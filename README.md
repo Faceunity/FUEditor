@@ -42,7 +42,7 @@ __FUEditor__ 是一款高效便捷的AR人脸道具编辑工具软件，为[Face
  FUEditor中自带一些示例项目，首次启动时，显示的项目即是示例项目，在最近项目列表中鼠标左键选择打开‘example_2D’项目。
 
   ![img](https://github.com/Faceunity/FUEditor/blob/master/data/doc/img/choice.png)  
- 进入示例项目，点击![button](https://github.com/Faceunity/FUEditor/blob/master/data/doc/img/qt32/play.png)按钮启动摄像头，点击![button](https://github.com/Faceunity/FUEditor/blob/master/data/doc/img/qt32/refresh.png)开始预览。
+ 进入示例项目，首先打包道具，点击![button](https://github.com/Faceunity/FUEditor/blob/master/data/doc/img/debug.png)。点击![button](https://github.com/Faceunity/FUEditor/blob/master/data/doc/img/qt32/play.png)按钮启动摄像头，点击![button](https://github.com/Faceunity/FUEditor/blob/master/data/doc/img/qt32/refresh.png)开始预览。
 
   ![img](https://github.com/Faceunity/FUEditor/blob/master/data/doc/img/example.png)  
 ---  
