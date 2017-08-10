@@ -5,7 +5,7 @@ __FUEditor__ 是一款高效便捷的AR人脸道具编辑工具软件，为[Face
  - 可以高效制作2D道具。贴纸，贴纸动画，动画组，特定脸部动作触发动画。Faceunity的2D贴纸技术本质也是3D的，有前后景深效果，侧脸时仍能紧贴人脸，而不是全部贴纸都在一个平面上。
  - 可以制作AR Mesh面具。
  - 可以制作3D的道具，调整材质，如花环头盔等。  
- ![xxx](https://github.com/Faceunity/FUEditor/tree/master/data/doc/img/gif.gif)
+ ![xxx](https://github.com/Faceunity/FUEditor/blob/master/data/doc/img/gif.gif)
 
 ## 1. 快速教程
 - 系统要求  
@@ -36,13 +36,13 @@ __FUEditor__ 是一款高效便捷的AR人脸道具编辑工具软件，为[Face
 - 启动程序  
  双击 FUEditor 目录中 FUEditor.bat 启动程序。显示最近项目列表，可以选择以前的项目，也可以新建项目。
 
- ![test](https://github.com/Faceunity/FUEditor/tree/master/data/doc/img/start.png)
+ ![test](https://github.com/Faceunity/FUEditor/blob/master/data/doc/img/start.png)
 
 - 查看example    
  FUEditor中自带一些示例项目，首次启动时，显示的项目即是示例项目，在最近项目列表中鼠标左键选择打开‘example_2D’项目。
 
- ![test](https://github.com/Faceunity/FUEditor/tree/master/data/doc/img/choice.png)  
+ ![test](https://github.com/Faceunity/FUEditor/blob/master/data/doc/img/choice.png)  
  进入示例项目，点击![test](./img/qt32/play.png)按钮启动摄像头，点击![test](./img/qt32/refresh.png)开始预览。
 
- ![test](https://github.com/Faceunity/FUEditor/tree/master/data/doc/img/example.png)  
+ ![test](https://github.com/Faceunity/FUEditor/blob/master/data/doc/img/example.png)  
 ---
