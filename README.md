@@ -14,7 +14,7 @@ __FUEditor__ 是一款高效便捷的AR人脸道具编辑工具软件，为[Face
 -	FUEditor无须安装可直接使用，将FUEditor.zip解压到系统适当位置。
 -	目录结构解释  
 ```C
-+FUEdittor\          //FUEditor根目录
+ +FUEdittor\          //FUEditor根目录
        -FUEditor.bat      //双击点击，启动FUEditor
        +bins\             //FUEditor程序库
        +data\             //FUEditor数据目录
