@@ -1,0 +1,43 @@
+{
+	string $all_blendshapes[] = `ls -type "blendShape"`;
+	string $BlendShape=$all_blendshapes[0];
+	string $bs_names[] = `aliasAttr -q $BlendShape`;
+	
+	string $fname=`file -q -sn`;
+	print $fname;
+	string $fpath=`match "^.*[\\/]" $fname`;
+	$fpath=$fpath+$BlendShape;
+	print $fpath;
+	sysFile -makeDir $fpath;
+	
+	for($i=0;$i<size($bs_names);$i+=2){
+		for($j=0;$j<size($all_blendshapes);$j++){
+			string $attr_name=$all_blendshapes[$j]+"."+$bs_names[$i];
+			if(`objExists $attr_name`)
+			    setAttr $attr_name 0;
+		}
+	}
+	string $obj_name=$fpath+"/bs0.obj";
+	print $obj_name;print "\n";
+	file -force -options "groups=1;ptgroups=1;materials=1;smoothing=1;normals=1" -type "OBJexport" -pr -es $obj_name;
+	for($i=0;$i<size($bs_names);$i+=2){
+		for($j=0;$j<size($all_blendshapes);$j++){
+			string $attr_name=$all_blendshapes[$j]+"."+$bs_names[$i];
+			if(`objExists $attr_name`)
+			    setAttr $attr_name 1;
+		}
+		string $name_part = `match "^h_[0-4][0-9]" $bs_names[$i]`;
+		print $name_part; print "  gg\n";
+		int $lg=size($name_part)-1;
+		int $id=`substring $name_part 3 4`;
+		print $id; print "\n";
+		string $obj_name=$fpath+"/bs"+($id)+".obj";
+		//print $obj_name;print "\n";
+		file -force -options "groups=1;ptgroups=1;materials=0;smoothing=1;normals=1" -type "OBJexport" -pr -es $obj_name;
+		for($j=0;$j<size($all_blendshapes);$j++){
+			string $attr_name=$all_blendshapes[$j]+"."+$bs_names[$i];
+			if(`objExists $attr_name`)
+			    setAttr $attr_name 0;
+		}
+	}
+};

@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <meta charset="utf-8" />
+      <title>FUEditor User Specification</title>
+      <style>.markdown-preview:not([data-use-github-style]) { padding: 2em; font-size: 1.2em; color: rgb(171, 178, 191); overflow: auto; background-color: rgb(40, 44, 52); }
+.markdown-preview:not([data-use-github-style]) > :first-child { margin-top: 0px; }
+.markdown-preview:not([data-use-github-style]) h1, .markdown-preview:not([data-use-github-style]) h2, .markdown-preview:not([data-use-github-style]) h3, .markdown-preview:not([data-use-github-style]) h4, .markdown-preview:not([data-use-github-style]) h5, .markdown-preview:not([data-use-github-style]) h6 { line-height: 1.2; margin-top: 1.5em; margin-bottom: 0.5em; color: rgb(255, 255, 255); }
+.markdown-preview:not([data-use-github-style]) h1 { font-size: 2.4em; font-weight: 300; }
+.markdown-preview:not([data-use-github-style]) h2 { font-size: 1.8em; font-weight: 400; }
+.markdown-preview:not([data-use-github-style]) h3 { font-size: 1.5em; font-weight: 500; }
+.markdown-preview:not([data-use-github-style]) h4 { font-size: 1.2em; font-weight: 600; }
+.markdown-preview:not([data-use-github-style]) h5 { font-size: 1.1em; font-weight: 600; }
+.markdown-preview:not([data-use-github-style]) h6 { font-size: 1em; font-weight: 600; }
+.markdown-preview:not([data-use-github-style]) strong { color: rgb(255, 255, 255); }
+.markdown-preview:not([data-use-github-style]) del { color: rgb(124, 135, 156); }
+.markdown-preview:not([data-use-github-style]) a, .markdown-preview:not([data-use-github-style]) a code { color: rgb(82, 139, 255); }
+.markdown-preview:not([data-use-github-style]) img { max-width: 100%; }
+.markdown-preview:not([data-use-github-style]) > p { margin-top: 0px; margin-bottom: 1.5em; }
+.markdown-preview:not([data-use-github-style]) > ul, .markdown-preview:not([data-use-github-style]) > ol { margin-bottom: 1.5em; }
+.markdown-preview:not([data-use-github-style]) blockquote { margin: 1.5em 0px; font-size: inherit; color: rgb(124, 135, 156); border-color: rgb(75, 83, 98); border-width: 4px; }
+.markdown-preview:not([data-use-github-style]) hr { margin: 3em 0px; border-top: 2px dashed rgb(75, 83, 98); background: none; }
+.markdown-preview:not([data-use-github-style]) table { margin: 1.5em 0px; }
+.markdown-preview:not([data-use-github-style]) th { color: rgb(255, 255, 255); }
+.markdown-preview:not([data-use-github-style]) th, .markdown-preview:not([data-use-github-style]) td { padding: 0.66em 1em; border: 1px solid rgb(75, 83, 98); }
+.markdown-preview:not([data-use-github-style]) code { color: rgb(255, 255, 255); background-color: rgb(58, 63, 75); }
+.markdown-preview:not([data-use-github-style]) pre.editor-colors { margin: 1.5em 0px; padding: 1em; font-size: 0.92em; border-radius: 3px; background-color: rgb(49, 54, 63); }
+.markdown-preview:not([data-use-github-style]) kbd { color: rgb(255, 255, 255); border-width: 1px 1px 2px; border-style: solid; border-color: rgb(75, 83, 98) rgb(75, 83, 98) rgb(62, 68, 81); background-color: rgb(58, 63, 75); }
+.markdown-preview[data-use-github-style] { font-family: "Helvetica Neue", Helvetica, "Segoe UI", Arial, freesans, sans-serif; line-height: 1.6; word-wrap: break-word; padding: 30px; font-size: 16px; color: rgb(51, 51, 51); overflow: scroll; background-color: rgb(255, 255, 255); }
+.markdown-preview[data-use-github-style] > :first-child { margin-top: 0px !important; }
+.markdown-preview[data-use-github-style] > :last-child { margin-bottom: 0px !important; }
+.markdown-preview[data-use-github-style] a:not([href]) { color: inherit; text-decoration: none; }
+.markdown-preview[data-use-github-style] .absent { color: rgb(204, 0, 0); }
+.markdown-preview[data-use-github-style] .anchor { position: absolute; top: 0px; left: 0px; display: block; padding-right: 6px; padding-left: 30px; margin-left: -30px; }
+.markdown-preview[data-use-github-style] .anchor:focus { outline: none; }
+.markdown-preview[data-use-github-style] h1, .markdown-preview[data-use-github-style] h2, .markdown-preview[data-use-github-style] h3, .markdown-preview[data-use-github-style] h4, .markdown-preview[data-use-github-style] h5, .markdown-preview[data-use-github-style] h6 { position: relative; margin-top: 1em; margin-bottom: 16px; font-weight: bold; line-height: 1.4; }
+.markdown-preview[data-use-github-style] h1 .octicon-link, .markdown-preview[data-use-github-style] h2 .octicon-link, .markdown-preview[data-use-github-style] h3 .octicon-link, .markdown-preview[data-use-github-style] h4 .octicon-link, .markdown-preview[data-use-github-style] h5 .octicon-link, .markdown-preview[data-use-github-style] h6 .octicon-link { display: none; color: rgb(0, 0, 0); vertical-align: middle; }
+.markdown-preview[data-use-github-style] h1:hover .anchor, .markdown-preview[data-use-github-style] h2:hover .anchor, .markdown-preview[data-use-github-style] h3:hover .anchor, .markdown-preview[data-use-github-style] h4:hover .anchor, .markdown-preview[data-use-github-style] h5:hover .anchor, .markdown-preview[data-use-github-style] h6:hover .anchor { padding-left: 8px; margin-left: -30px; text-decoration: none; }
+.markdown-preview[data-use-github-style] h1:hover .anchor .octicon-link, .markdown-preview[data-use-github-style] h2:hover .anchor .octicon-link, .markdown-preview[data-use-github-style] h3:hover .anchor .octicon-link, .markdown-preview[data-use-github-style] h4:hover .anchor .octicon-link, .markdown-preview[data-use-github-style] h5:hover .anchor .octicon-link, .markdown-preview[data-use-github-style] h6:hover .anchor .octicon-link { display: inline-block; }
+.markdown-preview[data-use-github-style] h1 tt, .markdown-preview[data-use-github-style] h2 tt, .markdown-preview[data-use-github-style] h3 tt, .markdown-preview[data-use-github-style] h4 tt, .markdown-preview[data-use-github-style] h5 tt, .markdown-preview[data-use-github-style] h6 tt, .markdown-preview[data-use-github-style] h1 code, .markdown-preview[data-use-github-style] h2 code, .markdown-preview[data-use-github-style] h3 code, .markdown-preview[data-use-github-style] h4 code, .markdown-preview[data-use-github-style] h5 code, .markdown-preview[data-use-github-style] h6 code { font-size: inherit; }
+.markdown-preview[data-use-github-style] h1 { padding-bottom: 0.3em; font-size: 2.25em; line-height: 1.2; border-bottom: 1px solid rgb(238, 238, 238); }
+.markdown-preview[data-use-github-style] h1 .anchor { line-height: 1; }
+.markdown-preview[data-use-github-style] h2 { padding-bottom: 0.3em; font-size: 1.75em; line-height: 1.225; border-bottom: 1px solid rgb(238, 238, 238); }
+.markdown-preview[data-use-github-style] h2 .anchor { line-height: 1; }
+.markdown-preview[data-use-github-style] h3 { font-size: 1.5em; line-height: 1.43; }
+.markdown-preview[data-use-github-style] h3 .anchor { line-height: 1.2; }
+.markdown-preview[data-use-github-style] h4 { font-size: 1.25em; }
+.markdown-preview[data-use-github-style] h4 .anchor { line-height: 1.2; }
+.markdown-preview[data-use-github-style] h5 { font-size: 1em; }
+.markdown-preview[data-use-github-style] h5 .anchor { line-height: 1.1; }
+.markdown-preview[data-use-github-style] h6 { font-size: 1em; color: rgb(119, 119, 119); }
+.markdown-preview[data-use-github-style] h6 .anchor { line-height: 1.1; }
+.markdown-preview[data-use-github-style] p, .markdown-preview[data-use-github-style] blockquote, .markdown-preview[data-use-github-style] ul, .markdown-preview[data-use-github-style] ol, .markdown-preview[data-use-github-style] dl, .markdown-preview[data-use-github-style] table, .markdown-preview[data-use-github-style] pre { margin-top: 0px; margin-bottom: 16px; }
+.markdown-preview[data-use-github-style] hr { height: 4px; padding: 0px; margin: 16px 0px; border: 0px none; background-color: rgb(231, 231, 231); }
+.markdown-preview[data-use-github-style] ul, .markdown-preview[data-use-github-style] ol { padding-left: 2em; }
+.markdown-preview[data-use-github-style] ul.no-list, .markdown-preview[data-use-github-style] ol.no-list { padding: 0px; list-style-type: none; }
+.markdown-preview[data-use-github-style] ul ul, .markdown-preview[data-use-github-style] ul ol, .markdown-preview[data-use-github-style] ol ol, .markdown-preview[data-use-github-style] ol ul { margin-top: 0px; margin-bottom: 0px; }
+.markdown-preview[data-use-github-style] li > p { margin-top: 16px; }
+.markdown-preview[data-use-github-style] dl { padding: 0px; }
+.markdown-preview[data-use-github-style] dl dt { padding: 0px; margin-top: 16px; font-size: 1em; font-style: italic; font-weight: bold; }
+.markdown-preview[data-use-github-style] dl dd { padding: 0px 16px; margin-bottom: 16px; }
+.markdown-preview[data-use-github-style] blockquote { padding: 0px 15px; color: rgb(119, 119, 119); border-left: 4px solid rgb(221, 221, 221); }
+.markdown-preview[data-use-github-style] blockquote > :first-child { margin-top: 0px; }
+.markdown-preview[data-use-github-style] blockquote > :last-child { margin-bottom: 0px; }
+.markdown-preview[data-use-github-style] table { display: block; width: 100%; overflow: auto; word-break: keep-all; }
+.markdown-preview[data-use-github-style] table th { font-weight: bold; }
+.markdown-preview[data-use-github-style] table th, .markdown-preview[data-use-github-style] table td { padding: 6px 13px; border: 1px solid rgb(221, 221, 221); }
+.markdown-preview[data-use-github-style] table tr { border-top: 1px solid rgb(204, 204, 204); background-color: rgb(255, 255, 255); }
+.markdown-preview[data-use-github-style] table tr:nth-child(2n) { background-color: rgb(248, 248, 248); }
+.markdown-preview[data-use-github-style] img { max-width: 100%; box-sizing: border-box; }
+.markdown-preview[data-use-github-style] .emoji { max-width: none; }
+.markdown-preview[data-use-github-style] span.frame { display: block; overflow: hidden; }
+.markdown-preview[data-use-github-style] span.frame > span { display: block; float: left; width: auto; padding: 7px; margin: 13px 0px 0px; overflow: hidden; border: 1px solid rgb(221, 221, 221); }
+.markdown-preview[data-use-github-style] span.frame span img { display: block; float: left; }
+.markdown-preview[data-use-github-style] span.frame span span { display: block; padding: 5px 0px 0px; clear: both; color: rgb(51, 51, 51); }
+.markdown-preview[data-use-github-style] span.align-center { display: block; overflow: hidden; clear: both; }
+.markdown-preview[data-use-github-style] span.align-center > span { display: block; margin: 13px auto 0px; overflow: hidden; text-align: center; }
+.markdown-preview[data-use-github-style] span.align-center span img { margin: 0px auto; text-align: center; }
+.markdown-preview[data-use-github-style] span.align-right { display: block; overflow: hidden; clear: both; }
+.markdown-preview[data-use-github-style] span.align-right > span { display: block; margin: 13px 0px 0px; overflow: hidden; text-align: right; }
+.markdown-preview[data-use-github-style] span.align-right span img { margin: 0px; text-align: right; }
+.markdown-preview[data-use-github-style] span.float-left { display: block; float: left; margin-right: 13px; overflow: hidden; }
+.markdown-preview[data-use-github-style] span.float-left span { margin: 13px 0px 0px; }
+.markdown-preview[data-use-github-style] span.float-right { display: block; float: right; margin-left: 13px; overflow: hidden; }
+.markdown-preview[data-use-github-style] span.float-right > span { display: block; margin: 13px auto 0px; overflow: hidden; text-align: right; }
+.markdown-preview[data-use-github-style] code, .markdown-preview[data-use-github-style] tt { padding: 0.2em 0px; margin: 0px; font-size: 85%; border-radius: 3px; background-color: rgba(0, 0, 0, 0.0392157); }
+.markdown-preview[data-use-github-style] code::before, .markdown-preview[data-use-github-style] tt::before, .markdown-preview[data-use-github-style] code::after, .markdown-preview[data-use-github-style] tt::after { letter-spacing: -0.2em; content: " "; }
+.markdown-preview[data-use-github-style] code br, .markdown-preview[data-use-github-style] tt br { display: none; }
+.markdown-preview[data-use-github-style] del code { text-decoration: inherit; }
+.markdown-preview[data-use-github-style] pre > code { padding: 0px; margin: 0px; font-size: 100%; word-break: normal; white-space: pre; border: 0px; background: transparent; }
+.markdown-preview[data-use-github-style] .highlight { margin-bottom: 16px; }
+.markdown-preview[data-use-github-style] .highlight pre, .markdown-preview[data-use-github-style] pre { padding: 16px; overflow: auto; font-size: 85%; line-height: 1.45; border-radius: 3px; background-color: rgb(247, 247, 247); }
+.markdown-preview[data-use-github-style] .highlight pre { margin-bottom: 0px; word-break: normal; }
+.markdown-preview[data-use-github-style] pre { word-wrap: normal; }
+.markdown-preview[data-use-github-style] pre code, .markdown-preview[data-use-github-style] pre tt { display: inline; max-width: initial; padding: 0px; margin: 0px; overflow: initial; line-height: inherit; word-wrap: normal; border: 0px; background-color: transparent; }
+.markdown-preview[data-use-github-style] pre code::before, .markdown-preview[data-use-github-style] pre tt::before, .markdown-preview[data-use-github-style] pre code::after, .markdown-preview[data-use-github-style] pre tt::after { content: normal; }
+.markdown-preview[data-use-github-style] kbd { display: inline-block; padding: 3px 5px; font-size: 11px; line-height: 10px; color: rgb(85, 85, 85); vertical-align: middle; border-width: 1px; border-style: solid; border-color: rgb(204, 204, 204) rgb(204, 204, 204) rgb(187, 187, 187); border-radius: 3px; box-shadow: rgb(187, 187, 187) 0px -1px 0px inset; background-color: rgb(252, 252, 252); }
+.markdown-preview[data-use-github-style] a { color: rgb(51, 122, 183); }
+.markdown-preview[data-use-github-style] code { color: inherit; }
+.markdown-preview[data-use-github-style] pre.editor-colors { padding: 0.8em 1em; margin-bottom: 1em; font-size: 0.85em; border-radius: 4px; overflow: auto; }
+.scrollbars-visible-always .markdown-preview pre.editor-colors .vertical-scrollbar, .scrollbars-visible-always .markdown-preview pre.editor-colors .horizontal-scrollbar { visibility: hidden; }
+.scrollbars-visible-always .markdown-preview pre.editor-colors:hover .vertical-scrollbar, .scrollbars-visible-always .markdown-preview pre.editor-colors:hover .horizontal-scrollbar { visibility: visible; }
+.markdown-preview .task-list-item-checkbox { position: absolute; margin: 0.25em 0px 0px -1.4em; }
+.bracket-matcher .region {
+  border-bottom: 1px dotted lime;
+  position: absolute;
+}
+
+.spell-check-misspelling .region {
+  border-bottom: 2px dotted rgba(255, 51, 51, 0.75);
+}
+.spell-check-corrections {
+  width: 25em !important;
+}
+
+pre.editor-colors {
+  background-color: #282c34;
+  color: #abb2bf;
+}
+pre.editor-colors .line.cursor-line {
+  background-color: rgba(153, 187, 255, 0.04);
+}
+pre.editor-colors .invisible {
+  color: #abb2bf;
+}
+pre.editor-colors .cursor {
+  border-left: 2px solid #528bff;
+}
+pre.editor-colors .selection .region {
+  background-color: #3e4451;
+}
+pre.editor-colors .bracket-matcher .region {
+  border-bottom: 1px solid #528bff;
+  box-sizing: border-box;
+}
+pre.editor-colors .invisible-character {
+  color: rgba(171, 178, 191, 0.15);
+}
+pre.editor-colors .indent-guide {
+  color: rgba(171, 178, 191, 0.15);
+}
+pre.editor-colors .wrap-guide {
+  background-color: rgba(171, 178, 191, 0.15);
+}
+pre.editor-colors .find-result .region.region.region,
+pre.editor-colors .current-result .region.region.region {
+  border-radius: 2px;
+  background-color: rgba(82, 139, 255, 0.24);
+  transition: border-color 0.4s;
+}
+pre.editor-colors .find-result .region.region.region {
+  border: 2px solid transparent;
+}
+pre.editor-colors .current-result .region.region.region {
+  border: 2px solid #528bff;
+  transition-duration: .1s;
+}
+pre.editor-colors .gutter .line-number {
+  color: #636d83;
+  -webkit-font-smoothing: antialiased;
+}
+pre.editor-colors .gutter .line-number.cursor-line {
+  color: #abb2bf;
+  background-color: #2c313a;
+}
+pre.editor-colors .gutter .line-number.cursor-line-no-selection {
+  background-color: transparent;
+}
+pre.editor-colors .gutter .line-number .icon-right {
+  color: #abb2bf;
+}
+pre.editor-colors .gutter:not(.git-diff-icon) .line-number.git-line-removed.git-line-removed::before {
+  bottom: -3px;
+}
+pre.editor-colors .gutter:not(.git-diff-icon) .line-number.git-line-removed::after {
+  content: "";
+  position: absolute;
+  left: 0px;
+  bottom: 0px;
+  width: 25px;
+  border-bottom: 1px dotted rgba(224, 82, 82, 0.5);
+  pointer-events: none;
+}
+pre.editor-colors .gutter .line-number.folded,
+pre.editor-colors .gutter .line-number:after,
+pre.editor-colors .fold-marker:after {
+  color: #abb2bf;
+}
+.syntax--comment {
+  color: #5c6370;
+  font-style: italic;
+}
+.syntax--comment .syntax--markup.syntax--link {
+  color: #5c6370;
+}
+.syntax--entity.syntax--name.syntax--type {
+  color: #e5c07b;
+}
+.syntax--entity.syntax--other.syntax--inherited-class {
+  color: #98c379;
+}
+.syntax--keyword {
+  color: #c678dd;
+}
+.syntax--keyword.syntax--control {
+  color: #c678dd;
+}
+.syntax--keyword.syntax--operator {
+  color: #abb2bf;
+}
+.syntax--keyword.syntax--other.syntax--special-method {
+  color: #61afef;
+}
+.syntax--keyword.syntax--other.syntax--unit {
+  color: #d19a66;
+}
+.syntax--storage {
+  color: #c678dd;
+}
+.syntax--storage.syntax--type.syntax--annotation,
+.syntax--storage.syntax--type.syntax--primitive {
+  color: #c678dd;
+}
+.syntax--storage.syntax--modifier.syntax--package,
+.syntax--storage.syntax--modifier.syntax--import {
+  color: #abb2bf;
+}
+.syntax--constant {
+  color: #d19a66;
+}
+.syntax--constant.syntax--variable {
+  color: #d19a66;
+}
+.syntax--constant.syntax--character.syntax--escape {
+  color: #56b6c2;
+}
+.syntax--constant.syntax--numeric {
+  color: #d19a66;
+}
+.syntax--constant.syntax--other.syntax--color {
+  color: #56b6c2;
+}
+.syntax--constant.syntax--other.syntax--symbol {
+  color: #56b6c2;
+}
+.syntax--variable {
+  color: #e06c75;
+}
+.syntax--variable.syntax--interpolation {
+  color: #be5046;
+}
+.syntax--variable.syntax--parameter {
+  color: #abb2bf;
+}
+.syntax--string {
+  color: #98c379;
+}
+.syntax--string.syntax--regexp {
+  color: #56b6c2;
+}
+.syntax--string.syntax--regexp .syntax--source.syntax--ruby.syntax--embedded {
+  color: #e5c07b;
+}
+.syntax--string.syntax--other.syntax--link {
+  color: #e06c75;
+}
+.syntax--punctuation.syntax--definition.syntax--comment {
+  color: #5c6370;
+}
+.syntax--punctuation.syntax--definition.syntax--method-parameters,
+.syntax--punctuation.syntax--definition.syntax--function-parameters,
+.syntax--punctuation.syntax--definition.syntax--parameters,
+.syntax--punctuation.syntax--definition.syntax--separator,
+.syntax--punctuation.syntax--definition.syntax--seperator,
+.syntax--punctuation.syntax--definition.syntax--array {
+  color: #abb2bf;
+}
+.syntax--punctuation.syntax--definition.syntax--heading,
+.syntax--punctuation.syntax--definition.syntax--identity {
+  color: #61afef;
+}
+.syntax--punctuation.syntax--definition.syntax--bold {
+  color: #e5c07b;
+  font-weight: bold;
+}
+.syntax--punctuation.syntax--definition.syntax--italic {
+  color: #c678dd;
+  font-style: italic;
+}
+.syntax--punctuation.syntax--section.syntax--embedded {
+  color: #be5046;
+}
+.syntax--punctuation.syntax--section.syntax--method,
+.syntax--punctuation.syntax--section.syntax--class,
+.syntax--punctuation.syntax--section.syntax--inner-class {
+  color: #abb2bf;
+}
+.syntax--support.syntax--class {
+  color: #e5c07b;
+}
+.syntax--support.syntax--type {
+  color: #56b6c2;
+}
+.syntax--support.syntax--function {
+  color: #56b6c2;
+}
+.syntax--support.syntax--function.syntax--any-method {
+  color: #61afef;
+}
+.syntax--entity.syntax--name.syntax--function {
+  color: #61afef;
+}
+.syntax--entity.syntax--name.syntax--class,
+.syntax--entity.syntax--name.syntax--type.syntax--class {
+  color: #e5c07b;
+}
+.syntax--entity.syntax--name.syntax--section {
+  color: #61afef;
+}
+.syntax--entity.syntax--name.syntax--tag {
+  color: #e06c75;
+}
+.syntax--entity.syntax--other.syntax--attribute-name {
+  color: #d19a66;
+}
+.syntax--entity.syntax--other.syntax--attribute-name.syntax--id {
+  color: #61afef;
+}
+.syntax--meta.syntax--class {
+  color: #e5c07b;
+}
+.syntax--meta.syntax--class.syntax--body {
+  color: #abb2bf;
+}
+.syntax--meta.syntax--method-call,
+.syntax--meta.syntax--method {
+  color: #abb2bf;
+}
+.syntax--meta.syntax--definition.syntax--variable {
+  color: #e06c75;
+}
+.syntax--meta.syntax--link {
+  color: #d19a66;
+}
+.syntax--meta.syntax--require {
+  color: #61afef;
+}
+.syntax--meta.syntax--selector {
+  color: #c678dd;
+}
+.syntax--meta.syntax--separator {
+  background-color: #373b41;
+  color: #abb2bf;
+}
+.syntax--meta.syntax--tag {
+  color: #abb2bf;
+}
+.syntax--underline {
+  text-decoration: underline;
+}
+.syntax--none {
+  color: #abb2bf;
+}
+.syntax--invalid.syntax--deprecated {
+  color: #523d14 !important;
+  background-color: #e0c285 !important;
+}
+.syntax--invalid.syntax--illegal {
+  color: white !important;
+  background-color: #e05252 !important;
+}
+.syntax--markup.syntax--bold {
+  color: #d19a66;
+  font-weight: bold;
+}
+.syntax--markup.syntax--changed {
+  color: #c678dd;
+}
+.syntax--markup.syntax--deleted {
+  color: #e06c75;
+}
+.syntax--markup.syntax--italic {
+  color: #c678dd;
+  font-style: italic;
+}
+.syntax--markup.syntax--heading {
+  color: #e06c75;
+}
+.syntax--markup.syntax--heading .syntax--punctuation.syntax--definition.syntax--heading {
+  color: #61afef;
+}
+.syntax--markup.syntax--link {
+  color: #56b6c2;
+}
+.syntax--markup.syntax--inserted {
+  color: #98c379;
+}
+.syntax--markup.syntax--quote {
+  color: #d19a66;
+}
+.syntax--markup.syntax--raw {
+  color: #98c379;
+}
+.syntax--source.syntax--c .syntax--keyword.syntax--operator {
+  color: #c678dd;
+}
+.syntax--source.syntax--cpp .syntax--keyword.syntax--operator {
+  color: #c678dd;
+}
+.syntax--source.syntax--cs .syntax--keyword.syntax--operator {
+  color: #c678dd;
+}
+.syntax--source.syntax--css .syntax--property-name,
+.syntax--source.syntax--css .syntax--property-value {
+  color: #828997;
+}
+.syntax--source.syntax--css .syntax--property-name.syntax--support,
+.syntax--source.syntax--css .syntax--property-value.syntax--support {
+  color: #abb2bf;
+}
+.syntax--source.syntax--gfm .syntax--markup {
+  -webkit-font-smoothing: auto;
+}
+.syntax--source.syntax--gfm .syntax--link .syntax--entity {
+  color: #61afef;
+}
+.syntax--source.syntax--go .syntax--storage.syntax--type.syntax--string {
+  color: #c678dd;
+}
+.syntax--source.syntax--ini .syntax--keyword.syntax--other.syntax--definition.syntax--ini {
+  color: #e06c75;
+}
+.syntax--source.syntax--java .syntax--storage.syntax--modifier.syntax--import {
+  color: #e5c07b;
+}
+.syntax--source.syntax--java .syntax--storage.syntax--type {
+  color: #e5c07b;
+}
+.syntax--source.syntax--java .syntax--keyword.syntax--operator.syntax--instanceof {
+  color: #c678dd;
+}
+.syntax--source.syntax--java-properties .syntax--meta.syntax--key-pair {
+  color: #e06c75;
+}
+.syntax--source.syntax--java-properties .syntax--meta.syntax--key-pair > .syntax--punctuation {
+  color: #abb2bf;
+}
+.syntax--source.syntax--js .syntax--keyword.syntax--operator {
+  color: #56b6c2;
+}
+.syntax--source.syntax--js .syntax--keyword.syntax--operator.syntax--delete,
+.syntax--source.syntax--js .syntax--keyword.syntax--operator.syntax--in,
+.syntax--source.syntax--js .syntax--keyword.syntax--operator.syntax--of,
+.syntax--source.syntax--js .syntax--keyword.syntax--operator.syntax--instanceof,
+.syntax--source.syntax--js .syntax--keyword.syntax--operator.syntax--new,
+.syntax--source.syntax--js .syntax--keyword.syntax--operator.syntax--typeof,
+.syntax--source.syntax--js .syntax--keyword.syntax--operator.syntax--void {
+  color: #c678dd;
+}
+.syntax--source.syntax--json .syntax--meta.syntax--structure.syntax--dictionary.syntax--json > .syntax--string.syntax--quoted.syntax--json {
+  color: #e06c75;
+}
+.syntax--source.syntax--json .syntax--meta.syntax--structure.syntax--dictionary.syntax--json > .syntax--string.syntax--quoted.syntax--json > .syntax--punctuation.syntax--string {
+  color: #e06c75;
+}
+.syntax--source.syntax--json .syntax--meta.syntax--structure.syntax--dictionary.syntax--json > .syntax--value.syntax--json > .syntax--string.syntax--quoted.syntax--json,
+.syntax--source.syntax--json .syntax--meta.syntax--structure.syntax--array.syntax--json > .syntax--value.syntax--json > .syntax--string.syntax--quoted.syntax--json,
+.syntax--source.syntax--json .syntax--meta.syntax--structure.syntax--dictionary.syntax--json > .syntax--value.syntax--json > .syntax--string.syntax--quoted.syntax--json > .syntax--punctuation,
+.syntax--source.syntax--json .syntax--meta.syntax--structure.syntax--array.syntax--json > .syntax--value.syntax--json > .syntax--string.syntax--quoted.syntax--json > .syntax--punctuation {
+  color: #98c379;
+}
+.syntax--source.syntax--json .syntax--meta.syntax--structure.syntax--dictionary.syntax--json > .syntax--constant.syntax--language.syntax--json,
+.syntax--source.syntax--json .syntax--meta.syntax--structure.syntax--array.syntax--json > .syntax--constant.syntax--language.syntax--json {
+  color: #56b6c2;
+}
+.syntax--source.syntax--ruby .syntax--constant.syntax--other.syntax--symbol > .syntax--punctuation {
+  color: inherit;
+}
+.syntax--source.syntax--python .syntax--keyword.syntax--operator.syntax--logical.syntax--python {
+  color: #c678dd;
+}
+.syntax--source.syntax--python .syntax--variable.syntax--parameter {
+  color: #d19a66;
+}
+</style>
+  </head>
+  <body class='markdown-preview' data-use-github-style><h1 id="-fueditor-"><strong>FUEditor 使用文档</strong></h1>
+<p>目录：</p>
+<ul>
+<li><a href="#-">简介</a></li>
+<li><a href="#1-">1. 快速安装</a></li>
+<li><a href="#2-">2. 使用</a><ul>
+<li><a href="#2-1-">2.1 新建项目</a></li>
+<li><a href="#2-2-2d-">2.2 2D道具编辑</a></li>
+<li><a href="#2-3-2d-">2.3 2D动画逻辑</a></li>
+<li><a href="#2-4-">2.4 特定脸部动作</a><ul>
+<li><a href="#2-4-1-">2.4.1 内置特定动作</a></li>
+<li><a href="#2-4-2-">2.4.2 自定义脸部动作</a></li>
+</ul>
+</li>
+<li><a href="#2-5-">2.5 组动画</a><ul>
+<li><a href="#2-5-1-">2.5.1 添加组动画</a></li>
+<li><a href="#2-5-2-">2.5.2 元素组构成</a></li>
+<li><a href="#2-5-3-">2.5.3 调整组元素顺序</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#3-ar-mesh-">3. AR Mesh 制作</a></li>
+<li><a href="#4-3d-">4. 静态3D道具制作</a><ul>
+<li><a href="#4-1-">4.1 道具制作</a></li>
+<li><a href="#4-2-">4.2 材质调整</a></li>
+</ul>
+</li>
+<li><a href="#5-avatar-">5. Avatar制作</a></li>
+<li><a href="#6-">6. 打包道具</a></li>
+<li><a href="#7-">7. 项目保存与切换</a></li>
+<li><a href="#8-">8. 高级功能自定义动画脚本</a></li>
+<li><a href="#9-">9. 常用术语解释</a></li>
+</ul>
+<h2 id="-">简介</h2>
+<p><strong>FUEditor</strong> 是一款高效便捷的AR人脸道具编辑工具软件，为<a href="www.faceunity.com">Faceunity</a>公司的Nama SDK提供支持。</p>
+<ul>
+<li>可以高效制作2D道具。贴纸，贴纸动画，动画组，特定脸部动作触发动画。Faceunity的2D贴纸技术本质也是3D的，有前后景深效果，侧脸时仍能紧贴人脸，而不是全部贴纸都在一个平面上。</li>
+<li>可以制作AR Mesh面具。</li>
+<li>可以制作3D的道具，调整材质，如花环头盔等。<br><img src=".\img\gif.gif" alt="xxx"></li>
+</ul>
+<h2 id="1-">1. 快速安装</h2>
+<ul>
+<li>系统要求  <ul>
+<li>win7/8/10 64位电脑</li>
+<li>摄像头，推荐使用 Logitech C920</li>
+</ul>
+</li>
+<li>FUEditor无须安装可直接使用，将FUEditor.zip解压到系统适当位置。</li>
+<li>目录结构解释  <pre class="editor-colors lang-C"><div class="line"><span class="syntax--source syntax--c"><span class="syntax--keyword syntax--operator syntax--c"><span>+</span></span><span>FUEdittor\&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--comment syntax--line syntax--double-slash syntax--cpp"><span class="syntax--punctuation syntax--definition syntax--comment syntax--cpp"><span>//</span></span><span>FUEditor根目录</span></span></span></div><div class="line"><span class="syntax--source syntax--c"><span>&nbsp;&nbsp;</span><span class="syntax--keyword syntax--operator syntax--c"><span>-</span></span><span>FUEditor.bat&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--comment syntax--line syntax--double-slash syntax--cpp"><span class="syntax--punctuation syntax--definition syntax--comment syntax--cpp"><span>//</span></span><span>双击点击，启动FUEditor</span></span></span></div><div class="line"><span class="syntax--source syntax--c"><span>&nbsp;&nbsp;</span><span class="syntax--keyword syntax--operator syntax--c"><span>+</span></span><span>bins\&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--comment syntax--line syntax--double-slash syntax--cpp"><span class="syntax--punctuation syntax--definition syntax--comment syntax--cpp"><span>//</span></span><span>FUEditor程序库</span></span></span></div><div class="line"><span class="syntax--source syntax--c"><span>&nbsp;&nbsp;</span><span class="syntax--keyword syntax--operator syntax--c"><span>+</span></span><span>data\&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--comment syntax--line syntax--double-slash syntax--cpp"><span class="syntax--punctuation syntax--definition syntax--comment syntax--cpp"><span>//</span></span><span>FUEditor数据目录</span></span></span></div><div class="line"><span class="syntax--source syntax--c"><span>&nbsp;&nbsp;</span><span class="syntax--keyword syntax--operator syntax--c"><span>+</span></span><span>log\&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--comment syntax--line syntax--double-slash syntax--cpp"><span class="syntax--punctuation syntax--definition syntax--comment syntax--cpp"><span>//</span></span><span>FUEditor运行日志</span></span></span></div><div class="line"><span class="syntax--source syntax--c"><span>&nbsp;&nbsp;</span><span class="syntax--keyword syntax--operator syntax--c"><span>+</span></span><span>Projects\&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--comment syntax--line syntax--double-slash syntax--cpp"><span class="syntax--punctuation syntax--definition syntax--comment syntax--cpp"><span>//</span></span><span>所有道具项目的目录</span></span></span></div><div class="line"><span class="syntax--source syntax--c"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--keyword syntax--operator syntax--c"><span>+</span></span><span>daoju1\&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--comment syntax--line syntax--double-slash syntax--cpp"><span class="syntax--punctuation syntax--definition syntax--comment syntax--cpp"><span>//</span></span><span>道具“daoju1”项目目录</span></span></span></div><div class="line"><span class="syntax--source syntax--c"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--keyword syntax--operator syntax--c"><span>-</span></span><span>daoju1.fuproj&nbsp;&nbsp;&nbsp;</span><span class="syntax--comment syntax--line syntax--double-slash syntax--cpp"><span class="syntax--punctuation syntax--definition syntax--comment syntax--cpp"><span>//</span></span><span>道具项目“daoju1”工程文件</span></span></span></div><div class="line"><span class="syntax--source syntax--c"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--keyword syntax--operator syntax--c"><span>+</span></span><span>build\&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--comment syntax--line syntax--double-slash syntax--cpp"><span class="syntax--punctuation syntax--definition syntax--comment syntax--cpp"><span>//</span></span><span>已签名道具bundle（测试证书）</span></span></span></div><div class="line"><span class="syntax--source syntax--c"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--keyword syntax--operator syntax--c"><span>+</span></span><span>release\&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--comment syntax--line syntax--double-slash syntax--cpp"><span class="syntax--punctuation syntax--definition syntax--comment syntax--cpp"><span>//</span></span><span>已签名道具bundle（正式证书）</span></span></span></div><div class="line"><span class="syntax--source syntax--c"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--keyword syntax--operator syntax--c"><span>+</span></span><span>zip\&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--comment syntax--line syntax--double-slash syntax--cpp"><span class="syntax--punctuation syntax--definition syntax--comment syntax--cpp"><span>//</span></span><span>未签名压缩包</span></span></span></div><div class="line"><span class="syntax--source syntax--c"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--keyword syntax--operator syntax--c"><span>+</span></span><span>fcopy\&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--comment syntax--line syntax--double-slash syntax--cpp"><span class="syntax--punctuation syntax--definition syntax--comment syntax--cpp"><span>//</span></span><span>自定义内容目录，用于自定义脚本</span></span></span></div><div class="line"><span class="syntax--source syntax--c"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--keyword syntax--operator syntax--c"><span>+</span></span><span>out\&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--comment syntax--line syntax--double-slash syntax--cpp"><span class="syntax--punctuation syntax--definition syntax--comment syntax--cpp"><span>//</span></span><span>临时文件</span></span></span></div><div class="line"><span class="syntax--source syntax--c"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--keyword syntax--operator syntax--c"><span>+</span></span><span>daoju2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--comment syntax--line syntax--double-slash syntax--cpp"><span class="syntax--punctuation syntax--definition syntax--comment syntax--cpp"><span>//</span></span><span>道具“daoju2”项目目录</span></span></span></div><div class="line"><span class="syntax--source syntax--c"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--keyword syntax--operator syntax--c"><span>-</span></span><span>daoju2.fuproj&nbsp;&nbsp;&nbsp;</span><span class="syntax--comment syntax--line syntax--double-slash syntax--cpp"><span class="syntax--punctuation syntax--definition syntax--comment syntax--cpp"><span>//</span></span><span>道具项目“daoju2”工程文件</span></span></span></div><div class="line"><span class="syntax--source syntax--c"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...</span></span></div><div class="line"><span class="syntax--source syntax--c"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--keyword syntax--operator syntax--c"><span>+</span></span><span>daoju3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--comment syntax--line syntax--double-slash syntax--cpp"><span class="syntax--punctuation syntax--definition syntax--comment syntax--cpp"><span>//</span></span><span>道具“daoju3”项目目录</span></span></span></div><div class="line"><span class="syntax--source syntax--c"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...</span></span></div></pre>
+</li>
+<li><p>启动程序<br>双击 FUEditor 目录中 FUEditor.bat 启动程序。显示最近项目列表，可以选择以前的项目，也可以新建项目。</p>
+<p><img src=".\img\start.png" alt="test"></p>
+</li>
+<li><p>查看example<br>FUEditor中自带一些示例项目，首次启动时，显示的项目即是示例项目，在最近项目列表中鼠标左键选择打开‘example_2D’项目。</p>
+<p><img src=".\img\choice.png" alt="test"><br>进入示例项目，点击<img src=".\img\qt32\play.png" alt="test">按钮启动摄像头，点击<img src=".\img\qt32\refresh.png" alt="test">开始预览。</p>
+<p><img src=".\img\example.png" alt="test">  </p>
+</li>
+</ul>
+<hr>
+<h2 id="2-">2. 使用</h2>
+<h4 id="2-1-">2.1 新建项目</h4>
+<ul>
+<li><p>创建：点击菜单<strong>File</strong>&gt;&gt;<strong>New Project</strong>，或者快捷键<strong>Ctrl+N</strong>，或者点击左上边按钮<img src=".\img\qt32\document-add.png" alt="test">。弹出对话框，选择创建项目类型，输入项目名称</p>
+<p><img src=".\img\createproject.png" alt="test">  </p>
+<p>创建完新项目后，界面左上角会显示<strong>FUEditor – 项目名</strong>，项目存放在 <em>FUEditor/Projects/项目名/</em> 目录下。<br><strong>注意</strong>：所有道具项目存放在 <em>FUEditor/Projects</em> 目录下，新建项目时不要重名。道具名称命名最好以“公司名缩写_设计师名缩写_道具名”规范来命名，如“fu_crt_maolian”。道具名最好不要和之前的一样，否则会覆盖掉之前打包好的道具。<br><em>FUEditor/Projects</em> 目录下由程序创建的目录不要随意动。</p>
+</li>
+</ul>
+<h4 id="2-2-2d-">2.2 2D道具编辑</h4>
+<ul>
+<li>添加：点击2D类型下&quot;<strong>+</strong>&quot;号创建新的元素；或者在&quot;<strong>2D</strong>&quot;上右键选择&quot;<strong>添加子元素</strong>&quot;；或者选中&quot;<strong>2D</strong>&quot;，点击下面<img src=".\img\qt32\add.png" alt="test">按钮添加新元素。  </li>
+<li><p>删除：点击<img src=".\img\qt32\remove.png" alt="test">删除当前选中的元素。或者在元素上点右键，选择&quot;<strong>删除</strong>&quot;。  </p>
+<p><img src=".\img\2daddremove.png" alt="test"></p>
+</li>
+</ul>
+<ul>
+<li><p>2D元素属性：<br>修改查看元素的属性，在视窗中选择道具元素，或者再树状元素列表中选择元素，右边会显示对应的元素属性视图  </p>
+<p><img src=".\img\attr.png" alt="test">  </p>
+</li>
+<li><p>属性释意：</p>
+<ul>
+<li>元素名：当前元素的名称，可修改，不同元素元素名不同。</li>
+<li>图片：点击右边图片按钮<img src=".\img\qt32\image.png" alt="test">，选择图片纹理。<br><strong>注意</strong>：2D元素帧动画序列命名必须是“xxxx_五位数字.扩展名” 例如， xxxx_00000.png, xxxx_00001.png 帧序列。<br>即使没有帧动画，只有一帧也需命名为xxxx_00000.png。</li>
+<li>水平翻转：沿元素中心做水平翻转。</li>
+<li>垂直翻转：沿元素中心做垂直翻转。</li>
+<li>是否背景：背景元素，不会跟人脸动，不拉伸，直接绘制在屏幕。不同屏幕分辨率按照(rx,ry)在屏幕上绘制元素，(rx,ry)表示元素中心在屏幕上的比例，左上角为(0,0),右下角为(1,1)。</li>
+<li>是否全屏：全屏元素，不会跟人脸动，拉伸绘制在全屏幕。</li>
+<li>是否横屏：全屏元素，且为横屏模式，不会跟人脸动，拉伸绘制在全屏幕。参见[横屏支持]章节。</li>
+<li>xyz：元素的位置，可直接输入；也可以在窗口中拖动，鼠标放到坐标轴上，按住鼠标左键拖动即可。</li>
+<li>保持图片宽高比：勾选，让元素保持原来图片的宽高比约束，调整宽或高会自动调整另一个值。取消后可自由调整宽高。</li>
+<li>宽度：元素宽度。</li>
+<li>高度：元素高度。</li>
+<li>FPS：播放帧速率，每秒播放多少帧。</li>
+<li>触发开始：当前道具从什么时候开始绘制。</li>
+<li>触发开始动作：当前道具在什么人脸表情动作下触发时开始绘制。</li>
+<li>是否需要保持动作：勾选时，且触发开始为“特定人脸表情动作”时，需要人脸保持某一动作，才能持续绘制道具元素。</li>
+<li>循环类型：当前道具的循环播放类型。</li>
+<li>触发结束：但特定条件满足时，结束当前道具元素绘制。</li>
+<li>触发结束动作：当前道具在什么人脸表情动作下触发时停止绘制。<br><strong>注 1</strong>：具体动画逻辑参见<a href="#">动画逻辑</a>章节<br><strong>注 2</strong>：背景元素以及全屏元素，在道具加载时就固定了方向，如要调整方向需要，需要在代码中调整旋转角度，调用<pre class="editor-colors lang-C"><div class="line"><span class="syntax--source syntax--c"><span class="syntax--comment syntax--block syntax--c"><span class="syntax--punctuation syntax--definition syntax--comment syntax--begin syntax--c"><span>/*</span></span></span></span></div><div class="line"><span class="syntax--source syntax--c"><span class="syntax--comment syntax--block syntax--c"><span>/&nbsp;第一个参数为bundleid，最后参数为旋转度数&nbsp;0，90，180，270。</span></span></span></div><div class="line"><span class="syntax--source syntax--c"><span class="syntax--comment syntax--block syntax--c"><span>/&nbsp;每加90度相当于逆时针旋转90度。</span></span></span></div><div class="line"><span class="syntax--source syntax--c"><span class="syntax--comment syntax--block syntax--c"><span class="syntax--punctuation syntax--definition syntax--comment syntax--end syntax--c"><span>*/</span></span></span></span></div><div class="line"><span class="syntax--source syntax--c"><span class="syntax--meta syntax--function syntax--c"><span class="syntax--entity syntax--name syntax--function syntax--c"><span>fuItemSetParamd</span></span><span class="syntax--punctuation syntax--section syntax--parameters syntax--begin syntax--bracket syntax--round syntax--c"><span>(</span></span><span>item_id</span><span class="syntax--punctuation syntax--separator syntax--delimiter syntax--c"><span>,</span></span><span>&nbsp;</span><span class="syntax--string syntax--quoted syntax--double syntax--c"><span class="syntax--punctuation syntax--definition syntax--string syntax--begin syntax--c"><span>&quot;</span></span><span>rotationAngle</span><span class="syntax--punctuation syntax--definition syntax--string syntax--end syntax--c"><span>&quot;</span></span></span><span class="syntax--punctuation syntax--separator syntax--delimiter syntax--c"><span>,</span></span><span class="syntax--constant syntax--numeric syntax--c"><span>90</span></span><span class="syntax--punctuation syntax--section syntax--parameters syntax--end syntax--bracket syntax--round syntax--c"><span>)</span></span></span><span class="syntax--punctuation syntax--terminator syntax--statement syntax--c"><span>;</span></span></span></div><div class="line"><span class="syntax--source syntax--c"><span>eg.</span></span></div><div class="line"><span class="syntax--source syntax--c"><span class="syntax--meta syntax--function syntax--c"><span class="syntax--entity syntax--name syntax--function syntax--c"><span>fuItemSetParamd</span></span><span class="syntax--punctuation syntax--section syntax--parameters syntax--begin syntax--bracket syntax--round syntax--c"><span>(</span></span><span>item_id</span><span class="syntax--punctuation syntax--separator syntax--delimiter syntax--c"><span>,</span></span><span>&nbsp;</span><span class="syntax--string syntax--quoted syntax--double syntax--c"><span class="syntax--punctuation syntax--definition syntax--string syntax--begin syntax--c"><span>&quot;</span></span><span>rotationAngle</span><span class="syntax--punctuation syntax--definition syntax--string syntax--end syntax--c"><span>&quot;</span></span></span><span class="syntax--punctuation syntax--separator syntax--delimiter syntax--c"><span>,</span></span><span class="syntax--constant syntax--numeric syntax--c"><span>90</span></span><span class="syntax--punctuation syntax--section syntax--parameters syntax--end syntax--bracket syntax--round syntax--c"><span>)</span></span></span><span class="syntax--punctuation syntax--terminator syntax--statement syntax--c"><span>;</span></span><span class="syntax--comment syntax--line syntax--double-slash syntax--cpp"><span class="syntax--punctuation syntax--definition syntax--comment syntax--cpp"><span>//</span></span><span>Android&nbsp;前置</span></span></span></div><div class="line"><span class="syntax--source syntax--c"><span class="syntax--meta syntax--function syntax--c"><span class="syntax--entity syntax--name syntax--function syntax--c"><span>fuItemSetParamd</span></span><span class="syntax--punctuation syntax--section syntax--parameters syntax--begin syntax--bracket syntax--round syntax--c"><span>(</span></span><span>item_id</span><span class="syntax--punctuation syntax--separator syntax--delimiter syntax--c"><span>,</span></span><span>&nbsp;</span><span class="syntax--string syntax--quoted syntax--double syntax--c"><span class="syntax--punctuation syntax--definition syntax--string syntax--begin syntax--c"><span>&quot;</span></span><span>rotationAngle</span><span class="syntax--punctuation syntax--definition syntax--string syntax--end syntax--c"><span>&quot;</span></span></span><span class="syntax--punctuation syntax--separator syntax--delimiter syntax--c"><span>,</span></span><span class="syntax--constant syntax--numeric syntax--c"><span>270</span></span><span class="syntax--punctuation syntax--section syntax--parameters syntax--end syntax--bracket syntax--round syntax--c"><span>)</span></span></span><span class="syntax--punctuation syntax--terminator syntax--statement syntax--c"><span>;</span></span><span class="syntax--comment syntax--line syntax--double-slash syntax--cpp"><span class="syntax--punctuation syntax--definition syntax--comment syntax--cpp"><span>//</span></span><span>Android&nbsp;后置</span></span></span></div><div class="line"><span class="syntax--source syntax--c"><span class="syntax--meta syntax--function syntax--c"><span class="syntax--entity syntax--name syntax--function syntax--c"><span>fuItemSetParamd</span></span><span class="syntax--punctuation syntax--section syntax--parameters syntax--begin syntax--bracket syntax--round syntax--c"><span>(</span></span><span>item_id</span><span class="syntax--punctuation syntax--separator syntax--delimiter syntax--c"><span>,</span></span><span>&nbsp;</span><span class="syntax--string syntax--quoted syntax--double syntax--c"><span class="syntax--punctuation syntax--definition syntax--string syntax--begin syntax--c"><span>&quot;</span></span><span>rotationAngle</span><span class="syntax--punctuation syntax--definition syntax--string syntax--end syntax--c"><span>&quot;</span></span></span><span class="syntax--punctuation syntax--separator syntax--delimiter syntax--c"><span>,</span></span><span class="syntax--constant syntax--numeric syntax--c"><span>0</span></span><span class="syntax--punctuation syntax--section syntax--parameters syntax--end syntax--bracket syntax--round syntax--c"><span>)</span></span></span><span class="syntax--punctuation syntax--terminator syntax--statement syntax--c"><span>;</span></span><span class="syntax--comment syntax--line syntax--double-slash syntax--cpp"><span class="syntax--punctuation syntax--definition syntax--comment syntax--cpp"><span>//</span></span><span>非Android&nbsp;平台</span></span></span></div></pre>
+</li>
+</ul>
+</li>
+<li><p><strong>横屏支持</strong>：<br>2D属性&quot;<strong>是否横屏</strong>&quot;选择，只适用于全屏元素，勾选后。
+在预览区，点击鼠标右键，在弹出框中选择横屏预览。<br><strong>注</strong>：一旦预览框选择对应的预览模式后，跟预览框模式不一样的全屏元素将不显示，仅仅是不显示，切换模式后将重新显示，打包正常。   </p>
+<p><strong>注</strong>：程序使用时，在加载道具后，默认竖屏模式，但需要切换横屏时，需要调用代码</p>
+<pre class="editor-colors lang-C"><div class="line"><span class="syntax--source syntax--c"><span class="syntax--meta syntax--function syntax--c"><span class="syntax--entity syntax--name syntax--function syntax--c"><span>fuItemSetParamd</span></span><span class="syntax--punctuation syntax--section syntax--parameters syntax--begin syntax--bracket syntax--round syntax--c"><span>(</span></span><span>item_id</span><span class="syntax--punctuation syntax--separator syntax--delimiter syntax--c"><span>,</span></span><span>&nbsp;</span><span class="syntax--string syntax--quoted syntax--double syntax--c"><span class="syntax--punctuation syntax--definition syntax--string syntax--begin syntax--c"><span>&quot;</span></span><span>isLandscape</span><span class="syntax--punctuation syntax--definition syntax--string syntax--end syntax--c"><span>&quot;</span></span></span><span class="syntax--punctuation syntax--separator syntax--delimiter syntax--c"><span>,</span></span><span class="syntax--constant syntax--numeric syntax--c"><span>1</span></span><span class="syntax--punctuation syntax--section syntax--parameters syntax--end syntax--bracket syntax--round syntax--c"><span>)</span></span></span><span class="syntax--punctuation syntax--terminator syntax--statement syntax--c"><span>;</span></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--comment syntax--line syntax--double-slash syntax--cpp"><span class="syntax--punctuation syntax--definition syntax--comment syntax--cpp"><span>//</span></span><span>第一个参数为bundleid，最后参数&nbsp;0-竖屏&nbsp;，1-横屏。</span></span></span></div></pre>
+<p>正视图/左视图/自由视图预览：<br><img src=".\img\henpin1.png" alt="test">  </p>
+<p>FUEditor中实时预览：<br><img src=".\img\henpin2.png" alt="test">  </p>
+</li>
+</ul>
+<h4 id="2-3-2d-">2.3 2D动画逻辑</h4>
+<p>单个元素，表示道具包中可编辑的最小单元。以下按照&quot;<strong>触发开始</strong>&quot;不同类型分类，描述各种不同条件下的动画逻辑。</p>
+<ul>
+<li><strong>触发开始</strong> - <strong>人脸出现</strong>：在出现人脸的时候，开始绘制元素，适用于需要人脸的元素。【当 &quot;触发结束&quot; 或者 &quot;循环类型&quot; 触发了结束后，暂时结束道具绘制，不管是否有人脸，当再次出现人脸时（有-&gt;无-&gt;有），再次绘制道具】。<ul>
+<li>触发结束 - 默认：正常按照循环类型进行绘制。   <ul>
+<li>循环类型 - 无限循环：则一直绘制该元素直到人脸消失，人脸出现时又重新绘制。</li>
+<li>循环类型 - 循环N次：循环绘制该元素N次(循环N次)，N 次后停止 该绘制该元素，暂停该道具。</li>
+<li>循环类型 - 循环1次并停留：播放道具一个循环后，停在最后一帧。</li>
+</ul>
+</li>
+<li>触发结束 - 人脸出现：【未定义操作】</li>
+<li>触发结束 - 屏幕初始化：【未定义操作】</li>
+<li>触发结束 - 特定脸部动作：按循环类型进行绘制，如触发特定脸部动作,停止当前元素，暂停该道具。<ul>
+<li>循环类型 - 无限循环：则一直绘制该元素直到人脸消失。</li>
+<li>循环类型 - 循环N次：循环绘制该元素N次(循环N次)，N次后停止该绘制该元素，暂停该道具。</li>
+<li>循环类型 - 循环1次并停留：播放该元素一个循环后，停在最后一帧。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>触发开始</strong> - <strong>屏幕初始化</strong>：道具加载后，立即绘制，无须人脸出现，适用于一些全屏或背景元素。【当 &quot;触发结束&quot; 或者 &quot;循环类型&quot; 触发了结束后，暂时结束道具绘制，不管是否有人脸。再次从有人脸到无人脸时（有/无-&gt;有-&gt; 无），再次绘制道具】<ul>
+<li>触发结束 - 默认：无特殊触发条件，按照循环类型逻辑。<ul>
+<li>循环类型 - 无限循环：一直绘制该元素，无论人脸有无。</li>
+<li>循环类型 - 循环N次： 循环绘制该元素N次(循环N次)，N次后停止该绘制该元素，暂停绘制，等待下次有脸到无脸的切换。</li>
+<li>循环类型 - 循环1次并停留：播放道具一个循环后，停在最后一帧。</li>
+</ul>
+</li>
+<li>触发结束 - 人脸出现：当人脸出现时，暂停绘制，等待下次有脸到无 脸的切换。当没有人脸出现时，按照循环类型控制逻辑。</li>
+<li>触发结束 - 屏幕初始化【未定义操作】</li>
+<li>触发结束 - 特定脸部动作：当出现特定人脸动作时，暂停绘制，等待下次 有脸到无脸的切换。当没有人脸出现时，按照循环类型控制逻辑。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>触发开始</strong> - <strong>特定脸部动作</strong>：道具加载后，需等特定人脸动作FaceActtionStart出现才触发元素绘制。适用于一些与人脸表情动作相关的元素。<ul>
+<li><strong>是否需要保持动作</strong> 选项：优先判断条件，当勾选时，人脸需要一直做着&quot;触发开始动作&quot;动作，才能保持元素绘制；不勾选时只要做一次&quot;触发开始动作&quot;触发，便开始绘制元素，开始绘制后，逻辑按循环类型以及触发结束来。</li>
+<li>触发结束 - 默认：无特殊触发条件，按<strong>是否需要保持</strong>特定脸部动作优先条件判断是否绘制。如绘制按照循环类型逻辑。<ul>
+<li>循环类型 - 无限循环：一直绘制该元素。</li>
+<li>循环类型 - 循环N次：循环绘制该元素N次(循环N次)，N次后停止该绘制该元素。当脸部动作&quot;触发开始动作&quot;再次被触发时，能够再次绘制。</li>
+<li>循环类型 - 循环1次并停留：播放道具一个循环后，停在最后一帧。</li>
+</ul>
+</li>
+<li>触发结束 - 人脸出现【未定义操作】</li>
+<li>触发结束 - 屏幕初始化【未定义操作】</li>
+<li>触发结束 - 特定脸部动作，当出现特定人脸动作特定脸部动作End时，停止绘制元素，当脸部动作FaceActtionStart再次被触发时，再次绘制。当没有特定人脸特定脸部动作End出现时，按needtokeep特定脸部动作优先条件判断是否绘制，如果绘制按照循环类型控制逻辑。    </li>
+</ul>
+</li>
+</ul>
+<hr>
+<h4 id="2-4-">2.4 特定脸部动作</h4>
+<p>当道具元素选择触发开始类型为：&quot;特定脸部动作&quot;，然后在触发开始动作列表中选择一个动作，能够根据人脸的特定表情触发元素播放。  </p>
+<p><img src=".\img\action.png" alt="test">  </p>
+<h6 id="2-4-1-">2.4.1 内置特定动作</h6>
+<ul>
+<li>&quot;taimei&quot; 是判断用户 抬眉毛的动作<img src=".\img\bq\01.png" alt="test">  </li>
+<li>&quot;taizuijiao_zuo&quot;是判断用户 抬左边嘴角的动作<img src=".\img\bq\02.png" alt="test">  </li>
+<li>&quot;taizuijiao_you&quot;是判断用户 抬右边嘴角的动作<img src=".\img\bq\03.png" alt="test">  </li>
+<li>&quot;nu&quot;是判断用户 怒的动作<img src=".\img\bq\04.png" alt="test">  </li>
+<li>&quot;zuixing_o&quot; 为嘴型O形<img src=".\img\bq\06.png" alt="test">  </li>
+<li>&quot;zuixing_a&quot; 为嘴型A形<img src=".\img\bq\05.png" alt="test">   </li>
+<li>&quot;zuixing_du&quot; 为嘴型嘟嘴形状<img src=".\img\bq\07.png" alt="test">  </li>
+<li>&quot;zuixing_min&quot; 为嘴型抿嘴形状<img src=".\img\bq\08.png" alt="test">  </li>
+<li>&quot;zuixing_guqi&quot; 为嘴型鼓气形状<img src=".\img\bq\09.png" alt="test">   </li>
+<li>&quot;biyan_zuo&quot; 为闭左眼<img src=".\img\bq\10.png" alt="test">  </li>
+<li>&quot;biyan_you&quot; 为闭右眼<img src=".\img\bq\11.png" alt="test">   </li>
+<li>&quot;zhuantou_zuo&quot; 为头往左边转<img src=".\img\bq\12.png" alt="test">   </li>
+<li>&quot;zhuantou_you&quot; 为头往右边转<img src=".\img\bq\13.png" alt="test">  </li>
+</ul>
+<h6 id="2-4-2-">2.4.2 自定义脸部动作</h6>
+<p>其中 &quot;触发开始动作&quot; 用户可以自定义。定义动作的文件为FUEditor/data/tools/actions.json。文件内容如下，是一个json文件，actions是一个数组，定义了上面图中所示的动作列表，每一个动作有name属性，name最终会显示在界面上。condition属性为具体判断条件，这里的condition是js脚本的条件语句。params.expression数长度为46，对应的46个表情通道，具体对应《Blendshape制作教程》。
+例如</p>
+<pre class="editor-colors lang-text"><div class="line"><span class="syntax--text syntax--plain"><span class="syntax--meta syntax--paragraph syntax--text"><span>{</span></span></span></div><div class="line"><span class="syntax--text syntax--plain"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--meta syntax--paragraph syntax--text"><span>&quot;actions&quot;:&nbsp;[</span></span></span></div><div class="line"><span class="syntax--text syntax--plain"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--meta syntax--paragraph syntax--text"><span>{</span></span></span></div><div class="line"><span class="syntax--text syntax--plain"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--meta syntax--paragraph syntax--text"><span>&quot;name&quot;:&nbsp;&quot;taimei&quot;,</span></span></span></div><div class="line"><span class="syntax--text syntax--plain"><span class="syntax--meta syntax--paragraph syntax--text"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;condition&quot;:&nbsp;&quot;params.expression[16]&nbsp;&gt;=&nbsp;0.4&nbsp;||&nbsp;params.expression[17]&nbsp;&gt;=&nbsp;0.4&nbsp;||&nbsp;params.expression[18]&nbsp;&gt;=&nbsp;0.4&quot;</span></span></span></div><div class="line"><span class="syntax--text syntax--plain"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--meta syntax--paragraph syntax--text"><span>},</span></span></span></div><div class="line"><span class="syntax--text syntax--plain"><span class="syntax--meta syntax--paragraph syntax--text"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</span></span></span></div><div class="line"><span class="syntax--text syntax--plain"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--meta syntax--paragraph syntax--text"><span>&quot;name&quot;:&nbsp;&quot;taizuijiao_zuo&quot;,</span></span></span></div><div class="line"><span class="syntax--text syntax--plain"><span class="syntax--meta syntax--paragraph syntax--text"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;condition&quot;:&nbsp;&quot;params.expression[24]&nbsp;&gt;=&nbsp;0.4&nbsp;||&nbsp;params.expression[28]&nbsp;&gt;=&nbsp;0.4&quot;</span></span></span></div><div class="line"><span class="syntax--text syntax--plain"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--meta syntax--paragraph syntax--text"><span>},</span></span></span></div><div class="line"><span class="syntax--text syntax--plain"><span class="syntax--meta syntax--paragraph syntax--text"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;………..</span></span></span></div><div class="line"><span class="syntax--text syntax--plain"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="syntax--meta syntax--paragraph syntax--text"><span>]</span></span></span></div><div class="line"><span class="syntax--text syntax--plain"><span class="syntax--meta syntax--paragraph syntax--text"><span>}</span></span></span></div></pre><hr>
+<h4 id="2-5-">2.5 组动画</h4>
+<h6 id="2-5-1-">2.5.1 添加组动画</h6>
+<p>创建组：<br> <img src=".\img\group.png" alt="test"><br> 创建子元素：<br> <img src=".\img\group-add.png" alt="test">  </p>
+<h6 id="2-5-2-">2.5.2 元素组构成</h6>
+<p>元素组由组的根节点以及组内元素构成：</p>
+<ul>
+<li>组的根节点，控制该组动画逻辑，组的动画逻辑如上定义单个元素的控制逻辑。</li>
+<li>组内元素，只能设置在当前组内循环次数N，循环结束后，开始组内下一节点的动画。</li>
+<li>组内最后一个元素，可以设置在当前组内循环次数N，循环结束后重新进入根节点逻辑；也可以设置为&quot;无限循环&quot;，这样前面的元素播放完后，开始无限循环最后一个，例入一群蝴蝶往头上飞，到头上后停在头上煽动翅膀，飞动画播放一次，停下来煽动无限循环。</li>
+</ul>
+<h6 id="2-5-3-">2.5.3 调整组元素顺序</h6>
+<p>组动画的播放顺序由在元素列表先后顺序决定，点击右键可以调整元素前后关系  </p>
+<p> <img src=".\img\group-up.png" alt="test">  </p>
+<hr>
+<h2 id="3-ar-mesh-">3. AR Mesh 制作</h2>
+<p>AR Mesh 是拟合人脸的一个3D的mesh, 当需要制作&quot;面具&quot;，可以使用该功能。</p>
+<ul>
+<li>创建：点击列表中&quot;AR Mesh&quot;下&quot;+&quot;创建新的元素。</li>
+<li>删除：右键点击&quot;删除&quot;删除当前选中的元素。</li>
+<li>调整：可以通过右键调整元素的先后顺序。<br><strong>注</strong>：支持多层 AR mesh，前后关系由在序列中先后顺序决定。  </li>
+</ul>
+<p>AR Mesh 纹理制作方法：</p>
+<ul>
+<li>方法一：可以使用 FUEditor/data/ref/ar_demo3.obj 在 3d max/maya 等工具中进行 UV 映射，制作贴图。</li>
+<li>方法二：参考 FUEditor/data/ref/ default_ar.png 或 reference_head.png，根据 UV 图 FUEditor/data/ref/ ar-uv.png （半透明可叠加）在 PS 等工具中制作贴图。  </li>
+</ul>
+<h2 id="4-3d-">4. 静态3D道具制作</h2>
+<p>Faceunity Nama SDK拥有实时跟踪三维人脸的能力，能够实时推算人脸在相机空间中的坐标以及人头的三维模型。所以可以根据<a href="#8-">参考人头</a>制作3D道具。obj原模型放在&quot;_FUEditor/data/ref/ar<em>demo3</em>&quot;,制作3D模型时可以参考该模型大小进行制作。首先要制作模型准备素材，再使用FUEditor进行预览打包，以及调整材质。</p>
+<h4 id="4-1-">4.1 道具制作</h4>
+<ul>
+<li><p>模型制作<br>根据参考人头obj，在3D Max/Maya等三维建模软件中制作想要的道具,最后导出obj文件。下面以maya为例，</p>
+<ol>
+<li><p>一定要导出材质和组<br>材质在导出之后肯定是要重新调整过的，但是编辑器仍然需要知道 Maya 里哪些面 绑的材质是一样的，哪些面是不一样的。要不然到编辑器里所有的面就会合到一起， 不能分开调了。组也是一样的道理。<br><strong>注</strong>：一个组内只能使用一个材质。<br><img src=".\img\mayae.png" alt="maya export">  </p>
+</li>
+<li><p>一定要对着参考人头调好模型大小，对于道具更要调整好位置<br>导入参考人头到maya中<br><img src=".\img\mayai.png" alt="maya import"><br>编辑器有一定的位置和大小调整功能，但如果道具小了/大了几十倍上百倍肯定就不行了。<br><img src=".\img\mayam.png" alt="maya model">  </p>
+</li>
+</ol>
+</li>
+<li><p>创建3D项目  </p>
+<ol>
+<li><p>点击创建项目，项目类型选择3D，输入项目名称，点击&quot;OK&quot;创建项目。<br><img src=".\img\c3d.png" alt="create 3d project">  </p>
+</li>
+<li><p>创建新的3D元素：在项目&quot;<strong>元素列表</strong>&quot;中点击&quot;<strong>3D</strong>&quot;类别下&quot;<strong>+</strong>&quot;，创建新的3D元素。  </p>
+</li>
+<li><p>加载obj：在&quot;<strong>属性列表</strong>&quot;中，网格项中点击右边按钮，在弹出对话框中选择需要加载的obj。<br><img src=".\img\n3d.png" alt="load obj">    </p>
+<p><img src=".\img\objload.png" alt="load obj"><br><strong>注</strong>：在导出的obj的材质mtl，最好也导出贴图信息，并确保路径正确。</p>
+</li>
+</ol>
+</li>
+</ul>
+<h4 id="4-2-">4.2 材质调整</h4>
+<p>FUEditor默认采用&quot;<strong>GGX</strong>&quot;光照模型。<br>在预览视图中选择要调整的部件或者在项目列表选择部件。选中右边会显示该部件的属性信息。<br>在项目列表中选择&quot;<strong>Global Params</strong>&quot;,右边会显示全局参数属性信息。    </p>
+<ul>
+<li>全局参数  <ul>
+<li>&quot;tex_light_probe&quot;:环境图  </li>
+<li>&quot;envmap_shift&quot;：环境图的旋转角度</li>
+<li>&quot;log_scale&quot;：道具整体缩放的比例，用对数调节是为了方便  </li>
+<li>&quot;eyeRscale&quot;：眼球左右旋转的倍率</li>
+<li>&quot;L0_yaw&quot;：主光的航向角，也就是左右转的那个角  </li>
+<li>&quot;L0_pitch&quot; 主光的俯仰角，也就是上下转的那个角  </li>
+<li>&quot;L0_R&quot;：主光的颜色，R通道  </li>
+<li>&quot;L0_G&quot;：主光的颜色，G通道  </li>
+<li>&quot;L0_B&quot;：主光的颜色，B通道  </li>
+<li>&quot;L0Intensity&quot;: 主光的强度，用对数调还是为了方便</li>
+<li>&quot;L1_yaw&quot;：补光的航向角，也就是左右转的那个角</li>
+<li>&quot;L1_pitch&quot;：补光的俯仰角，也就是上下转的那个角</li>
+<li>&quot;L1_R&quot;：补光的颜色，R通道  </li>
+<li>&quot;L1_G&quot;：补光的颜色，G通道  </li>
+<li>&quot;L1_B&quot;：补光的颜色，B通道  </li>
+<li>&quot;L1Intensity&quot;: 主光的强度，用对数调还是为了方便</li>
+<li>&quot;alphaThreshold&quot;：半透明算法阈值，设为1.0适合普通简单的半透明物体，设为0.5适合头发。</li>
+</ul>
+</li>
+<li>部件材质参数：<ul>
+<li>&quot;obj_type&quot;:物体的类型<ul>
+<li>一是镂空[0,0.25]</li>
+<li>二是会完全随着脑袋旋转和缩放,(0.25,0.5]</li>
+<li>三是权重控制旋转的幅度（前提是有对应主obj的weight.png,例如aa.obj对应的权重贴图是aa_weight.png）,(0.5,0.75]</li>
+<li>四是只会跟着脑袋位移变化和大小的缩放，例如身体(0.75,1]。  </li>
+</ul>
+</li>
+<li>&quot;tex_normal&quot;: 法向贴图，就是蓝了吧唧的那种，不是bump map哦～bump map要先转一下哦～～ 默认的grey.png等于没有贴图  </li>
+<li>&quot;normal_strength&quot;：法向贴图的强度，为了照顾没有法向贴图的模型，强度默认是0，所以设了法向贴图之后要把强度拽高点才能看到效果  </li>
+<li>&quot;albedo&quot;：颜色贴图，默认的white.png是白的。建议先弄好贴图再去调光哦。</li>
+<li>&quot;Ka&quot;: 自发光强度</li>
+<li>&quot;Kd&quot;：漫反射强度</li>
+<li>&quot;Ks&quot;：高光强度，注意高光不受颜色贴图影响</li>
+<li>&quot;Kr&quot;：环境图反射强度</li>
+<li>&quot;roughness&quot;：表面粗糙度。越大高光越分散，越小高光越集中</li>
+<li>&quot;tex_smoothness&quot;：高光强度贴图。在alpha通道里放的是影响高光和反射的权重，越大表示越亮。可以和颜色贴图放在一起哦。</li>
+<li>&quot;has_tex_smoothness&quot;：高光强度贴图的整体强度（有些拗口……），为了照顾到大多数没有高光强度贴图的模型，默认是0。设了贴图之后要把强度拽高哦～</li>
+<li>&quot;ior&quot;：环境图反射的折射率。折射率越小，反射从正面到边光的亮度变化越明显，整体强度越小。</li>
+<li>&quot;F0&quot;：高光的金属度。越高越接近金属，越低越接近塑料。</li>
+<li>&quot;is_eye&quot;：是眼睛就拽到右边，不是就拽到左边。是眼睛则会随眼球转动  </li>
+<li>&quot;is_hair&quot;：是头发胡子就拽到右边，不是就拽到左边。是头发则会加入透明处理  </li>
+</ul>
+</li>
+</ul>
+<p><strong>注</strong>：调整材质参数可以分为两种情况：</p>
+<ul>
+<li>1 当实时预览未开启时，这时调整参数是看不到直接的结果</li>
+<li>2 在加载完模型，并调整好位置了之后，可以&quot;打包bundle&quot;,并开启实时预览窗口，这个时候，再进行参数调整时，将能够实时的看到调整的结果，最终调整完时，需要重新&quot;打包bundle&quot;,确保调节好的参数能够打包到bundle里面。  </li>
+</ul>
+<h2 id="5-avatar-">5. Avatar制作</h2>
+<p>Avatar指的是3D模型，且脸部有跟Nama SDK一致的<a href="#8-">Blendshape/Morpher</a>，能够被Nama SDK驱动，进行脸部动画跟踪的模型。</p>
+<ul>
+<li>与静态3D道具相异之处：需要一组blendshape obj。  </li>
+<li><p>obj的命名规范，每个表情对应一个obj（命名为<strong>bsx.obj</strong>，x为序列号），可以只做其中的一部分，如下图所示：<br><img src=".\img\bsobj.png" alt="blendshape">  </p>
+<p>其中 bs0.obj 是自然表情。拓扑结构需要保证这些obj的顶点顺序、面顺序、人头位置都是一样的。&quot;<em>FUEditor/data/doc/blendshape</em>_<em>guide</em>&quot; 目录下脚本 exportObj.mel 可以帮助把maya的blendshape导出成obj文件。如果使用这个script，需要保证每个blendshape表情的名字规范为*bs0.obj、*bs1.obj、*bs2.obj、*bs3.obj、…、*bs46.obj。  </p>
+</li>
+<li>导入avatar模型的步骤：启动FUEditor.exe，创建3D项目，点击加载模型网格，选择 <strong>bs0.obj</strong> 导入，剩下的obj工具会自动加载进去。<strong>注意</strong>：必须选择 <strong>bs0.obj</strong>。   </li>
+<li>制作blendshape时需要注意：自然表情保持全部肌肉放松，不要有笑容等表情变化；其他表情需要在自然表情的基础上修改，只修改需要的部分即可，例如制作闭左眼的表情，右眼等其他部分要与自然表情完全相同。  </li>
+<li>自然表情和46种表情，参见&quot;<em>FUEditor/data/doc/blendshape</em>_<em>guide</em>&quot;目录下的 <strong>Blendshape_Guide.pdf</strong>。</li>
+</ul>
+<h2 id="6-">6. 打包道具</h2>
+<p>道具编辑修改完成后，需要进行打包操作。<br>2D项目支持2D元素和AR Mesh混合打包。<br>打包会自动保存项目。  </p>
+<p><strong>测试打包、正式打包</strong>：</p>
+<ul>
+<li>签名的证书分为两种，测试证书，以及正式证书，测试证书签出来的bundle，有一定时效性，运行一段时间后会消失。而正式证书签名的bundle可以一直运行。  </li>
+<li>FUEditor内置了测试证书，通过 <img src=".\img\debug.png" alt="test"> 打包出来的bundle即是测试bundle。测试bundle：点击&quot;打包bundle&quot;按钮，等待打包，道具打包后在&quot;FUEditor/Projects/当前道具/<strong>build</strong>/&quot;目录中。  </li>
+<li>测试打包又可以分为两个过程，一是&quot;<strong>测试-生成</strong>&quot;,生成过程即是将图片等资源进行转换；一是&quot;<strong>测试-签名</strong>&quot;，将转换好的资源进行加密打包。当需要修改一些临时脚本时，可以只&quot;<strong>测试-生成</strong>&quot;一次，多次修改生成的内容并多次&quot;<strong>测试-签名</strong>&quot;，这样可以节省生成时的耗时。  </li>
+<li>通过 <img src=".\img\release.png" alt="test"> 打包出来的bundle即是正式发布bundle，道具打包后在“FUEditor/Projects/当前道具/<strong>release</strong>/”目录中。<br><strong>注：</strong> 1.正式发布前需要确保测试打包正常。2.正式发布需要<strong>网络连接</strong>，需要正式证书。</li>
+<li>点击<img src=".\img\dir.png" alt="test"> 直接打开当前项目目录。</li>
+</ul>
+<h2 id="7-">7. 项目保存与切换</h2>
+<ul>
+<li>点击<img src=".\img\qt32\notes.png" alt="test"> ，保存当前项目xxxx，工程文件在Project/xxxx/xxxx.fuproj。保存后可以打开重新读取。</li>
+<li>点击<img src=".\img\qt32\fork.png" alt="test"> ，在弹出的对话框中输入新项目名xxxx2，点击确认另存为。当前的项目会另存为到Project/xxxx2下，同时切换到新的项目上工作，左上角显示FUEditor-xxxx2。</li>
+<li><p>点击<img src=".\img\qt32\folder-duplicate.png" alt="test">在Projects目录中选择要打开的项目，最后选择xxx<strong>.fuproj</strong>文件打开，如下图</p>
+<p><img src=".\img\openp.png" alt="test"></p>
+</li>
+</ul>
+<h2 id="8-">8. 高级功能自定义动画脚本</h2>
+<p>编辑完道具后，选择&quot;测试&quot;并点击&quot;打包bundle&quot;<img src=".\img\debug.png" alt="test">，FUEditor开始打包测试用的bundle，并且，会在&quot;<em>out</em>&quot;目录下生成待打包的资源，包括script.js。script.js是控制道具动画的逻辑。可以通过修改script.js能高度自定义道具动画。当需要进行脚本修改，或者添加其他资源文件时。可以在项目的&quot;<em>fcopy</em>&quot;中放置需要添加的文件，以后每次打包(测试/发布)时，FUEditor会主动将&quot;<em>fcopy</em>&quot;目录下的文件拷贝或者覆盖到&quot;<em>out</em>&quot;目录中，并最终打包到bundle内。</p>
+<h2 id="9-">9. 常用术语解释</h2>
+<ul>
+<li><strong>道具项目</strong>：表示用户创建的每一个道具工程，项目存放在 <em>FUEditor/Projects/项目名/</em> 目录下。</li>
+<li><strong>元素</strong>：元素表示由用户创建的每一个道具部件，如2D项目的一个矩形片，一张AR Mesh，一个3D部件。</li>
+<li><strong>bundle/item</strong>：生成资源，经过zip压缩后，再进行签名加密得到的文件。后缀名为.bundle</li>
+<li><strong>测试证书签名、正式证书签名</strong>:  <ul>
+<li>签名的证书分为两种，测试证书，以及正式证书，测试证书签出来的bundle，有一定时效性，运行一段时间后会消失,测试包的使用时间一般为两分钟左右，之后会导致人脸识别失败并报“debug key used, 100 frames remaining，debug key or authentication failed, rendering stopped”之类的错误。。而正式证书签名的bundle可以一直运行。  </li>
+<li>FUEditor内置了测试证书，通过<img src=".\img\debug.png" alt="test">打包出来的bundle即是测试bundle。</li>
+<li>通过<img src=".\img\release.png" alt="test">打包出来的bundle即是正式发布bundle。当软件交付给客户时，同时会给客户一个唯一的证书，请将证书放到 &quot;FUEditor/data/license/&quot;目录下，并命名为&quot;<strong>license.p12</strong>&quot;，用于发布道具。<br><strong>注意1:</strong> <img src=".\img\release.png" alt="test">打包发布bundle时，该功能只进行签名，不会进行内容生成。因此，需要通过<img src=".\img\debug.png" alt="test">打包以后，确认无误后，在进行发布打包。<br><strong>注意2:</strong> 该证书是客户身份的证明，每个公司客户都有一个不同的证书，不同的客户证书不同。不得将该证书转给其他公司使用，如有，经监控发现，将永久吊销证书。</li>
+</ul>
+</li>
+<li><strong>参考人头</strong>：Faceunity Nama SDK拥有实时跟踪三维人脸的能力，能够实时推算人脸在相机空间中的坐标以及人头的三维模型。FUEditor中内置的参考人头模型，即是最后实时跟踪时人头的大小。obj原模型放在&quot;_FUEditor/data/ref/ar<em>demo3</em>&quot;,制作3D模型时可以参考该模型大小进行制作。</li>
+<li><strong>Avatar</strong>:avatar指的是3D模型，且脸部有跟Nama SDK一致的Blendshape，能够被Nama SDK驱动，进行脸部动画跟踪的模型。</li>
+<li><strong>Blendshape/Morpher</strong>:表情融合模型，在3ds Max中称morpher，maya中称blendshape。计算公式如下：<br><img src=".\img\bs.png" alt="blenshape formula"><br>其中，Bk是指每一个blendshape，B0是指自然基表情，coef是指有Nama SDK提供的每一帧视频提取出来46个表情系数。</li>
+</ul>
+<hr>
+<!--
+## test
+ ---></body>
+</html>

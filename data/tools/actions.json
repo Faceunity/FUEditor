@@ -1,0 +1,56 @@
+{
+    "actions": [
+        {
+            "name": "taimei",
+            "condition": "params.expression[16] >= 0.4 || params.expression[17] >= 0.4 || params.expression[18] >= 0.4"
+        },
+        {
+            "name": "taizuijiao_zuo",
+            "condition": "params.expression[24] >= 0.4 || params.expression[28] >= 0.4"
+        },
+        {
+            "name": "taizuijiao_you",
+            "condition": "params.expression[23] >= 0.4 || params.expression[27] >= 0.4"
+        },
+        {
+            "name": "nu",
+            "condition": "params.expression[42] >= 0.5"
+        },
+        {
+            "name": "zuixing_o",
+            "condition": "params.expression[38] >= 0.4"
+        },
+        {
+            "name": "zuixing_a",
+            "condition": "params.expression[21] >= 0.3"
+        },
+        {
+            "name": "zuixing_du",
+            "condition": "params.expression[39] >= 0.5"
+        },
+        {
+            "name": "zuixing_min",
+            "condition": "params.expression[33] >= 0.5 || params.expression[34] >= 0.5"
+        },
+        {
+            "name": "zuixing_guqi",
+            "condition": "params.expression[43] >= 0.5"
+        },
+        {
+            "name": "biyan_zuo",
+            "condition": "params.expression[1] >= 0.5"
+        },
+        {
+            "name": "biyan_you",
+            "condition": "params.expression[0] >= 0.5"
+        },
+        {
+            "name": "zhuantou_zuo",
+            "condition": "params.rotation[1] >= 0.1"
+        },
+        {
+            "name": "zhuantou_you",
+            "condition": "params.rotation[1] >= 0.1"
+        }
+    ]
+}

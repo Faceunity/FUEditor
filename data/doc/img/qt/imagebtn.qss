@@ -1,0 +1,7 @@
+QPushButton{
+   qproperty-icon: url(./data/qt/image.png) off,
+                url(./data/qt/image.png) on ;
+    background-repeat:no-repeat;
+    border:none;
+	icon-size: 16px;
+}

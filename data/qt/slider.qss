@@ -1,0 +1,49 @@
+QSlider::groove:horizontal,QSlider::add-page:horizontal{
+	height:3px;
+	border-radius:3px;
+	background:#CCCCCC;
+}
+
+
+QSlider::sub-page:horizontal{
+	height:8px;
+	border-radius:3px;
+	background:#777777;
+}
+ 
+QSlider::handle:horizontal   
+{  
+   width:12px;
+	margin-top:-5px;
+	margin-bottom:-4px;
+	border-radius:6px;
+	background:qradialgradient(spread:pad,cx:0.5,cy:0.5,radius:0.5,fx:0.5,fy:0.5,stop:0.6 #888888,stop:0.8 #888888);
+}  
+QSlider::handle:horizontal:hover   
+{  
+    width:12px;
+	margin-top:-5px;
+	margin-bottom:-4px;
+	border-radius:6px;
+	background:qradialgradient(spread:pad,cx:0.5,cy:0.5,radius:0.5,fx:0.5,fy:0.5,stop:0.6 #666666,stop:0.8 #666666);
+}  
+QSlider::groove:vertical,QSlider::sub-page:vertical{
+	width:8px;
+	border-radius:3px;
+	background:#777777;
+}
+
+QSlider::add-page:vertical{
+	width:8px;
+	border-radius:3px;
+	background:#CCCCCC;
+}
+
+
+QSlider::handle:vertical{
+	height:12px;
+	margin-left:-5px;
+	margin-right:-4px;
+	border-radius:6px;
+	background:qradialgradient(spread:pad,cx:0.5,cy:0.5,radius:0.5,fx:0.5,fy:0.5,stop:0.6 #888888,stop:0.8 #888888);
+}
