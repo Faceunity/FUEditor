@@ -7,7 +7,7 @@ __FUEditor__ 是一款高效便捷的AR人脸道具编辑工具软件，为[Face
  - 可以制作3D的道具，调整材质，如花环头盔等。  
  ![img](https://github.com/Faceunity/FUEditor/blob/master/data/doc/img/gif.gif)
 
-## 1. 快速教程
+## 快速教程
 - 系统要求  
   - win7/8/10 64位电脑
   - 摄像头，推荐使用 Logitech C920
