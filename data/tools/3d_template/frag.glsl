@@ -64,9 +64,11 @@ vec3 sampleEnv(vec3 R0){
 			phi=phi;
 		}
 	}
-	phi=phi*(0.5/3.1415926)+envmap_shift;
-	phi-=floor(phi);
+	phi=phi*(0.5/3.1415926);
 	float theta=asin(clamp(R.y,-0.99,0.99))*(1.0/3.1415926)+0.5;
+	phi=phi*envmap_fov+envmap_shift;
+	theta=theta*envmap_fov;
+	phi-=floor(phi);theta-=floor(theta);
 	return sqr(texture2D(tex_light_probe,vec2(phi,theta)).xyz)*4.0;
 }
 

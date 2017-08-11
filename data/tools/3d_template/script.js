@@ -16,6 +16,8 @@
 	//@gparam tex_light_probe {"type":"texture","default_value":"beach_1_4.jpg"}
 	//环境图的旋转角度
 	//@gparam envmap_shift {"type":"slider","min":0,"max":1,"default_value":0.75}
+	//环境图的视角
+ 	//@gparam envmap_fov {"type":"slider","min":0.5,"max":5,"default_value":1.0}
 	//道具整体缩放的比例，用对数调节是为了方便
 	//@gparam log_scale {"type":"slider","min":-5,"max":5,"default_value":0}
 	//眼球左右旋转的倍率
@@ -358,6 +360,7 @@
 								normal_strength:V(matex.normal_strength,0.0),
 								tex_light_probe:tex_light_probe,
 								envmap_shift:V(globals.envmap_shift,0.75),
+								envmap_fov:V(globals.envmap_fov,1.0),
 								Ka:V(matex.Ka,0.0), Kd:V(matex.Kd,0.3), Ks:V(matex.Ks,0.2), Kr:V(matex.Kr,0.0),
 								roughness:V(matex.roughness,0.5),
 								has_tex_smoothness:V(matex.has_tex_smoothness,0.0),
@@ -406,7 +409,7 @@
 							gl.enable(gl.DEPTH_TEST);
 							gl.depthMask(false);
 							gl.enable(gl.BLEND);
-							gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ZERO,gl.ONE);
+							gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
 							shader=s_frag_shader+"vec4 shader_main_OIT(){vec4 c=shader_main();if (c.a<=" + alphaThreshold.toFixed(3) 
 								+ ") return vec4(c.rgb,c.a*" + (1.0/alphaThreshold).toFixed(3) + ");else return vec4(c.rgb,0.0);}";
 						}
@@ -486,6 +489,7 @@
 									normal_strength:V(matex.normal_strength,0.0),
 									tex_light_probe:tex_light_probe,
 									envmap_shift:V(globals.envmap_shift,0.75),
+									envmap_fov:V(globals.envmap_fov,1.0),
 									Ka:V(matex.Ka,0.0), Kd:V(matex.Kd,0.3), Ks:V(matex.Ks,0.2), Kr:V(matex.Kr,0.0),
 									roughness:V(matex.roughness,0.5),
 									has_tex_smoothness:V(matex.has_tex_smoothness,0.0),
