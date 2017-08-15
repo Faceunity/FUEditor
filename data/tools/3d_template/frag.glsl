@@ -22,10 +22,11 @@ float LightingFuncGGX_REF(vec3 N, vec3 V, vec3 L, float roughness, float F0){
 
 	// D
 	float alphaSqr = alpha*alpha;
-	float pi = 3.14159;
-	float denom = dotNH * dotNH *(alphaSqr-1.0) + 1.0;
-	if (alphaSqr>0.0) D = alphaSqr/(pi * denom * denom);
-	else D=0.0;
+	float one_over_pi = 0.31831;
+	float denom = dotNH * dotNH * (alphaSqr-1.0) + 1.0;
+	denom *= denom;
+	if (denom>0.0) D = alphaSqr * one_over_pi / denom;
+	else D=1.0;
 	
 	// F
 	float dotLH5 = pow(1.0-dotLH,5.0);

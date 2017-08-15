@@ -378,6 +378,30 @@
 						}
 					});// end blendshape.drawcalls.forEach(function(dc)
 				}
+				//bg_board.uniforms={"iGlobalTime":params.frame_id/30,"iResolution":[params.tracker_space_w,params.tracker_space_h]};
+				//背景动画
+				/*for(var i=0;i<bg_board.length;i++){
+					FaceUnity.RenderBillboard(tex_bg,bg_board[i],bg_board[i].texture_frames[(frame_id)%bg_board[i].texture_frames.length]);
+				}*/
+				//背景不动
+				/*var scale=(20000/params.focal_length);
+				var scale_tex=Math.min(tex_bg.w/params.tracker_space_w,tex_bg.h/params.tracker_space_h);
+				var w_tex=(scale_tex*params.tracker_space_w)/tex_bg.w;
+				var h_tex=(scale_tex*params.tracker_space_h)/tex_bg.h;
+				var x_tex=(1.0-w_tex)*0.5;
+				var y_tex=(1.0-h_tex)*0.5;
+				FaceUnity.RenderBillboard(tex_bg,bg_board,{
+					"v":[scale*params.tracker_space_w/2,-scale*params.tracker_space_h/2,scale*params.focal_length,
+						-scale*params.tracker_space_w/2,-scale*params.tracker_space_h/2,scale*params.focal_length,
+						-scale*params.tracker_space_w/2,scale*params.tracker_space_h/2,scale*params.focal_length,
+						scale*params.tracker_space_w/2,scale*params.tracker_space_h/2,scale*params.focal_length],
+					"vt":[
+						x_tex+w_tex,y_tex,
+						x_tex,y_tex,
+						x_tex,y_tex+h_tex,
+						x_tex+w_tex,y_tex+h_tex],
+					//"vt":[1,0, 0,0, 0,1, 1,1],
+				});*/
 				
 				//mesh
 				for(var faceIndex = 0; faceIndex < faces.length;faceIndex++){
@@ -506,30 +530,6 @@
 					
 					}
 				}
-				//bg_board.uniforms={"iGlobalTime":params.frame_id/30,"iResolution":[params.tracker_space_w,params.tracker_space_h]};
-				//背景动画
-				/*for(var i=0;i<bg_board.length;i++){
-					FaceUnity.RenderBillboard(tex_bg,bg_board[i],bg_board[i].texture_frames[(frame_id)%bg_board[i].texture_frames.length]);
-				}*/
-				//背景不动
-				/*var scale=(20000/params.focal_length);
-				var scale_tex=Math.min(tex_bg.w/params.tracker_space_w,tex_bg.h/params.tracker_space_h);
-				var w_tex=(scale_tex*params.tracker_space_w)/tex_bg.w;
-				var h_tex=(scale_tex*params.tracker_space_h)/tex_bg.h;
-				var x_tex=(1.0-w_tex)*0.5;
-				var y_tex=(1.0-h_tex)*0.5;
-				FaceUnity.RenderBillboard(tex_bg,bg_board,{
-					"v":[scale*params.tracker_space_w/2,-scale*params.tracker_space_h/2,scale*params.focal_length,
-						-scale*params.tracker_space_w/2,-scale*params.tracker_space_h/2,scale*params.focal_length,
-						-scale*params.tracker_space_w/2,scale*params.tracker_space_h/2,scale*params.focal_length,
-						scale*params.tracker_space_w/2,scale*params.tracker_space_h/2,scale*params.focal_length],
-					"vt":[
-						x_tex+w_tex,y_tex,
-						x_tex,y_tex,
-						x_tex,y_tex+h_tex,
-						x_tex+w_tex,y_tex+h_tex],
-					//"vt":[1,0, 0,0, 0,1, 1,1],
-				});*/
 				//渲染完成之后需要收拾一下GL的流水线状态，恢复默认值——直播框架什么的可能还要用的
 				gl.depthMask(true);
 				gl.disable(gl.DEPTH_TEST);
