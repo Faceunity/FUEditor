@@ -1,5 +1,7 @@
-varying vec3 N_frag,V_frag,dPds_frag,dPdt_frag;
+varying vec3 N_frag,dPds_frag,dPdt_frag;
 varying vec2 st_frag;
+varying vec3 V_frag;
+
 
 float G1V(float dotNV, float k){
 	return 1.0/(dotNV*(1.0-k)+k);
@@ -84,7 +86,7 @@ vec4 shader_main(){
 		vec3 nmmp=normalize(texture2D(tex_normal,st_frag).xyz-vec3(0.5));
 		N+=(normalize(-nmmp.x*normalize(dPds_frag)-nmmp.y*normalize(dPdt_frag)+nmmp.z*N)-N)*normal_strength;
 		N=normalize(N);	
-	}	
+	}
 	vec3 C_diff=vec3(0.0,0.0,0.0);
 	float C_spec=0.0;
 	vec3 V=-normalize(V_frag),L;

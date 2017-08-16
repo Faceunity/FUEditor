@@ -160,8 +160,8 @@
 		SCALE=Math.exp(V(globals.log_scale,0));
 		L0_dir=CreateDirection(V(globals.L0_yaw,0),V(globals.L0_pitch,0));
 		L1_dir=CreateDirection(V(globals.L1_yaw,0),V(globals.L1_pitch,0));
-		L0_color=CreateColor(V(globals.L0_R,1),V(globals.L0_G,1),V(globals.L0_B,1), V(globals.L0_log_intensity,0));
-		L1_color=CreateColor(V(globals.L1_R,1),V(globals.L1_G,1),V(globals.L1_B,1), V(globals.L1_log_intensity,-2));
+		L0_color=CreateColor(V(globals.L0_R,1),V(globals.L0_G,1),V(globals.L0_B,1), V(globals.L0Intensity,0));
+		L1_color=CreateColor(V(globals.L1_R,1),V(globals.L1_G,1),V(globals.L1_B,1), V(globals.L1Intensity,-2));
 		//编辑器在改了贴图之后会自动把文件转换成webp拷贝到工作区里，但是并不会帮着调LoadTexture，所以这里要调一下
 		tex_light_probe=FaceUnity.LoadTexture(V(globals.tex_light_probe,"beach_1_4.jpg"));
 		//因为用户可能什么参数都没设……obj导出的贴图也还是load一下吧
@@ -325,7 +325,7 @@
 								mat=FaceUnity.MatrixMul(
 									FaceUnity.CreateEyeMatrix(
 										[dc.P_center[0]*SCALE,dc.P_center[1]*SCALE,-dc.P_center[2]*SCALE],
-										[params.pupil_pos[0]*V(globals.eye_rot_scale,1.5),params.pupil_pos[1]]),
+										[params.pupil_pos[0]*V(globals.eyeRscale,1.5),params.pupil_pos[1]]),
 									mat);
 							}
 							//对于头发胡子之类的复杂透明物体，需要在给定的刚体变换矩阵下进行深度排序。z_sort_matrix就是排序用的矩阵
@@ -348,10 +348,7 @@
 								scales:[dc.scales[0]*SCALE,dc.scales[1]*SCALE,-dc.scales[2]*SCALE],
 								mat_view:mat,
 								mat_cam:mat_cam,
-								quatR1:[params.rotation[0],params.rotation[1],params.rotation[2],params.rotation[3]],
-								quatT1:[0,0,0],//[params.translation[0],params.translation[1],params.translation[2],1],
-								quatR2:[0,0,0,1],
-								quatT2:[0,0,0],//[mat2[12]-center[0],mat2[13]-center[1],mat2[14]-center[2]],
+								quatR1:[-params.rotation[0],-params.rotation[1],-params.rotation[2],params.rotation[3]],
 								obj_type:V(matex.obj_type, 0.3),
 								mat_proj:FaceUnity.CreateProjectionMatrix(),
 								tex_albedo:tex_map[V(matex.tex_albedo,dc.mat.tex)],
@@ -501,10 +498,7 @@
 									scales:[dc.scales[0]*SCALE,dc.scales[1]*SCALE,-dc.scales[2]*SCALE],
 									mat_view:mat,
 									mat_cam:mat_cam,
-									quatR1:[params.rotation[0],params.rotation[1],params.rotation[2],params.rotation[3]],
-									quatT1:[0,0,0],//[params.translation[0],params.translation[1],params.translation[2],1],
-									quatR2:[0,0,0,1],
-									quatT2:[0,0,0],//[mat2[12]-center[0],mat2[13]-center[1],mat2[14]-center[2]],
+									quatR1:[-params.rotation[0],-params.rotation[1],-params.rotation[2],params.rotation[3]],
 									obj_type:V(matex.obj_type, 0.3),
 									mat_proj:FaceUnity.CreateProjectionMatrix(),
 									tex_albedo:tex_map[V(matex.tex_albedo,dc.mat.tex)],
