@@ -17,7 +17,7 @@
 	//环境图的旋转角度
 	//@gparam envmap_shift {"type":"slider","min":0,"max":1,"default_value":0.75}
 	//环境图的视角
- 	//@gparam envmap_fov {"type":"slider","min":0.5,"max":5,"default_value":1.0}
+	//@gparam envmap_fov {"type":"slider","min":0.5,"max":5,"default_value":1.0}
 	//道具整体缩放的比例，用对数调节是为了方便
 	//@gparam log_scale {"type":"slider","min":-5,"max":5,"default_value":0}
 	//眼球左右旋转的倍率
@@ -56,15 +56,15 @@
 	//半透明算法阈值，设为1.0适合普通简单的半透明物体，设为0.5适合头发
 	//@gparam alphaThreshold {"type":"edit","default_value":"1.0"}
 	//法向贴图，就是蓝了吧唧的那种，不是bump map哦～bump map要先转一下哦～～ 默认的grey.png等于没有贴图
-	//@mparam tex_normal {"type":"texture","default_value":""}
+	//@mparam tex_normal {"type":"texture","default_value":"grey.png"}
 	//法向贴图的强度，为了照顾没有法向贴图的模型，强度默认是0，所以设了法向贴图之后要把强度拽高点才能看到效果
 	//@mparam normal_strength {"type":"slider","min":0,"max":1,"default_value":0}
 	//颜色贴图，默认的white.png是白的。建议先弄好贴图再去调光哦。
-	//@mparam albedo {"type":"texture","default_value":"white.png","isTex":1}
+	//@mparam tex_albedo {"type":"texture","default_value":"white.png","isTex":1}
 	//自发光强度
-	//@mparam Ka {"type":"slider","min":0,"max":1,"default_value":0.8}
+	//@mparam Ka {"type":"slider","min":0,"max":1,"default_value":0}
 	//漫反射强度
-	//@mparam Kd {"type":"slider","min":0,"max":1,"default_value":0.1}
+	//@mparam Kd {"type":"slider","min":0,"max":1,"default_value":0.3}
 	//高光强度，注意高光不受颜色贴图影响
 	//@mparam Ks {"type":"slider","min":0,"max":1,"default_value":0.2}
 	//环境图反射强度
@@ -375,6 +375,7 @@
 						}
 					});// end blendshape.drawcalls.forEach(function(dc)
 				}
+
 				//bg_board.uniforms={"iGlobalTime":params.frame_id/30,"iResolution":[params.tracker_space_w,params.tracker_space_h]};
 				//背景动画
 				/*for(var i=0;i<bg_board.length;i++){
@@ -461,7 +462,7 @@
 									mat=FaceUnity.MatrixMul(
 										FaceUnity.CreateEyeMatrix(
 											[dc.P_center[0]*SCALE,dc.P_center[1]*SCALE,-dc.P_center[2]*SCALE],
-											[params.pupil_pos[0]*V(globals.eye_rot_scale,1.5),params.pupil_pos[1]]),
+											[params.pupil_pos[0]*V(globals.eyeRscale,1.5),params.pupil_pos[1]]),
 										mat);
 								}
 								dc.use_custom_gl_states=1;
@@ -498,7 +499,10 @@
 									scales:[dc.scales[0]*SCALE,dc.scales[1]*SCALE,-dc.scales[2]*SCALE],
 									mat_view:mat,
 									mat_cam:mat_cam,
-									quatR1:[-params.rotation[0],-params.rotation[1],-params.rotation[2],params.rotation[3]],
+									quatR1:[params.rotation[0],params.rotation[1],params.rotation[2],params.rotation[3]],
+									quatT1:[0,0,0],//[params.translation[0],params.translation[1],params.translation[2],1],
+									quatR2:[0,0,0,1],
+									quatT2:[0,0,0],//[mat2[12]-center[0],mat2[13]-center[1],mat2[14]-center[2]],
 									obj_type:V(matex.obj_type, 0.3),
 									mat_proj:FaceUnity.CreateProjectionMatrix(),
 									tex_albedo:tex_map[V(matex.tex_albedo,dc.mat.tex)],
@@ -532,6 +536,6 @@
 				console.log(err.stack)
 			}
 		},
-		name:V(globals.name,"dummy"),
+		name:V(globals.name,"unnamed"),
 	};
 })()
