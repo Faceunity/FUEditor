@@ -10,7 +10,12 @@ __FUEditor__ 是一款高效便捷的AR人脸道具编辑工具软件，为[Face
 ## 快速教程
 - 系统要求  
   - win7/8/10 64位电脑
-  - 摄像头，推荐使用 Logitech C920
+  - 摄像头，推荐使用 Logitech C920  
+- 下载FUEditor。下载zip包；或者clone这个项目，方便后面快速更新  
+```C
+  git clone git@github.com:Faceunity/FUEditor.git  
+  git pull  
+```
 -	FUEditor无须安装可直接使用，将FUEditor.zip解压到系统适当位置。
 -	目录结构解释  
 ```C
