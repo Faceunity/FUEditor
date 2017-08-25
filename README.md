@@ -1,7 +1,7 @@
 # **FUEditor**
 
 ## 简介
-__FUEditor__ 是一款高效便捷的AR人脸道具编辑工具软件，为[Faceunity](www.faceunity.com)公司的Nama SDK提供支持。
+__FUEditor__ 是一款高效便捷的AR人脸道具编辑工具软件，为[Faceunity](http://www.faceunity.com/)公司的Nama SDK提供支持。
  - 可以高效制作2D道具。贴纸，贴纸动画，动画组，特定脸部动作触发动画。Faceunity的2D贴纸技术本质也是3D的，有前后景深效果，侧脸时仍能紧贴人脸，而不是全部贴纸都在一个平面上。
  - 可以制作AR Mesh面具。
  - 可以制作3D的道具，调整材质，如花环头盔等。  
