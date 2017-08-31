@@ -71,7 +71,7 @@
 	//@mparam Kr {"type":"slider","min":0,"max":1,"default_value":0.0}
 	//表面粗糙度。越大高光越分散，越小高光越集中
 	//@mparam roughness {"type":"slider","min":0.02,"max":1,"default_value":0.5}
-	//高光强度贴图。在alpha通道里放的是影响高光和反射的权重，越大表示越亮。可以和颜色贴图放在一起哦。
+	//高光强度贴图，应为灰度图，越大表示越亮。
 	//@mparam tex_smoothness {"type":"texture","default_value":"grey.png"}
 	//高光强度贴图的整体强度（有些拗口……），为了照顾到大多数没有高光强度贴图的模型，默认是0。设了贴图之后要把强度拽高哦～
 	//@mparam has_tex_smoothness {"type":"slider","min":0,"max":1,"default_value":0}
