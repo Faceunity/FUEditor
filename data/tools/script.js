@@ -192,7 +192,7 @@
 				}
 				if(name=="isAndroid"){
 					g_params[name]=value;
-					g_params["matp"] = [0,1,-1,0];
+					//g_params["matp"] = [0,1,-1,0];
 				}
 				if(name=="rotationAngle"){
 					if(Math.abs(value-0) < 0.01){
