@@ -71,7 +71,7 @@
 	//@mparam Kr {"type":"slider","min":0,"max":1,"default_value":0.0}
 	//表面粗糙度。越大高光越分散，越小高光越集中
 	//@mparam roughness {"type":"slider","min":0.02,"max":1,"default_value":0.5}
-	//高光强度贴图，应为灰度图，越大表示越亮。
+	//高光强度贴图。在alpha通道里放的是影响高光和反射的权重，越大表示越亮。可以和颜色贴图放在一起哦。
 	//@mparam tex_smoothness {"type":"texture","default_value":"grey.png"}
 	//高光强度贴图的整体强度（有些拗口……），为了照顾到大多数没有高光强度贴图的模型，默认是0。设了贴图之后要把强度拽高哦～
 	//@mparam has_tex_smoothness {"type":"slider","min":0,"max":1,"default_value":0}
@@ -118,7 +118,9 @@
 	从这里开始开始涉及到编辑器中需要操作的参数。为了加快编辑速度，需要在script.js中提供动态重载的接口，
 	所以这里在初始化时并没有设置参数值，而是抽象出了一个ReloadThingsForEditor函数供编辑器随时调用。
 	*/
-	
+	var g_params={
+		is3DFlipH: 0.0,
+	};
 	var faces = [];
 	var tex_map={};
 	var SCALE = 1;
@@ -207,6 +209,10 @@
 			//特殊参数名'@refresh'表示“刷新一下”
 			if(name=='@refresh'){
 				ReloadThingsForEditor();
+				return 1;
+			}
+			if(name=='is3DFlipH'){
+				g_params[name] = value;
 				return 1;
 			}
 			/*
@@ -366,6 +372,7 @@
 								F0:V(matex.F0,1.0),
 								L0_dir:L0_dir,L0_color:L0_color,
 								L1_dir:L1_dir,L1_color:L1_color,
+								isFlipH:g_params['is3DFlipH'],
 								//L2_dir:[0.25,0,-1],L2_color:[2.0,2.0,2.0],
 							},z_sort_matrix);//最后的隐藏参数是深度排序用的矩阵，undefined表示不排序。
 							
@@ -520,6 +527,7 @@
 									F0:V(matex.F0,1.0),
 									L0_dir:L0_dir,L0_color:L0_color,
 									L1_dir:L1_dir,L1_color:L1_color,
+									isFlipH:g_params['is3DFlipH'],
 									//L2_dir:[0.25,0,-1],L2_color:[2.0,2.0,2.0],
 								},pass);
 									
