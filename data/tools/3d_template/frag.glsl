@@ -103,7 +103,7 @@ vec4 shader_main(){
 	L=-L0_dir;C_diff+=max(dot(N,L),0.0)*L0_color; C_spec+=LightingFuncGGX_REF(N,V,L,roughness,F0);
 	L=-L1_dir;C_diff+=max(dot(N,L),0.0)*L1_color; //C_spec+=LightingFuncGGX_REF(N,V,L,roughness,0.08);
 	//L=-L2_dir;C_diff+=max(dot(N,L),0.0)*L2_color; C_spec+=LightingFuncGGX_REF(N,V,L,roughness,0.08);
-	float smoothness=texture2D(tex_smoothness,st_frag).w*has_tex_smoothness+(1.0-has_tex_smoothness);
+	float smoothness=sqr(texture2D(tex_smoothness,st_frag).x)*has_tex_smoothness+(1.0-has_tex_smoothness);
 	vec4 C_tex=sqr(texture2D(tex_albedo,st_frag));
 	vec3 C_brdf=(C_diff*Kd+vec3(Ka))*C_tex.xyz+vec3(Ks*smoothness)*(C_spec);
 	vec3 C_refl=sampleEnv(R);
