@@ -423,6 +423,9 @@
 					*/
 					var alphaThreshold = parseFloat(V(globals.alphaThreshold, "1.0"));
 					for(var pass=0;pass<3;pass++){
+						var frag_OIT = FaceUnity.SimpleOITBegin(pass);
+						shader = s_frag_shader + frag_OIT;
+						/*
 						if (pass==0) {
 							gl.enable(gl.DEPTH_TEST);
 							gl.depthFunc(gl.LEQUAL);
@@ -442,6 +445,7 @@
 							shader=s_frag_shader+"vec4 shader_main_OIT(){vec4 c=shader_main();if (c.a<=" + alphaThreshold.toFixed(3) 
 								+ ") return vec4(c.rgb,c.a*" + (1.0/alphaThreshold).toFixed(3) + ");else return vec4(c.rgb,0.0);}";
 						}
+						*/
 						//遍历每个材质
 						blendshape.drawcalls.forEach(function(dc){
 						//取出编辑器提供的材质参数
@@ -535,6 +539,7 @@
 						});// end blendshape.drawcalls.forEach(function(dc)
 					
 					}
+					FaceUnity.SimpleOITEnd();
 				}
 				//渲染完成之后需要收拾一下GL的流水线状态，恢复默认值——直播框架什么的可能还要用的
 				gl.depthMask(true);
