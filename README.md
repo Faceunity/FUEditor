@@ -1,4 +1,6 @@
 # **FUEditor**
+### \***New Features:**
+ - 3D的道具也可以有贴图动画啦，可以使得贴纸动画更具立体感，详见文档 _4.3 贴图动画_。
 
 ## 简介
 __FUEditor__ 是一款高效便捷的AR人脸道具编辑工具软件，为[Faceunity](http://www.faceunity.com/)公司的Nama SDK提供支持。
