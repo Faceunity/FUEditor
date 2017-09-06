@@ -1,3 +1,2 @@
-[info][fueditor.cpp:41][20:10:58]: open log
-[info][fueditor.cpp:42][20:10:58]: current path :F:/FUEditor/Distribution/Publish/Github/FUEditor
-[info][TreeViewController.cpp:91][20:10:53]: item select: 3D:Global Params
+[info][fueditor.cpp:41][11:56:52]: open log
+[info][fueditor.cpp:42][11:56:52]: current path :F:/FUEditor/Distribution/Publish/Github/FUEditor
