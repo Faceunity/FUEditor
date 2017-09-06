@@ -45,6 +45,8 @@
 	//@gparam L1_G {"type":"slider","min":0,"max":1,"default_value":1}
 	//@gparam L1_B {"type":"slider","min":0,"max":1,"default_value":1}
 	//@gparam L1Intensity {"type":"slider","min":-4,"max":4,"default_value":-2}
+	//贴图动画的帧率，需要子部件的 tex_albedo 选择成动画帧 xxx_00000.png, xxx_00001.png ...
+	//@gparam TexFPS {"type":"edit","default_value":"10.0"}
 	///////////////////////////
 	//以下是材质参数
 	/*物体的类型,一是镂空,[0,0.25]；
@@ -110,6 +112,26 @@
 	var blendshape=FaceUnity.LoadBlendshape("avatar.json","avatar.bin");
 	var s_vert_shader=FaceUnity.ReadFromCurrentItem("vert.glsl");
 	var s_frag_shader=FaceUnity.ReadFromCurrentItem("frag.glsl");
+	
+	var bigtexjson = JSON.parse(FaceUnity.ReadFromCurrentItem("bigtex_desc.json")||"{}");
+	var bigtexcnt = 0;
+	var bigtex = new Array();
+	if(bigtexjson["bigtexs"]!=undefined){
+		for(var i=0;i<bigtexjson["bigtexs"].length;i++){
+			bigtex[bigtexcnt] = FaceUnity.LoadTexture(bigtexjson["bigtexs"][i],0);
+			bigtexcnt++;
+		}
+	}
+	console.log("bigtexcnt",bigtexcnt);
+	now = Date.now();
+	blendshape.drawcalls.forEach(function(dc){
+		var matex=(materials_json[dc.name]||{});
+		if(matex.tex_albedo_frames!=undefined){
+			matex.last = now;
+			matex.frame_id = 0;
+		}
+	});
+	
 	//背景动画
 	//var bg_board=JSON.parse(FaceUnity.ReadFromCurrentItem("desc.json"));
 	//var tex_bg=FaceUnity.LoadTexture("bg.jpg");
@@ -286,6 +308,17 @@
 				}
 				faces.push(params);
 				
+				//for tex animation
+				now = Date.now();
+				blendshape.drawcalls.forEach(function(dc){
+					var matex=(materials_json[dc.name]||{});
+					if(matex.tex_albedo_frames!=undefined){
+						elapse = now - matex.last;
+						matex.frame_id = parseInt(elapse * V(globals.TexFPS,10.0) / 1000);
+					}
+				});
+				console.log(globals.TexFPS)
+				
 				//贴图
 				//for(var faceIndex = 0; faceIndex < faces.length;faceIndex++){
 					//要再画个面具的话可以加载一个贴图，然后去掉下面的注释
@@ -350,6 +383,13 @@
 							gl.depthMask(1);
 							gl.enable(gl.BLEND);
 							gl.blendFunc(gl.ZERO,gl.ONE);
+							if(matex.tex_albedo_frames!=undefined){
+								albedo = bigtex[matex.tex_albedo_frames[matex.frame_id % matex.tex_albedo_frames.length].bigtexidx];
+								lbrt = matex.tex_albedo_frames[matex.frame_id % matex.tex_albedo_frames.length].lbrt;
+							}else{
+						 		albedo = tex_map[V(matex.tex_albedo,dc.mat.tex)];
+								lbrt = [0.0,0.0,1.0,1.0];
+							}
 							FaceUnity.RenderBlendshapeComponent(blendshape,dc,s_vert_shader,s_frag_shader,{
 								scales:[dc.scales[0]*SCALE,dc.scales[1]*SCALE,-dc.scales[2]*SCALE],
 								mat_view:mat,
@@ -357,7 +397,8 @@
 								quatR1:[-params.rotation[0],-params.rotation[1],-params.rotation[2],params.rotation[3]],
 								obj_type:V(matex.obj_type, 0.3),
 								mat_proj:FaceUnity.CreateProjectionMatrix(),
-								tex_albedo:tex_map[V(matex.tex_albedo,dc.mat.tex)],
+								tex_albedo:albedo,
+								lbrt:lbrt,
 								tex_normal:tex_map[V(matex.tex_normal,"grey.png")],
 								tex_smoothness:tex_map[V(matex.tex_smoothness,"grey.png")],
 								normal_strength:V(matex.normal_strength,0.0),
@@ -505,7 +546,13 @@
 											[params.pupil_pos[0],params.pupil_pos[1]]),
 										mat);
 								}
-							
+								if(matex.tex_albedo_frames!=undefined){
+									albedo = bigtex[matex.tex_albedo_frames[matex.frame_id % matex.tex_albedo_frames.length].bigtexidx];
+									lbrt = matex.tex_albedo_frames[matex.frame_id % matex.tex_albedo_frames.length].lbrt;
+								}else{
+									albedo = tex_map[V(matex.tex_albedo,dc.mat.tex)];
+									lbrt = [0.0,0.0,1.0,1.0];
+								}
 								FaceUnity.RenderBlendshapeComponent_new(blendshape,dc,s_vert_shader,shader,{
 									scales:[dc.scales[0]*SCALE,dc.scales[1]*SCALE,-dc.scales[2]*SCALE],
 									mat_view:mat,
@@ -516,7 +563,8 @@
 									quatT2:[0,0,0],//[mat2[12]-center[0],mat2[13]-center[1],mat2[14]-center[2]],
 									obj_type:V(matex.obj_type, 0.3),
 									mat_proj:FaceUnity.CreateProjectionMatrix(),
-									tex_albedo:tex_map[V(matex.tex_albedo,dc.mat.tex)],
+									tex_albedo:albedo,
+									lbrt:lbrt,
 									tex_normal:tex_map[V(matex.tex_normal,"grey.png")],
 									tex_smoothness:tex_map[V(matex.tex_smoothness,"grey.png")],
 									normal_strength:V(matex.normal_strength,0.0),
@@ -547,6 +595,22 @@
 				faces.splice(0,faces.length);
 			}catch(err){
 				console.log(err.stack)
+			}
+		},
+		RenderNonFace:function(params){
+			////fixed section
+			if(params.face_count>0) return;
+			try{
+				now = Date.now();
+				blendshape.drawcalls.forEach(function(dc){
+					var matex=(materials_json[dc.name]||{});
+					if(matex.tex_albedo_frames!=undefined){
+						matex.last = now;
+						matex.frame_id = 0;
+					}
+				});
+			}catch(err){
+				console.log(err.stack);
 			}
 		},
 		name:V(globals.name,"unnamed"),
