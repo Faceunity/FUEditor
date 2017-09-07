@@ -21,6 +21,12 @@
 	//var tex=FaceUnity.LoadTexture("bigtex.webp");
 	var s_eyes_shader=FaceUnity.ReadFromCurrentItem("eyes.glsl");
 	
+	/*back#1ground_seg
+	var model=FaceUnity.LoadNNModel("nn.json");
+	var base_color=new Float32Array([-104.008/255,-116.669/255,-122.675/255]);
+	var s_visualize_shader=FaceUnity.ReadFromCurrentItem("visualize.glsl");
+	//back#1ground_seg*/
+	
 	var last = Date.now();
 	
 	var bigtexcnt = 0;
@@ -63,8 +69,24 @@
 	var cur_w=0,cur_h=0;
 	var last_state=0;
 	
+	deepCopy =function(p, c){
+		var c = c || {};
+　　　　for (var i in p) {
+　　　　　　if (typeof p[i] === 'object') {
+　　　　　　　　c[i] = (p[i].constructor === Array) ? [] : {};
+　　　　　　　　deepCopy(p[i], c[i]);
+　　　　　　} else {
+　　　　　　　　　c[i] = p[i];
+　　　　　　}
+　　　　}
+　　　　return c;
+　　}
+	
 	var arCnt = 0;
 	var arTex = new Array();
+	var bg_boards = new Array();
+	var bgCnt = 0;
+	console.log("board.length",boards.length,"arCnt",arCnt,"bgCnt",bgCnt);
 	for(var i=0;i<boards.length;i++){
 		if(boards[i].name.search("_ar")!=-1){
 			//console.log(boards[i].name);
@@ -73,8 +95,17 @@
 			arCnt++;
 		}
 		boards[i].isActive = true;
+		if(boards[i].name.search("_fcbg")!=-1){
+			bg_boards[bgCnt]=deepCopy(boards[i]);
+			bg_boards[bgCnt].last = Date.now();
+			bgCnt++;
+			boards.splice(i,1);
+			boards_bk.splice(i,1);
+			i--;
+		}
 	}
-	console.log("board.length",boards.length,"arCnt",arCnt);
+	console.log("board.length",boards.length,"arCnt",arCnt,"bgCnt",bgCnt);
+	
 	reExtract=function (params){
 		//console.log("reExtract")
 		try{
@@ -182,6 +213,13 @@
 		}
 		orientationChange();
 	}
+	//
+	activateNext = function(board){
+		if(board.triggerNextNodes==undefined || board.triggerNextNodes.length==0)return;
+		for(var idx in board.triggerNextNodes){
+			boards[board.triggerNextNodes[idx]].isActive=true;
+		}
+	}
 	return {
 		SetParam:function(name,value){
 			//console.log("set param ", name, " to ", value);
@@ -212,6 +250,75 @@
 				return 0;
 			}
 		},
+		
+		m_texid:0,
+		m_matrix:undefined,
+		enable_trackerless:1,
+		////////////////////////////////
+		/*back#2ground_seg
+		m_texid:0,
+		m_matrix:undefined,
+		enable_trackerless:1,
+		OnGeneralExtraDetector:function(){try{
+			//we first compute the letterboxing / rotation matrix
+			var matrix=new Float32Array(6);
+			var rotation_mode=FaceUnity.g_current_rmode;
+			var w=FaceUnity.g_image_w;
+			var h=FaceUnity.g_image_h;
+			var dw_letterbox,dh_letterbox;
+			if(!(rotation_mode&1)){
+				var conceptual_h_letterboxed=Math.max(w/0.75,h);
+				var conceptual_w_letterboxed=conceptual_h_letterboxed*0.75;
+				dw_letterbox=(conceptual_w_letterboxed-w);
+				dh_letterbox=(conceptual_h_letterboxed-h);
+			}else{
+				var conceptual_h_letterboxed=Math.max(h/0.75,w);
+				var conceptual_w_letterboxed=conceptual_h_letterboxed*0.75;
+				dw_letterbox=(conceptual_h_letterboxed-w);
+				dh_letterbox=(conceptual_w_letterboxed-h);
+			}
+			switch(rotation_mode){
+				default:{console.log('invalid rotation mode',rotation_mode);}break;
+				case 0:{matrix[0]=w;matrix[1]=0;matrix[2]=0;matrix[3]=h;matrix[4]=0;matrix[5]=0;}break;
+				case 1:{matrix[0]=0;matrix[1]=h;matrix[2]=-w;matrix[3]=0;matrix[4]=w;matrix[5]=0;}break;
+				case 2:{matrix[0]=-w;matrix[1]=0;matrix[2]=0;matrix[3]=-h;matrix[4]=w;matrix[5]=h;}break;
+				case 3:{matrix[0]=0;matrix[1]=-h;matrix[2]=w;matrix[3]=0;matrix[4]=0;matrix[5]=h;}
+			}
+			var input=FaceUnity.ExtractNNModelInput(model.w,model.h,model.channels, matrix,base_color);
+			var output=FaceUnity.RunNNModelRaw(model,input);
+			this.m_texid=FaceUnity.UploadBackgroundSegmentationResult(model,output);
+			this.m_matrix=matrix;
+		}catch(err){
+			console.log(err.stack);
+		}},
+		FilterEntireImage:function(){try{
+			//console.log('FilterEntireImage',this.m_texid)
+			if(!this.m_texid){return;}
+			now = Date.now();
+			var rsq01=1.0/(this.m_matrix[0]*this.m_matrix[0]+this.m_matrix[1]*this.m_matrix[1]);
+			var rsq23=1.0/(this.m_matrix[2]*this.m_matrix[2]+this.m_matrix[3]*this.m_matrix[3]);
+			for(var i=0;i<bg_boards.length;i++){
+				if(bg_boards[i].isActive && bg_boards[i].name.search("_fcbg")!=-1){
+					elapse = now - bg_boards[i].last;
+					bg_boards[i].frame_id = parseInt(elapse * bg_boards[i].fps / 1000);
+					var idx  = (bg_boards[i].frame_id)%bg_boards[i].texture_frames.length;
+					FaceUnity.InsertImageFilter("color",s_visualize_shader,{
+						inv_matrix0123:[this.m_matrix[0]*rsq01,this.m_matrix[1]*rsq01,this.m_matrix[2]*rsq23,this.m_matrix[3]*rsq23],
+						inv_matrix45_image_dim:[this.m_matrix[4],this.m_matrix[5],FaceUnity.g_image_w,FaceUnity.g_image_h],
+						tex_segmentation:this.m_texid,
+						tex_background:bigtex[bg_boards[i].texture_frames[idx].bigtexidx],
+						background_uv_lt:bg_boards[i].texture_frames[idx].vt.slice(0,4),
+						background_uv_rb:bg_boards[i].texture_frames[idx].vt.slice(4)
+					});	
+				}
+			}
+		}catch(err){
+			console.log(err.stack);
+		}},
+		//back#2ground_seg*/
+		////////////////////////////////
+		
+		////////////////////////////////
 		Render:function(params){
 			////fixed section
 			try{
@@ -244,6 +351,8 @@
 					FaceUnity.RenderAR(arTex[i]);
 				}
 				////
+				
+				var mat_cam=FaceUnity.CreateViewMatrix([0,0,0,1],params.translation);
 				
 				////<----trigger start section
 				for(var i=0;i<boards.length - arCnt;i++){
@@ -283,13 +392,13 @@
 					
 						if(boards[i].looptype=="infinite" || (boards[i].frame_id < boards[i].texture_frames.length * boards[i].loopcnt)){
 							var idx  = (boards[i].frame_id)%boards[i].texture_frames.length;
-							FaceUnity.RenderBillboard(bigtex[boards[i].texture_frames[idx].bigtexidx],boards[i],boards[i].texture_frames[idx],boards[i].matp);
+							FaceUnity.RenderBillboard(bigtex[boards[i].texture_frames[idx].bigtexidx],boards[i],boards[i].texture_frames[idx],boards[i].matp,boards[i].rotationType?mat_cam:undefined);
 							//console.log(boards[i].name,boards[i].frame_id);
 						}
 						if(boards[i].looptype=="loop1stay"&& boards[i].frame_id >= boards[i].texture_frames.length * boards[i].loopcnt){
 							//loop 1 time and stay at last frame.
 							var idx  = boards[i].texture_frames.length-1;
-							FaceUnity.RenderBillboard(bigtex[boards[i].texture_frames[idx].bigtexidx],boards[i],boards[i].texture_frames[idx],boards[i].matp);
+							FaceUnity.RenderBillboard(bigtex[boards[i].texture_frames[idx].bigtexidx],boards[i],boards[i].texture_frames[idx],boards[i].matp,boards[i].rotationType?mat_cam:undefined);
 						}
 					}
 				}
@@ -303,21 +412,25 @@
 						boards[i].triggered = 0;
 						boards[i].frame_id =0;
 						boards[i].last = now;
+						activateNext(boards[i]);
 						if(boards[i].nodetype==1){
 							recursiveStop(i,now);
 						}
 						boards[i].isActive = false;
+						
 						continue;
 					}
 					if(/*action end*/boards[i].triggerend=="faceaction" && isActionTriggered(boards[i].endaction,params)){
 						boards[i].triggered = 0;
 						boards[i].frame_id =0;
 						boards[i].last = now;
+						activateNext(boards[i]);
 						if(boards[i].nodetype==1){
 							recursiveStop(i,now);
 						}
 						if(boards[i].triggerstart=="newface"||boards[i].triggerstart=="alwaysrender"){
 							boards[i].isActive = false;
+							
 						}
 					}
 					if(boards[i].triggerstart=="alwaysrender" || (boards[i].root!=-1 && boards[boards[i].root].triggerstart=="alwaysrender"))continue;
@@ -326,6 +439,7 @@
 						boards[i].triggered = 0;
 						boards[i].frame_id =0;
 						boards[i].last = now;
+						activateNext(boards[i]);
 						if(boards[i].nodetype==1){
 							recursiveStop(i,now);
 						}
@@ -336,8 +450,7 @@
 						boards[i].triggered = 0;
 						boards[i].frame_id =0;
 						boards[i].last = now;
-						//console.log("faceaction end:",boards[i].nodetype," ",boards[i].root,boards[i].triggerstart);
-						
+						activateNext(boards[i]);
 						if(boards[i].nodetype==1){
 							recursiveStop(i,now);
 						}
@@ -346,18 +459,17 @@
 						}
 					}
 					if(/*loop end*/boards[i].looptype=="loopcnt" && ((boards[i].frame_id +1) >= boards[i].texture_frames.length * boards[i].loopcnt)){
-						//console.log(boards[i].name,"endxxxxxxx",boards[i].frame_id,boards[i].texture_frames.length * boards[i].loopcnt);
 						boards[i].triggered = 0;
 						boards[i].frame_id =0;
 						boards[i].last = now;
+						activateNext(boards[i]);
 						if(boards[i].triggerstart=="newface"){
 							boards[i].isActive = false;
+							activateNext(boards[i]);
 						}
 						if(boards[i].nodetype==3){
 							//last node
 							var root = boards[boards[i].root];
-							//console.log("loop end,",root.looptype,root.frame_id,root.frameCnt1Loop * root.loopcnt);
-							//console.log(root.loopcountdown);
 							if(root.looptype=="loopcnt"){
 								//console.log("countdown");
 								root.loopcountdown-=1;
@@ -368,6 +480,7 @@
 										boards[root.childNodes[j]].last = now;
 									}
 								}else{
+									activateNext(boards[boards[i].root]);
 									recursiveStop(boards[i].root,now);
 									if(root.triggerstart=="newface"){
 										root.isActive = false;
@@ -425,6 +538,8 @@
 				}
 				
 				now = Date.now();
+				
+				//var mat_cam=FaceUnity.CreateViewMatrix([0,0,0,1],params.translation);
 				
 				////<----trigger start section
 				for(var i=0;i<boards.length - arCnt;i++){
@@ -489,6 +604,7 @@
 						boards[i].frame_id = 0;
 						boards[i].last = now;
 						boards[i].isActive = false;
+						activateNext(boards[i]);
 						if(boards[i].nodetype==3){
 							//last node
 							var root = boards[boards[i].root];
@@ -503,6 +619,7 @@
 								}else{
 									recursiveStop(boards[i].root,now);
 									root.isActive = false;
+									activateNext(boards[boards[i].root]);
 								}
 							}
 							if(root.looptype=="infinite"){
