@@ -33,5 +33,7 @@ void main(){
 		dPdt_frag=normalize((mat_view*vec4(dPdt.x,dPdt.y,-dPdt.z,0.0)).xyz);
 	}
 	//st_frag=st;
+	st.y = 1.0 - st.y;
 	st_frag=lbrt.xy + (lbrt.zw-lbrt.xy)*st;
+	st_frag.y = 1.0 - st_frag.y;
 }
