@@ -1,2 +1,2 @@
-[info][fueditor.cpp:41][15:51:43]: open log
-[info][fueditor.cpp:42][15:51:43]: current path :F:/FUEditor/Distribution/Publish/Github/FUEditor
+[info][fueditor.cpp:41][21:11:53]: open log
+[info][fueditor.cpp:42][21:11:53]: current path :F:/FUEditor/Distribution/Publish/Github/FUEditor
