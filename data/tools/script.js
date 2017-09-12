@@ -23,8 +23,12 @@
 	
 	/*back#1ground_seg
 	var model=FaceUnity.LoadNNModel("nn.json");
-	var base_color=new Float32Array([-104.008/255,-116.669/255,-122.675/255]);
+	var base_color=new Float32Array([-122.675/255,-116.669/255,-104.008/255]);
 	var s_visualize_shader=FaceUnity.ReadFromCurrentItem("visualize.glsl");
+	var cur_rotation_mode=-1;
+	var cnn_prob = new Array();
+	var cnn_running_time_sum = 0.;
+	var cnn_running_time_count = 0;
 	//back#1ground_seg*/
 	
 	var last = Date.now();
@@ -263,17 +267,24 @@
 			//we first compute the letterboxing / rotation matrix
 			var matrix=new Float32Array(6);
 			var rotation_mode=FaceUnity.g_current_rmode;
+		if (cur_rotation_mode == -1 || cur_rotation_mode!=rotation_mode)
+			{
+				cur_rotation_mode=rotation_mode;
+				cnn_prob.length=0;
+			}
+			
+			//console.log("rotation_mode: ",rotation_mode);
 			var w=FaceUnity.g_image_w;
 			var h=FaceUnity.g_image_h;
 			var dw_letterbox,dh_letterbox;
 			if(!(rotation_mode&1)){
-				var conceptual_h_letterboxed=Math.max(w/0.75,h);
-				var conceptual_w_letterboxed=conceptual_h_letterboxed*0.75;
+				var conceptual_h_letterboxed=Math.max(w/0.5625,h);
+				var conceptual_w_letterboxed=conceptual_h_letterboxed*0.5625;
 				dw_letterbox=(conceptual_w_letterboxed-w);
 				dh_letterbox=(conceptual_h_letterboxed-h);
 			}else{
-				var conceptual_h_letterboxed=Math.max(h/0.75,w);
-				var conceptual_w_letterboxed=conceptual_h_letterboxed*0.75;
+				var conceptual_h_letterboxed=Math.max(h/0.5625,w);
+				var conceptual_w_letterboxed=conceptual_h_letterboxed*0.5625;
 				dw_letterbox=(conceptual_h_letterboxed-w);
 				dh_letterbox=(conceptual_w_letterboxed-h);
 			}
@@ -286,6 +297,17 @@
 			}
 			var input=FaceUnity.ExtractNNModelInput(model.w,model.h,model.channels, matrix,base_color);
 			var output=FaceUnity.RunNNModelRaw(model,input);
+			cnn_running_time_sum+=output[output.length-1];
+			cnn_running_time_count++;
+			//console.log("average running time:"+cnn_running_time_sum/cnn_running_time_count+"ms");
+			if (cnn_prob.length==0){
+				for(var i=0;i<output.length;i++){cnn_prob[i] = output[i];}
+			}
+			else{
+				for(var i=0;i<output.length;i++){cnn_prob[i] = 0.5*output[i]+0.5*cnn_prob[i]; output[i]=cnn_prob[i];}
+			}
+			//console.log(cnn_prob);
+			//console.log(output);
 			this.m_texid=FaceUnity.UploadBackgroundSegmentationResult(model,output);
 			this.m_matrix=matrix;
 		}catch(err){

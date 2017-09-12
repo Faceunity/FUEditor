@@ -1,0 +1,195 @@
+{
+    "projectname": "example_filter_gradient",
+    "projecttype": 8,
+    "layers": [
+        {
+            "id": 1,
+            "panel_type_str": "gradient_map",
+            "panel_type": 8,
+            "is_enable": true,
+            "blend_type_idx": 0,
+            "alpha": 1.0,
+            "cur_presetting_idx": 11,
+            "is_reverse": false,
+            "markers": [
+                {
+                    "selected": false,
+                    "pos": 0.11999999731779099,
+                    "ratio": 0.5,
+                    "color": [
+                        255,
+                        0,
+                        0
+                    ]
+                },
+                {
+                    "selected": false,
+                    "pos": 0.2800000011920929,
+                    "ratio": 0.5,
+                    "color": [
+                        255,
+                        252,
+                        0
+                    ]
+                },
+                {
+                    "selected": false,
+                    "pos": 0.44999998807907107,
+                    "ratio": 0.6000000238418579,
+                    "color": [
+                        1,
+                        180,
+                        57
+                    ]
+                },
+                {
+                    "selected": false,
+                    "pos": 0.6000000238418579,
+                    "ratio": 0.3499999940395355,
+                    "color": [
+                        0,
+                        234,
+                        255
+                    ]
+                },
+                {
+                    "selected": false,
+                    "pos": 0.75,
+                    "ratio": 0.6000000238418579,
+                    "color": [
+                        0,
+                        3,
+                        144
+                    ]
+                },
+                {
+                    "selected": false,
+                    "pos": 0.8799999952316284,
+                    "ratio": 0.5,
+                    "color": [
+                        255,
+                        0,
+                        198
+                    ]
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "panel_type_str": "op_loop",
+            "panel_type": 11,
+            "is_enable": true,
+            "blend_type_idx": 0,
+            "alpha": 1.0,
+            "loop_frequency": 3
+        }
+    ],
+    "loop_layers": [
+        {
+            "id": 3,
+            "parent_id": 2,
+            "panel_type_str": "hue_saturation",
+            "panel_type": 5,
+            "is_enable": true,
+            "blend_type_idx": 0,
+            "alpha": 1.0,
+            "is_shading": false,
+            "hue": 0,
+            "saturation": 0,
+            "luminosity": 0
+        },
+        {
+            "id": 4,
+            "parent_id": 2,
+            "panel_type_str": "hue_saturation",
+            "panel_type": 5,
+            "is_enable": true,
+            "blend_type_idx": 0,
+            "alpha": 1.0,
+            "is_shading": false,
+            "hue": -45,
+            "saturation": 0,
+            "luminosity": 0
+        },
+        {
+            "id": 5,
+            "parent_id": 2,
+            "panel_type_str": "hue_saturation",
+            "panel_type": 5,
+            "is_enable": true,
+            "blend_type_idx": 0,
+            "alpha": 1.0,
+            "is_shading": false,
+            "hue": -90,
+            "saturation": 0,
+            "luminosity": 0
+        },
+        {
+            "id": 6,
+            "parent_id": 2,
+            "panel_type_str": "hue_saturation",
+            "panel_type": 5,
+            "is_enable": true,
+            "blend_type_idx": 0,
+            "alpha": 1.0,
+            "is_shading": false,
+            "hue": -135,
+            "saturation": 0,
+            "luminosity": 0
+        },
+        {
+            "id": 7,
+            "parent_id": 2,
+            "panel_type_str": "hue_saturation",
+            "panel_type": 5,
+            "is_enable": true,
+            "blend_type_idx": 0,
+            "alpha": 1.0,
+            "is_shading": false,
+            "hue": -180,
+            "saturation": 0,
+            "luminosity": 0
+        },
+        {
+            "id": 8,
+            "parent_id": 2,
+            "panel_type_str": "hue_saturation",
+            "panel_type": 5,
+            "is_enable": true,
+            "blend_type_idx": 0,
+            "alpha": 1.0,
+            "is_shading": false,
+            "hue": 135,
+            "saturation": 0,
+            "luminosity": 0
+        },
+        {
+            "id": 9,
+            "parent_id": 2,
+            "panel_type_str": "hue_saturation",
+            "panel_type": 5,
+            "is_enable": true,
+            "blend_type_idx": 0,
+            "alpha": 1.0,
+            "is_shading": false,
+            "hue": 90,
+            "saturation": 0,
+            "luminosity": 0
+        },
+        {
+            "id": 10,
+            "parent_id": 2,
+            "panel_type_str": "hue_saturation",
+            "panel_type": 5,
+            "is_enable": true,
+            "blend_type_idx": 0,
+            "alpha": 1.0,
+            "is_shading": false,
+            "hue": 45,
+            "saturation": 0,
+            "luminosity": 0
+        }
+    ],
+    "selected_panel": 2,
+    "cur_show_panel": 10
+}

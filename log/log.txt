@@ -1,3 +1,2 @@
-[info][fueditor.cpp:41][19:00:45]: open log
-[info][fueditor.cpp:42][19:00:45]: current path :F:/FUEditor/Distribution/Publish/Github/FUEditor
-[info][TreeViewController.cpp:94][19:00:38]: item select: 2D:yanhua
+[info][fueditor.cpp:41][15:51:43]: open log
+[info][fueditor.cpp:42][15:51:43]: current path :F:/FUEditor/Distribution/Publish/Github/FUEditor

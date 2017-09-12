@@ -1,0 +1,175 @@
+{
+    "projectname": "example_filter_light_perception",
+    "projecttype": 8,
+    "layers": [
+        {
+            "id": 1,
+            "panel_type_str": "curves",
+            "panel_type": 7,
+            "is_enable": true,
+            "blend_type_idx": 0,
+            "alpha": 1.0,
+            "cur_idx": 0,
+            "params": [
+                {
+                    "name": "RGB",
+                    "points": [
+                        0,
+                        0,
+                        122,
+                        154,
+                        255,
+                        255
+                    ]
+                },
+                {
+                    "name": "R",
+                    "points": [
+                        0,
+                        0,
+                        255,
+                        255
+                    ]
+                },
+                {
+                    "name": "G",
+                    "points": [
+                        0,
+                        0,
+                        255,
+                        255
+                    ]
+                },
+                {
+                    "name": "B",
+                    "points": [
+                        0,
+                        0,
+                        255,
+                        255
+                    ]
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "panel_type_str": "image",
+            "panel_type": 9,
+            "is_enable": true,
+            "blend_type_idx": 0,
+            "alpha": 1.0,
+            "is_scale": false,
+            "aspect_sensitive": false,
+            "image": "keli_1.png"
+        },
+        {
+            "id": 3,
+            "panel_type_str": "op_loop",
+            "panel_type": 11,
+            "is_enable": true,
+            "blend_type_idx": 0,
+            "alpha": 1.0,
+            "loop_frequency": 3
+        }
+    ],
+    "loop_layers": [
+        {
+            "id": 4,
+            "parent_id": 3,
+            "panel_type_str": "image",
+            "panel_type": 9,
+            "is_enable": true,
+            "blend_type_idx": 9,
+            "alpha": 1.0,
+            "is_scale": true,
+            "aspect_sensitive": false,
+            "image": "f1.png"
+        },
+        {
+            "id": 5,
+            "parent_id": 3,
+            "panel_type_str": "image",
+            "panel_type": 9,
+            "is_enable": true,
+            "blend_type_idx": 9,
+            "alpha": 1.0,
+            "is_scale": true,
+            "aspect_sensitive": false,
+            "image": "f2.png"
+        },
+        {
+            "id": 6,
+            "parent_id": 3,
+            "panel_type_str": "image",
+            "panel_type": 9,
+            "is_enable": true,
+            "blend_type_idx": 9,
+            "alpha": 1.0,
+            "is_scale": true,
+            "aspect_sensitive": false,
+            "image": "f3.png"
+        },
+        {
+            "id": 7,
+            "parent_id": 3,
+            "panel_type_str": "image",
+            "panel_type": 9,
+            "is_enable": true,
+            "blend_type_idx": 9,
+            "alpha": 1.0,
+            "is_scale": true,
+            "aspect_sensitive": false,
+            "image": "f4.png"
+        },
+        {
+            "id": 8,
+            "parent_id": 3,
+            "panel_type_str": "image",
+            "panel_type": 9,
+            "is_enable": true,
+            "blend_type_idx": 9,
+            "alpha": 1.0,
+            "is_scale": true,
+            "aspect_sensitive": false,
+            "image": "f5.png"
+        },
+        {
+            "id": 9,
+            "parent_id": 3,
+            "panel_type_str": "image",
+            "panel_type": 9,
+            "is_enable": true,
+            "blend_type_idx": 9,
+            "alpha": 1.0,
+            "is_scale": true,
+            "aspect_sensitive": false,
+            "image": "f4.png"
+        },
+        {
+            "id": 10,
+            "parent_id": 3,
+            "panel_type_str": "image",
+            "panel_type": 9,
+            "is_enable": true,
+            "blend_type_idx": 9,
+            "alpha": 1.0,
+            "is_scale": true,
+            "aspect_sensitive": false,
+            "image": "f3.png"
+        },
+        {
+            "id": 11,
+            "parent_id": 3,
+            "panel_type_str": "image",
+            "panel_type": 9,
+            "is_enable": true,
+            "blend_type_idx": 9,
+            "alpha": 1.0,
+            "is_scale": true,
+            "aspect_sensitive": false,
+            "image": "f2.png"
+        }
+    ],
+    "selected_panel": 3,
+    "cur_show_panel": 11
+}

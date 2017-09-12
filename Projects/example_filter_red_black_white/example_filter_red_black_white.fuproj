@@ -1,0 +1,147 @@
+{
+    "projectname": "example_filter_red_black_white",
+    "projecttype": 8,
+    "layers": [
+        {
+            "id": 1,
+            "panel_type_str": "curves",
+            "panel_type": 7,
+            "is_enable": true,
+            "blend_type_idx": 0,
+            "alpha": 1.0,
+            "cur_idx": 0,
+            "params": [
+                {
+                    "name": "RGB",
+                    "points": [
+                        0,
+                        0,
+                        100,
+                        156,
+                        255,
+                        255
+                    ]
+                },
+                {
+                    "name": "R",
+                    "points": [
+                        0,
+                        0,
+                        255,
+                        255
+                    ]
+                },
+                {
+                    "name": "G",
+                    "points": [
+                        0,
+                        0,
+                        255,
+                        255
+                    ]
+                },
+                {
+                    "name": "B",
+                    "points": [
+                        0,
+                        0,
+                        255,
+                        255
+                    ]
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "panel_type_str": "op_loop",
+            "panel_type": 11,
+            "is_enable": true,
+            "blend_type_idx": 0,
+            "alpha": 1.0,
+            "loop_frequency": 3
+        },
+        {
+            "id": 6,
+            "panel_type_str": "levels",
+            "panel_type": 6,
+            "is_enable": true,
+            "blend_type_idx": 0,
+            "alpha": 1.0,
+            "cur_idx": 0,
+            "params": [
+                {
+                    "name": "RGB",
+                    "range": [
+                        141.0,
+                        1.0,
+                        147.0
+                    ]
+                },
+                {
+                    "name": "R",
+                    "range": [
+                        0.0,
+                        1.0,
+                        255.0
+                    ]
+                },
+                {
+                    "name": "G",
+                    "range": [
+                        0.0,
+                        1.0,
+                        255.0
+                    ]
+                },
+                {
+                    "name": "B",
+                    "range": [
+                        0.0,
+                        1.0,
+                        255.0
+                    ]
+                }
+            ]
+        },
+        {
+            "id": 7,
+            "panel_type_str": "hue_saturation",
+            "panel_type": 5,
+            "is_enable": true,
+            "blend_type_idx": 0,
+            "alpha": 1.0,
+            "is_shading": true,
+            "hue": 349,
+            "saturation": 25,
+            "luminosity": 0
+        }
+    ],
+    "loop_layers": [
+        {
+            "id": 4,
+            "parent_id": 3,
+            "panel_type_str": "image",
+            "panel_type": 9,
+            "is_enable": true,
+            "blend_type_idx": 0,
+            "alpha": 1.0,
+            "is_scale": false,
+            "aspect_sensitive": false,
+            "image": "keli_1.png"
+        },
+        {
+            "id": 5,
+            "parent_id": 3,
+            "panel_type_str": "image",
+            "panel_type": 9,
+            "is_enable": true,
+            "blend_type_idx": 0,
+            "alpha": 1.0,
+            "is_scale": false,
+            "aspect_sensitive": false,
+            "image": "keli_2.png"
+        }
+    ],
+    "selected_panel": 7,
+    "cur_show_panel": 7
+}
