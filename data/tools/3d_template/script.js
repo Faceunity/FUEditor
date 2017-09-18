@@ -73,7 +73,7 @@
 	//@mparam Kr {"type":"slider","min":0,"max":1,"default_value":0.0}
 	//表面粗糙度。越大高光越分散，越小高光越集中
 	//@mparam roughness {"type":"slider","min":0.02,"max":1,"default_value":0.5}
-	//高光强度贴图。在alpha通道里放的是影响高光和反射的权重，越大表示越亮。可以和颜色贴图放在一起哦。
+	//高光强度贴图，应为灰度图，越大表示越亮。
 	//@mparam tex_smoothness {"type":"texture","default_value":"grey.png"}
 	//高光强度贴图的整体强度（有些拗口……），为了照顾到大多数没有高光强度贴图的模型，默认是0。设了贴图之后要把强度拽高哦～
 	//@mparam has_tex_smoothness {"type":"slider","min":0,"max":1,"default_value":0}
@@ -463,9 +463,8 @@
 					*/
 					var alphaThreshold = parseFloat(V(globals.alphaThreshold, "1.0"));
 					for(var pass=0;pass<3;pass++){
-						var frag_OIT = FaceUnity.SimpleOITBegin(pass);
-						shader = s_frag_shader + frag_OIT;
-						/*
+						//var frag_OIT = FaceUnity.SimpleOITBegin(pass);
+						//shader = s_frag_shader + frag_OIT;
 						if (pass==0) {
 							gl.enable(gl.DEPTH_TEST);
 							gl.depthFunc(gl.LEQUAL);
@@ -475,17 +474,17 @@
 						} else if (pass==1) {
 							gl.enable(gl.DEPTH_TEST);
 							gl.depthMask(true);
-							shader=s_frag_shader+"vec4 shader_main_OIT(){vec4 c=shader_main();if (c.a>" + alphaThreshold.toFixed(3) 
+							shader=s_frag_shader+"vec4 shader_main_OIT(){vec4 c=shader_main();if (c.a>=" + alphaThreshold.toFixed(3) 
 								+ ") return vec4(c.rgb,1.0);else discard;}";
 						} else if (pass==2) {
 							gl.enable(gl.DEPTH_TEST);
 							gl.depthMask(false);
 							gl.enable(gl.BLEND);
 							gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
-							shader=s_frag_shader+"vec4 shader_main_OIT(){vec4 c=shader_main();if (c.a<=" + alphaThreshold.toFixed(3) 
+							shader=s_frag_shader+"vec4 shader_main_OIT(){vec4 c=shader_main();if (c.a<" + alphaThreshold.toFixed(3) 
 								+ ") return vec4(c.rgb,c.a*" + (1.0/alphaThreshold).toFixed(3) + ");else return vec4(c.rgb,0.0);}";
 						}
-						*/
+						
 						//遍历每个材质
 						blendshape.drawcalls.forEach(function(dc){
 						//取出编辑器提供的材质参数
@@ -586,7 +585,9 @@
 						});// end blendshape.drawcalls.forEach(function(dc)
 					
 					}
-					FaceUnity.SimpleOITEnd();
+					//FaceUnity.SimpleOITEnd();
+					gl.depthMask(true);
+					gl.disable(gl.DEPTH_TEST);
 				}
 				//渲染完成之后需要收拾一下GL的流水线状态，恢复默认值——直播框架什么的可能还要用的
 				gl.depthMask(true);
