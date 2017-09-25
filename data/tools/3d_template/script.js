@@ -481,7 +481,7 @@
 							gl.depthMask(false);
 							gl.enable(gl.BLEND);
 							gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
-							shader=s_frag_shader+"vec4 shader_main_OIT(){vec4 c=shader_main();if (c.a<" + alphaThreshold.toFixed(3) 
+							shader=s_frag_shader+"vec4 shader_main_OIT(){vec4 c=shader_main();if (c.a<=" + alphaThreshold.toFixed(3) 
 								+ ") return vec4(c.rgb,c.a*" + (1.0/alphaThreshold).toFixed(3) + ");else return vec4(c.rgb,0.0);}";
 						}
 						
