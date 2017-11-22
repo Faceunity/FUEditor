@@ -860,45 +860,7 @@ body .markdown-body
   float: left;
   margin: 0.3em 0 0.25em -1.6em;
   vertical-align: middle;
-}</style><title>FUEditor User Specification</title></head><body><article class="markdown-body"><div class="toc">
-<ul>
-<li><a href="#fueditor">FUEditor 使用文档</a><ul>
-<li><a href="#_1">简介</a></li>
-<li><a href="#1">1. 快速安装</a></li>
-<li><a href="#2">2. 使用</a><ul>
-<li><a href="#21">2.1 新建项目</a></li>
-<li><a href="#22-2d">2.2 2D道具编辑</a></li>
-<li><a href="#23-2d">2.3 2D动画逻辑</a></li>
-<li><a href="#24">2.4 特定脸部动作</a><ul>
-<li><a href="#241">2.4.1 内置特定动作</a></li>
-<li><a href="#242">2.4.2 自定义脸部动作</a></li>
-</ul>
-</li>
-<li><a href="#25">2.5 组动画</a><ul>
-<li><a href="#251">2.5.1 添加组动画</a></li>
-<li><a href="#252">2.5.2 元素组构成</a></li>
-<li><a href="#253">2.5.3 调整组元素顺序</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a href="#3-ar-mesh">3. AR Mesh 制作</a></li>
-<li><a href="#4-3d">4. 静态3D道具制作</a><ul>
-<li><a href="#41">4.1 道具制作</a></li>
-<li><a href="#42">4.2 材质调整</a></li>
-<li><a href="#43">4.3 贴图动画</a></li>
-</ul>
-</li>
-<li><a href="#5-avatar">5. Avatar制作</a></li>
-<li><a href="#6">6. 高级视频滤镜</a></li>
-<li><a href="#7">7. 打包道具</a></li>
-<li><a href="#8">8. 项目保存与切换</a></li>
-<li><a href="#9">9. 高级功能自定义动画脚本</a></li>
-<li><a href="#10">10. 常用术语解释</a></li>
-</ul>
-</li>
-</ul>
-</div>
+}</style><title>FUEditor User Specification</title></head><body><article class="markdown-body"><p>[TOC]</p>
 <h1>
 <a id="user-content-fueditor-使用文档" class="anchor" href="#fueditor-%E4%BD%BF%E7%94%A8%E6%96%87%E6%A1%A3" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><strong>FUEditor 使用文档</strong>
 </h1>
@@ -980,21 +942,30 @@ FUEditor中自带一些示例项目，首次启动时，显示的项目即是示
 </ul>
 <p><a href="./img/attr.png" target="_blank"><img src="./img/attr.png" alt="test" style="max-width:100%;"></a></p>
 <ul>
-<li>属性释意：
+<li>
+<p>基本属性释意：</p>
 <ul>
 <li>元素名：当前元素的名称，可修改，不同元素元素名不同。</li>
 <li>图片：点击右边图片按钮<a href="./img/qt32/image.png" target="_blank"><img src="./img/qt32/image.png" alt="test" style="max-width:100%;"></a>，选择图片纹理。<br>
-<strong>注意</strong>：2D元素帧动画序列命名必须是“xxxx_五位数字.扩展名” 例如， xxxx_00000.png, xxxx_00001.png 帧序列。<br>
-即使没有帧动画，只有一帧也需命名为xxxx_00000.png。</li>
+<strong>注意</strong>：2D元素帧动画序列命名必须是“xxxx_五位数字.扩展名” 例如， xxxx_00000.png, xxxx_00001.png 帧序列，<br>
+即使没有帧动画，只有一帧也需命名为xxxx_00000.png。图片最大不能超过2000<em>2000。图片太大，会影响性能,建议控制在1000</em>1000以下。</li>
 <li>水平翻转：沿元素中心做水平翻转。</li>
 <li>垂直翻转：沿元素中心做垂直翻转。</li>
 <li>
 <strong>元素类型</strong>:
 <ul>
-<li>跟随人脸: 跟随人脸的元素，将跟踪人脸移动或旋转。</li>
+<li>跟随人脸元素: 跟随人脸的元素，将跟踪人脸移动或旋转。</li>
 <li>屏幕元素：屏幕元素，不会跟人脸动，不拉伸，直接绘制在屏幕。不同屏幕分辨率按照(rx,ry)在屏幕上绘制元素，(rx,ry)表示元素中心在屏幕上的比例，左上角为(0,0),右下角为(1,1)。</li>
-<li>背景分割：背景分割元素，选择该模式的元素可以在相机画面中自动分割出人像，并替换背景为该元素内容。</li>
-<li>全屏元素：全屏元素，不会跟人脸动，高宽拉伸绘制在全屏幕。</li>
+<li>背景分割元素：背景分割元素，选择该模式的元素可以在相机画面中自动分割出人像，并替换背景为该元素内容。</li>
+<li>全屏前景元素：全屏前景元素，不会跟人脸动，高宽拉伸绘制在全屏幕。</li>
+<li>全屏背景元素：全屏背景元素，不会跟人脸动，高宽拉伸绘制在全屏幕。</li>
+</ul>
+</li>
+<li>
+<strong>旋转类型</strong>:
+<ul>
+<li>旋转平移: 跟随人脸的元素，将跟踪人脸移动和旋转。</li>
+<li>仅平移：跟随人脸的元素，跟随人脸平移运动，但不旋转。</li>
 </ul>
 </li>
 <li>是否横屏：当元素是全屏元素时，才能选择该选项，且为横屏模式，不会跟人脸动，拉伸绘制在全屏幕。参见[横屏支持]章节。</li>
@@ -1002,6 +973,13 @@ FUEditor中自带一些示例项目，首次启动时，显示的项目即是示
 <li>保持图片宽高比：勾选，让元素保持原来图片的宽高比约束，调整宽或高会自动调整另一个值。取消后可自由调整宽高。</li>
 <li>宽度：元素宽度。</li>
 <li>高度：元素高度。</li>
+<li>开启深度测试：当2D元素和3D元素混合使用时，给2D元素开启深度测试，能获得正确的遮挡效果。</li>
+</ul>
+<p><a href="./img/anim.png" target="_blank"><img src="./img/anim.png" alt="test" style="max-width:100%;"></a></p>
+</li>
+<li>
+<p>动画参数释意：</p>
+<ul>
 <li>FPS：播放帧速率，每秒播放多少帧。</li>
 <li>触发开始：当前道具从什么时候开始绘制。</li>
 <li>触发开始动作：当前道具在什么人脸表情动作下触发时开始绘制。</li>
@@ -1010,12 +988,18 @@ FUEditor中自带一些示例项目，首次启动时，显示的项目即是示
 <li>触发结束：但特定条件满足时，结束当前道具元素绘制。</li>
 <li>触发结束动作：当前道具在什么人脸表情动作下触发时停止绘制。</li>
 <li>
-<strong>结束后触发</strong>: 结束触发表示当前元素结束时，激活触发其他已经结束的元素，点击右边按钮进行操作，可以用来做动画循环。例如 元素A，A的触发开始是[人脸出现]，触发结束是[特定动作X];元素B，B的触发开始是[特定动作X]且需要保持动作，<strong>结束后触发</strong>[A];那这动画是正常情况下播放A动画，当出现特定动作X时，A暂时关闭，播放B动画，B结束时，重新激活触发A，回到正常状态。<br>
-<strong>注 1</strong>：具体动画逻辑参见<a href="#">动画逻辑</a>章节<br>
-<strong>注 2</strong>：背景元素以及全屏元素，在道具加载时就固定了方向，如要调整方向需要，需要在代码中调整旋转角度，调用</li>
+<strong>结束后触发</strong>: 结束触发表示当前元素结束时，激活触发其他已经结束的元素，点击右边按钮进行操作，可以用来做动画循环。例如 元素A，A的触发开始是[人脸出现]，触发结束是[特定动作X];元素B，B的触发开始是[特定动作X]且需要保持动作，<strong>结束后触发</strong>[A];那这动画是正常情况下播放A动画，当出现特定动作X时，A暂时关闭，播放B动画，B结束时，重新激活触发A，回到正常状态。</li>
+<li>
+<strong>是否由其他元素触发</strong>: (配合上面结束后触发)当元素设置为被触发时，即使这个元素是始终绘制(屏幕初始化)的也得等，其他元素结束触发它。用于做动画序列的。</li>
+<li>
+<strong>是否仅活跃一次</strong>：如果设置为是，那么满足触发条件，触发道具播放，当满足结束条件(特定动作、循环N次)该道具元素结束播放，结束后将不再重新触发。如果没设置为是，那么触发结束后，人脸离开屏幕再回来又能触发该元素播放。</li>
 </ul>
 </li>
 </ul>
+<p><strong>注 1</strong>：具体动画逻辑参见<a href="#">动画逻辑</a>章节<br>
+<strong>注 2</strong>：当出现，全屏元素没有覆盖满全屏时，需要设置,Android/iOS一样</p>
+<div class="highlight highlight-source-c"><pre><span class="pl-en">fuItemSetParamd</span>(item_id, <span class="pl-s"><span class="pl-pds">"</span>isAndroid<span class="pl-pds">"</span></span>,<span class="pl-c1">1</span>);     <span class="pl-c"><span class="pl-c">//</span>第一个参数为bundleid，。</span></pre></div>
+<p><strong>注 3</strong>：背景元素以及全屏元素，在集成的Nama SDK版本大于4.0.0时，全屏元素会自动跟随人脸的旋转而旋转，如果需要在道具加载时就固定了方向，要调整方向，需要在代码中调整旋转角度，调用</p>
 <div class="highlight highlight-source-c"><pre><span class="pl-c"><span class="pl-c">/*</span></span>
 <span class="pl-c">/ 第一个参数为bundleid，最后参数为旋转度数 0，90，180，270。</span>
 <span class="pl-c">/ 每加90度相当于逆时针旋转90度。</span>
@@ -1025,6 +1009,10 @@ eg.
 <span class="pl-en">fuItemSetParamd</span>(item_id, <span class="pl-s"><span class="pl-pds">"</span>rotationAngle<span class="pl-pds">"</span></span>,<span class="pl-c1">90</span>);<span class="pl-c"><span class="pl-c">//</span>Android 前置</span>
 <span class="pl-en">fuItemSetParamd</span>(item_id, <span class="pl-s"><span class="pl-pds">"</span>rotationAngle<span class="pl-pds">"</span></span>,<span class="pl-c1">270</span>);<span class="pl-c"><span class="pl-c">//</span>Android 后置</span>
 <span class="pl-en">fuItemSetParamd</span>(item_id, <span class="pl-s"><span class="pl-pds">"</span>rotationAngle<span class="pl-pds">"</span></span>,<span class="pl-c1">0</span>);<span class="pl-c"><span class="pl-c">//</span>非Android 平台</span></pre></div>
+<p><strong>注 4</strong>：判断道具是否结束，需要客户端主动查询道具的状态：</p>
+<div class="highlight highlight-source-c"><pre>var ret1 = fuItemGetParamd(<span class="pl-c1">1</span>,<span class="pl-s"><span class="pl-pds">"</span>hasFinish<span class="pl-pds">"</span></span>);<span class="pl-c"><span class="pl-c">//</span>是否有（仅活跃一次）的元素已经结束了</span>
+var ret2 = fuItemGetParamd(<span class="pl-c1">1</span>, <span class="pl-s"><span class="pl-pds">"</span>allFinish<span class="pl-pds">"</span></span>);<span class="pl-c"><span class="pl-c">//</span>是否 全部的（仅活跃一次）的元素已经结束了</span>
+console.log(ret1, ret2);</pre></div>
 <ul>
 <li>
 <strong>横屏支持</strong>：<br>
@@ -1032,12 +1020,14 @@ eg.
 在预览区，点击鼠标右键，在弹出框中选择横屏预览。<br>
 <strong>注</strong>：一旦预览框选择对应的预览模式后，跟预览框模式不一样的全屏元素将不显示，仅仅是不显示，切换模式后将重新显示，打包正常。</li>
 </ul>
-<p><strong>注</strong>：程序使用时，在加载道具后，默认竖屏模式，但需要切换横屏时，需要调用代码</p>
+<p><strong>注</strong>：程序使用时，在加载道具后，默认竖屏模式，但需要切换横屏时，需要调用代码,</p>
 <div class="highlight highlight-source-c"><pre><span class="pl-en">fuItemSetParamd</span>(item_id, <span class="pl-s"><span class="pl-pds">"</span>isLandscape<span class="pl-pds">"</span></span>,<span class="pl-c1">1</span>);     <span class="pl-c"><span class="pl-c">//</span>第一个参数为bundleid，最后参数 0-竖屏 ，1-横屏。</span></pre></div>
-<p>正视图/左视图/自由视图预览：<br>
-<a href="./img/henpin1.png" target="_blank"><img src="./img/henpin1.png" alt="test" style="max-width:100%;"></a></p>
-<p>FUEditor中实时预览：<br>
-<a href="./img/henpin2.png" target="_blank"><img src="./img/henpin2.png" alt="test" style="max-width:100%;"></a></p>
+<p>上述 <strong>isLandscape</strong> 参数只是切换纹理图，如果旋转方向不对，需要再调用下面代码，设置rotationTexAngle，该参数仅旋转纹理图片：</p>
+<div class="highlight highlight-source-c"><pre><span class="pl-en">fuItemSetParamd</span>(item_id, <span class="pl-s"><span class="pl-pds">"</span>rotationTexAngle<span class="pl-pds">"</span></span>,<span class="pl-c1">90</span>);     <span class="pl-c"><span class="pl-c">//</span>逆时针旋转90度</span>
+<span class="pl-en">fuItemSetParamd</span>(item_id, <span class="pl-s"><span class="pl-pds">"</span>rotationTexAngle<span class="pl-pds">"</span></span>,<span class="pl-c1">180</span>);     <span class="pl-c"><span class="pl-c">//</span>逆时针旋转90度</span>
+<span class="pl-en">fuItemSetParamd</span>(item_id, <span class="pl-s"><span class="pl-pds">"</span>rotationTexAngle<span class="pl-pds">"</span></span>,<span class="pl-c1">270</span>);     <span class="pl-c"><span class="pl-c">//</span>逆时针旋转90度</span>
+<span class="pl-en">fuItemSetParamd</span>(item_id, <span class="pl-s"><span class="pl-pds">"</span>rotationTexAngle<span class="pl-pds">"</span></span>,<span class="pl-c1">360</span>);     <span class="pl-c"><span class="pl-c">//</span>逆时针旋转90度</span>
+<span class="pl-en">fuItemSetParamd</span>(item_id, <span class="pl-s"><span class="pl-pds">"</span>rotationTexAngle<span class="pl-pds">"</span></span>,-<span class="pl-c1">90</span>);     <span class="pl-c"><span class="pl-c">//</span>顺时针旋转90度</span></pre></div>
 <h4>
 <a id="user-content-23-2d动画逻辑" class="anchor" href="#23-2d%E5%8A%A8%E7%94%BB%E9%80%BB%E8%BE%91" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>2.3 2D动画逻辑</h4>
 <p>单个元素，表示道具包中可编辑的最小单元。以下按照"<strong>触发开始</strong>"不同类型分类，描述各种不同条件下的动画逻辑。</p>
@@ -1260,6 +1250,12 @@ eg.
 <li>"TexFPS"：贴图动画的帧率，需要子部件的 tex_albedo 选择成动画帧 xxx_00000.png, xxx_00001.png ...</li>
 <li>"L1Intensity": 主光的强度，用对数调还是为了方便</li>
 <li>"alphaThreshold"：半透明算法阈值，设为1.0适合普通简单的半透明物体，设为0.5适合头发。</li>
+<li>"is_fixpos": 是否固定位置,不跟随人脸运动，固定位置如下fixed_x/y/z。</li>
+<li>"fixed_x":在没有人脸的时候的固定位置 ,x.</li>
+<li>"fixed_y":在没有人脸的时候的固定位置 ,y.</li>
+<li>"fixed_z":在没有人脸的时候的固定位置 ,z,z 向里，越大越远.</li>
+<li>"isnofacerender":在没有人脸的时候是否绘制, 如果绘制，那么已上面的点为固定点。</li>
+<li>"rot_weight":控制旋转的幅度，rot_weight=控制旋转的幅度，rot_weight=0不跟人头旋转。</li>
 </ul>
 </li>
 <li>部件材质参数：
@@ -1294,6 +1290,9 @@ eg.
 <li>1 当实时预览未开启时，这时调整参数是看不到直接的结果</li>
 <li>2 在加载完模型，并调整好位置了之后，可以"打包bundle",并开启实时预览窗口，这个时候，再进行参数调整时，将能够实时的看到调整的结果，最终调整完时，需要重新"打包bundle",确保调节好的参数能够打包到bundle里面。</li>
 </ul>
+<h5>
+<a id="user-content-421-材质复制粘贴" class="anchor" href="#421-%E6%9D%90%E8%B4%A8%E5%A4%8D%E5%88%B6%E7%B2%98%E8%B4%B4" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>4.2.1 材质复制粘贴</h5>
+<p>部件材质参数支持拷贝粘贴，具体做法是在具体部件的材质列别上点击右键，选择“复制全部参数”，然后到另一个部件上，选择“粘贴全部参数”，实现全部全部材质信息的拷贝。需要注意的是：复制和粘贴的过程，tex_albedo等贴图材质信息也会复制，如果不是使用相同的贴图，那么复制粘贴后，需要重新设置贴图信息。</p>
 <h4>
 <a id="user-content-43-贴图动画" class="anchor" href="#43-%E8%B4%B4%E5%9B%BE%E5%8A%A8%E7%94%BB" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>4.3 贴图动画</h4>
 <p>FUEditor 3D道具支持循环贴图动画，类似于2D贴纸动画，可以创建一些贴合脸部的3D模型，并使用贴纸动画，使得贴纸动画更具立体感。<br>
@@ -1311,6 +1310,10 @@ eg.
 </ul>
 </li>
 </ul>
+<h4>
+<a id="user-content-43-3d道具水平翻转" class="anchor" href="#43-3d%E9%81%93%E5%85%B7%E6%B0%B4%E5%B9%B3%E7%BF%BB%E8%BD%AC" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>4.3 3D道具水平翻转</h4>
+<p>当需要对3D道具进行水平翻转时，需要在客户端调用如下代码：</p>
+<div class="highlight highlight-source-c"><pre><span class="pl-en">fuItemSetParamd</span>(<span class="pl-c1">2</span>,<span class="pl-s"><span class="pl-pds">'</span>is3DFlipH<span class="pl-pds">'</span></span>,<span class="pl-c1">1</span>);</pre></div>
 <h2>
 <a id="user-content-5-avatar制作" class="anchor" href="#5-avatar%E5%88%B6%E4%BD%9C" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>5. Avatar制作</h2>
 <p>Avatar指的是3D模型，且脸部有跟Nama SDK一致的<a href="#8-">Blendshape/Morpher</a>，能够被Nama SDK驱动，进行脸部动画跟踪的模型。</p>
@@ -1356,7 +1359,13 @@ eg.
 <a id="user-content-9-高级功能自定义动画脚本" class="anchor" href="#9-%E9%AB%98%E7%BA%A7%E5%8A%9F%E8%83%BD%E8%87%AA%E5%AE%9A%E4%B9%89%E5%8A%A8%E7%94%BB%E8%84%9A%E6%9C%AC" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>9. 高级功能自定义动画脚本</h2>
 <p>编辑完道具后，选择"测试"并点击"打包bundle"<a href="./img/debug.png" target="_blank"><img src="./img/debug.png" alt="test" style="max-width:100%;"></a>，FUEditor开始打包测试用的bundle，并且，会在"<em>out</em>"目录下生成待打包的资源，包括script.js。script.js是控制道具动画的逻辑。可以通过修改script.js能高度自定义道具动画。当需要进行脚本修改，或者添加其他资源文件时。可以在项目的"<em>fcopy</em>"中放置需要添加的文件，以后每次打包(测试/发布)时，FUEditor会主动将"<em>fcopy</em>"目录下的文件拷贝或者覆盖到"<em>out</em>"目录中，并最终打包到bundle内。</p>
 <h2>
-<a id="user-content-10-常用术语解释" class="anchor" href="#10-%E5%B8%B8%E7%94%A8%E6%9C%AF%E8%AF%AD%E8%A7%A3%E9%87%8A" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>10. 常用术语解释</h2>
+<a id="user-content-10-工具" class="anchor" href="#10-%E5%B7%A5%E5%85%B7" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>10. 工具</h2>
+<ul>
+<li>
+<strong>表情夸张转换</strong>：将旧avatar数据，转换为新avatar数据，保证在关闭表情系数限制后，avatar混合表情正确。点击菜单栏"<em>工具</em>"，点击"<em>表情夸张转换</em>"，选择旧bundle，在自动转换后，将使用测试证书自动打包，点击刷新按钮可以看到效果。确认无误，请自行发布打包。</li>
+</ul>
+<h2>
+<a id="user-content-11-常用术语解释" class="anchor" href="#11-%E5%B8%B8%E7%94%A8%E6%9C%AF%E8%AF%AD%E8%A7%A3%E9%87%8A" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>11. 常用术语解释</h2>
 <ul>
 <li>
 <strong>道具项目</strong>：表示用户创建的每一个道具工程，项目存放在 <em>FUEditor/Projects/项目名/</em> 目录下。</li>

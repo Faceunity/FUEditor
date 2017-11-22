@@ -1,0 +1,67 @@
+//called by pack_qtan.jc
+(function(){
+	GL_BYTE=0x1400
+	GL_UNSIGNED_BYTE=0x1401
+	GL_SHORT=0x1402
+	GL_UNSIGNED_SHORT=0x1403
+	GL_INT=0x1404
+	GL_UNSIGNED_INT=0x1405
+	GL_FLOAT=0x1406
+	GL_DOUBLE=0x140A
+	GL_2_BYTES=0x1407
+	GL_3_BYTES=0x1408
+	GL_4_BYTES=0x1409
+	GL_HALF_FLOAT=0x140B
+	GL_HALF_FLOAT_OES=0x8D61
+	
+	return JSON.stringify({
+		body_rigged:{
+			static:[
+				{name:'P_sgn',size:4,type:GL_SHORT,normalized:1,stride:36,offset:0},
+				{name:'Qtangent',size:4,type:GL_SHORT,normalized:1,stride:36,offset:8},
+				{name:'st',size:2,type:GL_HALF_FLOAT,normalized:0,stride:36,offset:16},
+				{name:'SKEL0',size:4,type:GL_UNSIGNED_BYTE,normalized:0,stride:36,offset:20},
+				{name:'SKEL1',size:4,type:GL_UNSIGNED_BYTE,normalized:0,stride:36,offset:24},
+				{name:'WEIGHT0',size:4,type:GL_UNSIGNED_BYTE,normalized:1,stride:36,offset:28},
+				{name:'WEIGHT1',size:4,type:GL_UNSIGNED_BYTE,normalized:1,stride:36,offset:32},
+			],
+			dynamic:[],
+		},
+		joint_bound:{
+			static:[
+				{name:'P_sgn',size:4,type:GL_SHORT,normalized:1,stride:20,offset:0},
+				{name:'Qtangent',size:4,type:GL_SHORT,normalized:1,stride:20,offset:8},
+				{name:'st',size:2,type:GL_HALF_FLOAT,normalized:0,stride:20,offset:16},
+			],
+			dynamic:[],
+		},
+		joint_bound_hair:{
+			static:[
+				{name:'P_sgn',size:4,type:GL_SHORT,normalized:1,stride:28,offset:0},
+				{name:'Qtangent',size:4,type:GL_SHORT,normalized:1,stride:28,offset:8},
+				{name:'st',size:2,type:GL_HALF_FLOAT,normalized:0,stride:28,offset:16},
+				{name:'hairShading',size:3,type:GL_SHORT,normalized:1,stride:28,offset:20},
+			],
+			dynamic:[],
+		},
+		head_static:{
+			static:[
+				{name:'P',size:3,type:GL_SHORT,normalized:1,stride:20,offset:0},
+				{name:'weight_sgn',size:2,type:GL_UNSIGNED_BYTE,normalized:1,stride:20,offset:6},
+				{name:'Qtangent',size:4,type:GL_SHORT,normalized:1,stride:20,offset:8},
+				{name:'st',size:2,type:GL_HALF_FLOAT,normalized:0,stride:20,offset:16},
+			],
+			dynamic:[],
+		},
+		head_dynamic:{
+			static:[
+				{name:'st',size:2,type:GL_HALF_FLOAT,normalized:0,stride:4,offset:0},
+			],
+			dynamic:[
+				{name:'P',size:3,type:GL_SHORT,normalized:1,stride:16,offset:0},
+				{name:'weight_sgn',size:2,type:GL_UNSIGNED_BYTE,normalized:1,stride:16,offset:6},
+				{name:'Qtangent',size:4,type:GL_SHORT,normalized:1,stride:16,offset:8},
+			],
+		},
+	});
+})();
