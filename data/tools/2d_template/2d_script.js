@@ -15,7 +15,7 @@
 	var GL_CONSTANT_ALPHA=0x8003;
 	var GL_ONE_MINUS_CONSTANT_ALPHA=0x8004;
 	/////////////////////////util
-	isActionTriggered=function (actionname, params){
+	var isActionTriggered=function (actionname, params){
 		if(params.expression==undefined || params.rotation==undefined)return false;
 		switch (actionname){
 			//#action
@@ -88,18 +88,18 @@
 		}
 	}
 	
-	deepCopy =function(p, c){
+	var deepCopy =function(p, c){
 		var c = c || {};
-　　　　for (var i in p) {
-　　　　　　if (typeof p[i] === 'object') {
-　　　　　　　　c[i] = (p[i].constructor === Array) ? [] : {};
-　　　　　　　　deepCopy(p[i], c[i]);
-　　　　　　} else {
-　　　　　　　　　c[i] = p[i];
-　　　　　　}
-　　　　}
-　　　　return c;
-　　}
+		for (var i in p) {
+			if (typeof p[i] === 'object') {
+				c[i] = (p[i].constructor === Array) ? [] : {};
+				deepCopy(p[i], c[i]);
+			} else {
+				c[i] = p[i];
+			}
+		}
+		return c;
+	}
 	//define Mesh for render objects
 	//constructor Mesh, board for 2d,drawcall for 3d,
 	var Mesh = function(board, drawcall){
@@ -446,6 +446,7 @@
 	if(FaceUnity.m_platform && FaceUnity.m_platform=="android"){
 		g_params.isAndroid=1;
 	}
+	var now = Date.now();
 	////////////////////////////////////
 	return {
 		CalRef:calTriggerNextNodesRef,

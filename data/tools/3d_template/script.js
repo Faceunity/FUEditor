@@ -1,8 +1,9 @@
-(function(){
+//#Current
+(function () {
 	var g_items = [];
 	var item2ds;
 	var item3ds;
-	const require=function(fn){
+	var require=function(fn){
 		var jsstr = FaceUnity.ReadFromCurrentItem(fn);
 		if(jsstr == undefined){
 			console.log(fn,"is not exist");
@@ -13,8 +14,8 @@
 	};
 	var itemname = "dummy";
 	try{
-		item2ds=require("2d_script.js");
-		item3ds=require("3d_script.js");
+	    item2ds = require("2d_script.js");
+		item3ds = require("3d_script.js");
 		
 		if(item3ds!=undefined){
 			g_items.push(item3ds);
@@ -25,7 +26,7 @@
 			itemname = item2ds.name;
 		}
 		if(item2ds && item2ds.CalRef && item3ds && item3ds.meshlst)item2ds.CalRef(item3ds.meshlst);
-		if(item3ds && item3ds.CalRef && item2ds && item2ds.meshlst)item3ds.CalRef(item2ds.meshlst);
+		if (item3ds && item3ds.CalRef && item2ds && item2ds.meshlst) item3ds.CalRef(item2ds.meshlst);
 	}catch(err){
 		console.log(err.stack);
 	}
@@ -33,7 +34,7 @@
 	var faces=[];
 	return {
 		SetParam:function(name,value){
-			try{
+		    try {
 				var respone = false;
 				for(var i in g_items){
 					var ret = g_items[i].SetParam(name,value);

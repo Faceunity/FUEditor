@@ -48,15 +48,24 @@
 	//半透明算法阈值，设为1.0适合普通简单的半透明物体，设为0.5适合头发
 	//@gparam alphaThreshold {"type":"edit","default_value":"1.0"}
 	//是否固定位置,不跟随人脸运动，固定位置如下fixed_x/y/z
-	//@gparam is_fixpos {"type":"slider","min":0,"max":1,"default_value":0}
 	//在没有人脸的时候的固定位置
+	//@gparam is_fix_x {"type":"slider","min":0,"max":1,"default_value":0}
+	//@gparam is_fix_y {"type":"slider","min":0,"max":1,"default_value":0}
+	//@gparam is_fix_z {"type":"slider","min":0,"max":1,"default_value":0}
 	//@gparam fixed_x {"type":"slider","min":-600,"max":600,"default_value":0}
 	//@gparam fixed_y {"type":"slider","min":-600,"max":600,"default_value":0}
-	//@gparam fixed_z {"type":"slider","min":0,"max":3000,"default_value":350}
+	//@gparam fixed_z {"type":"slider","min":0,"max":2000,"default_value":350}
 	//在没有人脸的时候是否绘制
 	//@gparam isnofacerender {"type":"slider","min":0,"max":1,"default_value":0}
+	//@gparam fixed_nx {"type":"slider","min":-600,"max":600,"default_value":0}
+	//@gparam fixed_ny {"type":"slider","min":-600,"max":600,"default_value":0}
+	//@gparam fixed_nz {"type":"slider","min":0,"max":2000,"default_value":350}
+	
+	//@gparam use_fov {"type":"slider","min":0,"max":1,"default_value":0}
+	//@gparam camera_fov {"type":"slider","min":5,"max":90,"default_value":20}
 	//控制旋转的幅度，rot_weight=1完全按照人头旋转，rot_weight=0不跟人头旋转
-	//@gparam rot_weight {"type":"slider","min":0,"max":1,"default_value":1}
+	//@gparam rot_weight {"type":"slider","min":0,"max":1,"default_value":1}	
+	//@gparam expr_clamp {"type":"slider","min":0,"max":1,"default_value":0}	
 	///////////////////////////
 	//以下是材质参数
 	/*物体的类型,一是镂空,[0,0.25]；
@@ -118,7 +127,7 @@
 	"材质名"和blendshape.drawcalls[i].name是一一对应的。
 	*/
 	/////////////////////////util
-	isActionTriggered=function (actionname, params){
+	var isActionTriggered=function (actionname, params){
 		if(params.expression==undefined || params.rotation==undefined)return false;
 		switch (actionname){
 			//#action
@@ -127,7 +136,7 @@
 				break;
 		}
 	};
-	quaterionSlerp=function(p,q,t){
+	var quaterionSlerp=function(p,q,t){
 		var sum = 0;
 		for(var i =0;i<4;i++)sum+=p[i]*q[i];
 		var theta = Math.acos(sum);
@@ -148,9 +157,12 @@
 	var globals=JSON.parse(FaceUnity.ReadFromCurrentItem("globals.json")||"{}");
 	var materials_json=JSON.parse(FaceUnity.ReadFromCurrentItem("materials.json")||"{}");
 	//下面是正常的三维道具绘制流程
-	var blendshape=FaceUnity.LoadBlendshape("avatar.json","avatar.bin");
 	var s_vert_shader=FaceUnity.ReadFromCurrentItem("3d_vert.glsl");
-	var s_frag_shader=FaceUnity.ReadFromCurrentItem("3d_frag.glsl");
+	var s_frag_shader = FaceUnity.ReadFromCurrentItem("3d_frag.glsl");
+
+    //骨骼动画相关
+	var a_vert_shader = FaceUnity.ReadFromCurrentItem("anim_dq_vert.glsl");
+	var fbxmeshs = JSON.parse(FaceUnity.ReadFromCurrentItem("meshes.json"));
 	
 	var bigtexjson = JSON.parse(FaceUnity.ReadFromCurrentItem("3d_bigtex_desc.json")||"{}");
 	var bigtexcnt = 0;
@@ -162,7 +174,7 @@
 		}
 	}
 	console.log("bigtexcnt",bigtexcnt);
-	now = Date.now();
+	var now = Date.now();
 	var expression=[]; for(var i=0; i<46; i++) expression.push(0);
 	var focal_length = 303.64581298828125;
 	//背景动画
@@ -191,6 +203,7 @@
 	var V=function(v0,v1){
 		return v0==undefined?v1:v0;
 	};
+	var Vs = function (v0, v1) { return v0 == undefined ? v1 : v0.slice(); };
 	/**
 	* \brief 根据欧拉角计算方向向量的辅助函数。用来帮助调节光源方向
 	* \param yaw 航向角
@@ -222,29 +235,6 @@
 		L1_color=CreateColor(V(globals.L1_R,1),V(globals.L1_G,1),V(globals.L1_B,1), V(globals.L1Intensity,-2));
 		//编辑器在改了贴图之后会自动把文件转换成webp拷贝到工作区里，但是并不会帮着调LoadTexture，所以这里要调一下
 		tex_light_probe=FaceUnity.LoadTexture(V(globals.tex_light_probe,"beach_1_4.jpg"),0,gl.CLAMP_TO_EDGE);
-		//因为用户可能什么参数都没设……obj导出的贴图也还是load一下吧
-		blendshape.drawcalls.forEach(function(dc){
-			if(dc.mat.tex&&!tex_map[dc.mat.tex]){
-				tex_map[dc.mat.tex]=FaceUnity.LoadTexture(dc.mat.tex);
-			}
-		});
-		//对每个物体
-		for(var sname in materials_json){
-			//看一下是不是改过材质
-			var mat=materials_json[sname];
-			if(typeof(mat)=='object'){
-				//然后在材质参数里面找tex_开头看着像贴图的
-				for(var skey in mat){
-					if(skey.match(/^tex_.*/)){
-						//如果没有load过，就不管三七二十一load一下再说
-						var fn=mat[skey];
-						if(!tex_map[fn]){
-							tex_map[fn]=FaceUnity.LoadTexture(fn);
-						}
-					}
-				}
-			}
-		}
 	};
 	//就算在没有编辑器的时候，总也还是要初始化一次的
 	ReloadThingsForEditor();
@@ -275,22 +265,23 @@
 		}
 	}
 	
-	deepCopy =function(p, c){
+	var deepCopy =function(p, c){
 		var c = c || {};
-　　　　for (var i in p) {
-　　　　　　if (typeof p[i] === 'object') {
-　　　　　　　　c[i] = (p[i].constructor === Array) ? [] : {};
-　　　　　　　　deepCopy(p[i], c[i]);
-　　　　　　} else {
-　　　　　　　　　c[i] = p[i];
-　　　　　　}
-　　　　}
-　　　　return c;
-　　}
+		for (var i in p) {
+			if (typeof p[i] === 'object') {
+				c[i] = (p[i].constructor === Array) ? [] : {};
+				deepCopy(p[i], c[i]);
+			} else {
+				c[i] = p[i];
+			}
+		}
+		return c;
+	}
 
 	var Mesh = function(dc,anim){
-		deepCopy(dc,this);
-		deepCopy(anim,this);
+	    deepCopy(dc, this);
+	    if (anim != null && anim != undefined)
+	        deepCopy(anim, this);
 		this.itemtype=3;
 		if(this.betriggered==undefined)this.isActive = true;
 		this.has_tex_albedo_frames = true;
@@ -309,7 +300,7 @@
 			if(this.triggerstart=="alwaysrender")this.isActive = true;
 		}
 	}
-	Mesh.prototype.stopThis = function(now){
+	Mesh.prototype.stopThis = function(now, animCounter){
 		console.log("stopThis:",this.name);
 		if(!this.triggered)return;
 		this.triggered =0;
@@ -321,11 +312,11 @@
 		}	
 		if(this.isactiveonce==1){
 			this.isFinished=1;
-			AnimCounter.finish(this.name);
+			animCounter.finish(this.name);
 		}
 	}
-	Mesh.prototype.stop = function(now){
-		this.stopThis(now);
+	Mesh.prototype.stop = function (now, animCounter) {
+	    this.stopThis(now, animCounter);
 	}
 	Mesh.prototype.activateNext = function(){
 		if(this.triggerNextNodesRef==undefined || this.triggerNextNodesRef.length==0)return;
@@ -343,7 +334,7 @@
 		this.isActive = true;
 		console.log("thriggerThis3d",this.name);
 	}
-	Mesh.prototype.triggerStartEvent=function(params,now,isNoneFace){
+	Mesh.prototype.triggerStartEvent = function (params, now, isNoneFace) {
 		if(this.triggered || !this.isActive)return;
 		if((!isNoneFace && (this.triggerstart=="newface" || (this.triggerstart=="faceaction" && isActionTriggered(this.startaction,params))))
 			||(isNoneFace && this.triggerstart=="alwaysrender")){		 
@@ -354,11 +345,25 @@
 		var matex=(materials_json[this.name]||{});
 		
 		var rotation = params.rotation.slice();
+		
 		if(V(globals.rot_weight,1.0) < 0.05){
 			rotation = [0,0,0,1];
 		}else if(V(globals.rot_weight,1.0) < 0.95){
-			rotation = quaterionSlerp([0,0,0,1], rotation, V(globals.rot_weight,1.0));
+			var delta = [-rotation[0],-rotation[1],-rotation[2],1.0-rotation[3]];
+			var w=1.0 - globals.rot_weight;
+			rotation=[w*delta[0]+rotation[0],w*delta[1]+rotation[1],w*delta[2]+rotation[2],w*delta[3]+rotation[3]];
 		}
+		/*
+		if(V(globals.rot_weight,1.0) < 0.01){
+			rotation = [0,0,0,1];
+		}else if(V(globals.rot_weight,1.0) < 0.99){
+			if(Math.abs(rotation[0])<0.00001 && Math.abs(rotation[1])<0.00001 && Math.abs(rotation[2])<0.00001 && Math.abs(rotation[3] - 1.0)<0.00001){
+				rotation = [0,0,0,1];
+			}else{
+				rotation = quaterionSlerp([0,0,0,1], rotation, V(globals.rot_weight,1.0)).slice();
+			}
+		}
+		*/
 		
 		var mat=FaceUnity.CreateViewMatrix(
 			[-rotation[0],-rotation[1],-rotation[2],rotation[3]],
@@ -399,188 +404,396 @@
 			if(this.force_frame_id!=undefined && this.force_frame_id>=0)this.frame_id = this.force_frame_id;
 		}
 	}
-	Mesh.prototype.triggerEndEvent = function(params,now,isNoneFace){
+	Mesh.prototype.triggerEndEvent = function (params, now, isNoneFace, animCounter) {
 		if(this.triggered!=1)return;
 		if(!isNoneFace){
 			if(this.triggerend=="newface"){
-				this.stop(now);return;
+			    this.stop(now, animCounter); return;
 			}
 			if(/*action end*/this.triggerend=="faceaction" && isActionTriggered(this.endaction,params)){
-				this.stop(now);
+			    this.stop(now, animCounter);
 			}
 			if(this.triggerstart=="alwaysrender")return;
 			
 			if(/*action keep*/this.triggerstart=="faceaction" && this.needkeepfaceaction== 1 && !isActionTriggered(this.startaction,params)){
-				this.stop(now);
+			    this.stop(now, animCounter);
 			}
 		}else{
 			if(this.triggerstart!="alwaysrender")return;
 		}
 		
 		if(/*loop end*/this.looptype=="loopcnt" && ((this.frame_id +1) >= this.tex_albedo_frames.length * this.loopcnt)){
-			this.stop(now);
+		    this.stop(now, animCounter);
 		}
 	}
 	
-	Mesh.prototype.renderEvent = function(params,pass,shader){
-		if(!this.triggered || !this.isActive)return;
+	Mesh.prototype.renderEvent = function (blendshape, params, pass, shader, animation, fid) {
+	    if (!this.triggered || !this.isActive) return;
 		var matex=(materials_json[this.name]||{});
 		if(this.has_tex_albedo_frames==true){
-			albedo = bigtex[this.tex_albedo_frames[this.frame_id % this.tex_albedo_frames.length].bigtexidx];
-			lbrt = this.tex_albedo_frames[this.frame_id % this.tex_albedo_frames.length].lbrt;
+			var albedo = bigtex[this.tex_albedo_frames[this.frame_id % this.tex_albedo_frames.length].bigtexidx];
+			var lbrt = this.tex_albedo_frames[this.frame_id % this.tex_albedo_frames.length].lbrt;
 		}else{
-			albedo = tex_map[V(matex.tex_albedo,this.mat.tex)];
-			lbrt = [0.0,0.0,1.0,1.0];
+			var albedo = tex_map[V(matex.tex_albedo,this.mat.tex)];
+			var lbrt = [0.0,0.0,1.0,1.0];
 		}
-		FaceUnity.RenderBlendshapeComponent_new(blendshape,this,s_vert_shader,shader,{
-			scales:[this.scales[0]*SCALE,this.scales[1]*SCALE,-this.scales[2]*SCALE],
-			mat_view:this.mat,
-			mat_cam:this.mat_cam,
-			quatR1:[this.rotation[0],this.rotation[1],this.rotation[2],this.rotation[3]],
-			quatT1:[0,0,0],//[params.translation[0],params.translation[1],params.translation[2],1],
-			quatR2:[0,0,0,1],
-			quatT2:[0,0,0],//[mat2[12]-center[0],mat2[13]-center[1],mat2[14]-center[2]],
-			obj_type:V(matex.obj_type, 0.3),
-			mat_proj:FaceUnity.CreateProjectionMatrix(),
-			tex_albedo:albedo,
-			lbrt:lbrt,
-			tex_normal:tex_map[V(matex.tex_normal,"grey.png")],
-			tex_smoothness:tex_map[V(matex.tex_smoothness,"grey.png")],
-			normal_strength:V(matex.normal_strength,0.0),
-			tex_light_probe:tex_light_probe,
-			envmap_shift:V(globals.envmap_shift,0.75),
-			envmap_fov:V(globals.envmap_fov,1.0),
-			Ka:V(matex.Ka,0.0), Kd:V(matex.Kd,0.3), Ks:V(matex.Ks,0.2), Kr:V(matex.Kr,0.0),
-			roughness:V(matex.roughness,0.5),
-			has_tex_smoothness:V(matex.has_tex_smoothness,0.0),
-			is_hair:pass>0,
-			ior:V(matex.ior,1.33),
-			F0:V(matex.F0,1.0),
-			L0_dir:L0_dir,L0_color:L0_color,
-			L1_dir:L1_dir,L1_color:L1_color,
-			isFlipH:g_params['is3DFlipH'],
-			weightOffset:g_params['weightOffset'],
-			//L2_dir:[0.25,0,-1],L2_color:[2.0,2.0,2.0],
-		},pass);
-	}
-	
-	
-	
-	var last_state=0;
-	var meshlst = new Array();
-	AnimCounter.total=0;
-	for(var i = 0;i<blendshape.drawcalls.length;i++){
-		var nmesh = new Mesh(blendshape.drawcalls[i],materials_json[blendshape.drawcalls[i].name].anim);
-		meshlst.push(nmesh);
-		meshlst[nmesh.name]=nmesh;
-		if(nmesh.isactiveonce)AnimCounter.total++;
-	}
-	var facehack_mesh_ref_lst; 
-	var transparent_mesh_ref_lst; 
-	var opaque_mesh_ref_lst;
-	var reExtractSubLst = function(){
-		facehack_mesh_ref_lst = meshlst.filter(function(mesh){return V((materials_json[mesh.name]||{}).obj_type,0)<=0.25;});
-		transparent_mesh_ref_lst =  meshlst.filter(function(mesh){return V((materials_json[mesh.name]||{}).is_hair,0)>0.5;});
-		opaque_mesh_ref_lst = meshlst.filter(function(mesh){
-			return (V((materials_json[mesh.name]||{}).obj_type,0)>0.25)
-				&& (V((materials_json[mesh.name]||{}).is_hair,0)<0.5);
-		});
-	}
-	reExtractSubLst();
-	/*
-	for(var i = 0;i<facehack_mesh_ref_lst.length;i++){
-		console.log("=========facehack:",facehack_mesh_ref_lst[i].name);
-	}
-	for(var i = 0;i<transparent_mesh_ref_lst.length;i++){
-		console.log("+++++++++transparent:",transparent_mesh_ref_lst[i].name);
-	}
-	for(var i = 0;i<opaque_mesh_ref_lst.length;i++){
-		console.log("#########opaque:",opaque_mesh_ref_lst[i].name);
-	}
-	*/
-	var calTriggerNextNodesRef=function(meshlst_2d){
-		for(var i = 0;i<meshlst.length;i++){
-			var nmesh = meshlst[i];
-			if(nmesh.triggerNextNodes.length!=0)nmesh.triggerNextNodesRef = new Array();
-			for(var j = 0;j<nmesh.triggerNextNodes.length;j++){
-				var mesh3dref = meshlst[nmesh.triggerNextNodes[j]];
-				if(mesh3dref){nmesh.triggerNextNodesRef.push(mesh3dref);}
-				else if(meshlst_2d){
-					var mesh2dref = meshlst_2d[nmesh.triggerNextNodes[j]];
-					if(mesh2dref){nmesh.triggerNextNodesRef.push(mesh2dref);}
-				}
-			}
+		var shaderUse = s_vert_shader;
+		if(V(globals.use_fov,0)>0.5){
+			var mat_proj = FaceUnity.CreateProjectionMatrix_FOV(V(globals.camera_fov,20));
+		}else{
+			var mat_proj = FaceUnity.CreateProjectionMatrix();
 		}
-	}
-	
-	var DoRender = function(params,pass){
-		try{
-			//for tex animation
-			now = Date.now();
-			if(last_state==0){
-				for(var i = 0; i < meshlst.length; i++)meshlst[i].switchState(last_state,1);
-				last_state = 1;
-			}
-			var alphaThreshold = parseFloat(V(globals.alphaThreshold, "1.0"));
-			var shader=s_frag_shader+"vec4 shader_main_OIT(){vec4 c=shader_main();return vec4(c.rgb,1.0);}";
-			//update for all mesh
-			meshlst.forEach(function(mesh){
-				mesh.triggerStartEvent(params,now,false);
-				mesh.updateEvent(params,now);
-			});
-			if(pass==1){
-				FaceUnity.ComputeBlendshapeGeometry(blendshape,params);
-				//for facehack
-				gl.enable(gl.DEPTH_TEST);
-				gl.depthFunc(gl.LEQUAL);
-				gl.enable(gl.BLEND);
-				gl.blendFunc(gl.ZERO,gl.ONE);
-				facehack_mesh_ref_lst.forEach(function(mesh){mesh.renderEvent(params,-1,shader);});
-				gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
-			
-			}else if(pass ==2){
-				//for opaque object
-				gl.enable(gl.DEPTH_TEST);
-				gl.depthFunc(gl.LEQUAL);
-				gl.depthMask(true);
-				gl.disable(gl.BLEND);
-				opaque_mesh_ref_lst.forEach(function(mesh){mesh.renderEvent(params,0,shader);});
-				
-				//for transport object, alpha cut pass one
-				gl.enable(gl.DEPTH_TEST);
-				gl.depthMask(true);
-				shader=s_frag_shader+"vec4 shader_main_OIT(){vec4 c=shader_main();if (c.a>=" + alphaThreshold.toFixed(3) + ") return vec4(c.rgb,1.0);else discard;}";
-				transparent_mesh_ref_lst.forEach(function(mesh){mesh.renderEvent(params,1,shader);});
-				
-				//for transport object, alpha cut pass two
-				gl.enable(gl.DEPTH_TEST);
-				gl.depthMask(false);
-				gl.enable(gl.BLEND);
-				gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ZERO);
-				shader=s_frag_shader+"vec4 shader_main_OIT(){vec4 c=shader_main();if (c.a<=" + alphaThreshold.toFixed(3) + ") return vec4(c.rgb,c.a*" + (1.0/alphaThreshold).toFixed(3) + ");else return vec4(c.rgb,0.0);}";
-				transparent_mesh_ref_lst.forEach(function(mesh){mesh.renderEvent(params,2,shader);});
-						
-				gl.depthMask(true);
-				gl.disable(gl.DEPTH_TEST);
-				
-				meshlst.forEach(function(mesh){mesh.triggerEndEvent(params,now,false);});
-			}
-		}catch(err){
-			console.log(err.stack)
+		var shaderParams = {
+		    scales: [this.scales[0] * SCALE, this.scales[1] * SCALE, this.scales[2] * SCALE],
+		    mat_view: this.mat,
+		    mat_cam: this.mat_cam,
+		    quatR1:[this.rotation[0],this.rotation[1],this.rotation[2],this.rotation[3]],
+		    quatT1: [0, 0, 0],//[params.translation[0],params.translation[1],params.translation[2],1],
+		    quatR2: [0, 0, 0, 1],
+		    quatT2: [0, 0, 0],//[mat2[12]-center[0],mat2[13]-center[1],mat2[14]-center[2]],
+		    obj_type: V(matex.obj_type, 0.3),
+		    mat_proj: mat_proj,
+		    tex_albedo: albedo,
+		    lbrt: lbrt,
+		    tex_normal: tex_map[V(matex.tex_normal, "grey.png")],
+		    tex_smoothness: tex_map[V(matex.tex_smoothness, "grey.png")],
+		    normal_strength: V(matex.normal_strength, 0.0),
+		    tex_light_probe: tex_light_probe,
+		    envmap_shift: V(globals.envmap_shift, 0.75),
+		    envmap_fov: V(globals.envmap_fov, 1.0),
+		    Ka: V(matex.Ka, 0.0), Kd: V(matex.Kd, 0.3), Ks: V(matex.Ks, 0.2), Kr: V(matex.Kr, 0.0),
+		    roughness: V(matex.roughness, 0.5),
+		    has_tex_smoothness: V(matex.has_tex_smoothness, 0.0),
+		    is_hair: pass > 0,
+		    ior: V(matex.ior, 1.33),
+		    F0: V(matex.F0, 1.0),
+		    L0_dir: L0_dir, L0_color: L0_color,
+		    L1_dir: L1_dir, L1_color: L1_color,
+		    isFlipH: g_params['is3DFlipH'],
+		    weightOffset: g_params['weightOffset'],
+		    //L2_dir:[0.25,0,-1],L2_color:[2.0,2.0,2.0],
+		};
+
+		var globalTranslation = Vs(FaceUnity.globalTranslation, [0, -98, 1243, 1]);
+		var globalRotationQuat = Vs(FaceUnity.globalRotationQuat, [0, 0, 0, 1]);
+
+		if (animation != null) {
+		    shaderUse = a_vert_shader;
+		    shaderParams.fid = fid;
+		    shaderParams.animating = animation.animating;
+		    shaderParams.tex_deform = animation.tex_deform;
+		    shaderParams.deform_width = animation.tex_deform_width;
+		    shaderParams.anim_head = animation.anim_head;
+		    shaderParams.rootBone = animation.root;
+		    //for test
+		    //shaderParams.skrootTrans = [0, 0, 0];
+		    //shaderParams.mat_view = FaceUnity.CreateViewMatrix(globalRotationQuat, globalTranslation);
+		    //shaderParams.mat_proj = FaceUnity.CreateProjectionMatrix_FOV(20, 0.1);
+		} else {
+		    shaderUse = s_vert_shader;
 		}
+		if (this.translate != null && this.translate != undefined &&
+            this.rotate != null && this.rotate != undefined &&
+            this.transform != null && this.transform != undefined) {
+		    shaderParams.trans_pos = this.translate;
+		    shaderParams.rot_mat1 = [this.rotate[0], this.rotate[1], this.rotate[2]];
+		    shaderParams.rot_mat2 = [this.rotate[3], this.rotate[4], this.rotate[5]];
+		    shaderParams.rot_mat3 = [this.rotate[6], this.rotate[7], this.rotate[8]];
+		    shaderParams.model_mat = this.transform;
+		} else {
+		    shaderParams.rot_mat1 = [1, 0, 0];
+		    shaderParams.rot_mat2 = [0, 1, 0];
+		    shaderParams.rot_mat3 = [0, 0, 1];
+		    shaderParams.trans_pos = [0, 0, 0];
+		    shaderParams.model_mat = [1, 0, 0, 0,
+                                      0, 1, 0, 0,
+                                      0, 0, 1, 0,
+                                      0, 0, 0, 1];
+		}
+		FaceUnity.RenderBlendshapeComponent_new(blendshape, this, shaderUse, shader, shaderParams, pass);
 	}
 
-	console.log("3d AnimCounter.total",AnimCounter.total);
+	//meshgroup
+	var MeshGroup = function (filename) {
+	    this.meshName = filename;
+	    this.blendshape = FaceUnity.LoadBlendshape(filename + ".json", filename + ".bin");
+	    this.meshlst = new Array();
+	    this.last_state = 0;
+	    this.facehack_mesh_ref_lst = null;
+	    this.transparent_mesh_ref_lst = null;
+	    this.opaque_mesh_ref_lst = null;
+	    this.AnimCounter = AnimCounter;
+
+	    this.ReloadThingsForEditor();
+	    this.pushBlendshape2Meshlst();
+	    this.reExtractSubLst();
+	}
+	MeshGroup.prototype.setDCHash = function () {
+	    this.blendshape.drawcalls.forEach(function (dc) {
+	        dc.shader_hash_0 = undefined;
+	        dc.shader_hash_1 = undefined;
+	        dc.shader_hash_2 = undefined;
+	    });
+	}
+	MeshGroup.prototype.ReloadThingsForEditor = function () {
+	    //因为用户可能什么参数都没设……obj导出的贴图也还是load一下吧
+	    this.blendshape.drawcalls.forEach(function (dc) {
+	        if (dc.mat.tex && !tex_map[dc.mat.tex]) {
+	            tex_map[dc.mat.tex] = FaceUnity.LoadTexture(dc.mat.tex);
+	        }
+	    });
+	    //对每个物体
+	    for (var sname in materials_json) {
+	        //看一下是不是改过材质
+	        var mat = materials_json[sname];
+	        if (typeof (mat) == 'object') {
+	            //然后在材质参数里面找tex_开头看着像贴图的
+	            for (var skey in mat) {
+	                if (skey.match(/^tex_.*/)) {
+	                    //如果没有load过，就不管三七二十一load一下再说
+	                    var fn = mat[skey];
+	                    if (!tex_map[fn]) {
+	                        tex_map[fn] = FaceUnity.LoadTexture(fn);
+	                    }
+	                }
+	            }
+	        }
+	    }
+	}
+	MeshGroup.prototype.reExtractSubLst = function () {
+	    this.facehack_mesh_ref_lst = this.meshlst.filter(function (mesh) { return V((materials_json[mesh.name] || {}).obj_type, 0) <= 0.25; });
+	    this.transparent_mesh_ref_lst = this.meshlst.filter(function (mesh) { return V((materials_json[mesh.name] || {}).is_hair, 0) > 0.5; });
+	    this.opaque_mesh_ref_lst = this.meshlst.filter(function (mesh) {
+	        return (V((materials_json[mesh.name] || {}).obj_type, 0) > 0.25)
+				&& (V((materials_json[mesh.name] || {}).is_hair, 0) < 0.5);
+	    });
+	}
+	MeshGroup.prototype.calTriggerNextNodesRef = function (meshlst_2d) {
+	    for (var i = 0; i < this.meshlst.length; i++) {
+	        var nmesh = this.meshlst[i];
+	        if (nmesh.triggerNextNodes.length != 0) nmesh.triggerNextNodesRef = new Array();
+	        for (var j = 0; j < nmesh.triggerNextNodes.length; j++) {
+	            var mesh3dref = this.meshlst[nmesh.triggerNextNodes[j]];
+	            if (mesh3dref) { nmesh.triggerNextNodesRef.push(mesh3dref); }
+	            else if (meshlst_2d) {
+	                var mesh2dref = meshlst_2d[nmesh.triggerNextNodes[j]];
+	                if (mesh2dref) { nmesh.triggerNextNodesRef.push(mesh2dref); }
+	            }
+	        }
+	    }
+	}
+	MeshGroup.prototype.pushBlendshape2Meshlst = function () {
+	    for (var i = 0; i < this.blendshape.drawcalls.length; i++) {
+	        var nmesh = new Mesh(this.blendshape.drawcalls[i], null);
+	        if (materials_json[this.blendshape.drawcalls[i].name] != null &&
+                materials_json[this.blendshape.drawcalls[i].name] != undefined)
+	            nmesh = new Mesh(this.blendshape.drawcalls[i], materials_json[this.blendshape.drawcalls[i].name].anim);
+	        this.meshlst.push(nmesh);
+	        this.meshlst[nmesh.name] = nmesh;
+	        if (nmesh.isactiveonce) this.AnimCounter.total++;
+	    }
+	}
+	MeshGroup.prototype.renderMesh = function (params, pass, animation, fid) {
+	    try {
+	        //for tex animation
+	        var now = Date.now();
+	        if (this.last_state == 0) {
+	            for (var i = 0; i < this.meshlst.length; i++) this.meshlst[i].switchState(this.last_state, 1);
+	            this.last_state = 1;
+	        }
+	        var alphaThreshold = parseFloat(V(globals.alphaThreshold, "1.0"));
+	        var shader = s_frag_shader + "vec4 shader_main_OIT(){vec4 c=shader_main();return vec4(c.rgb,1.0);}";
+	        var parent = this;
+	        //update for all mesh
+	        this.meshlst.forEach(function (mesh) {
+	            mesh.triggerStartEvent(params, now, false);
+	            mesh.updateEvent(params, now);
+	        });
+	        if (pass == 1) {
+	            FaceUnity.ComputeBlendshapeGeometry(this.blendshape, params);
+	            //for facehack
+	            gl.enable(gl.DEPTH_TEST);
+	            gl.depthFunc(gl.LEQUAL);
+	            gl.enable(gl.BLEND);
+	            gl.blendFunc(gl.ZERO, gl.ONE);
+	            this.facehack_mesh_ref_lst.forEach(function (mesh) { mesh.renderEvent(parent.blendshape, params, -1, shader, animation, fid); });
+	            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+	        } else if (pass == 2) {
+	            //for opaque object
+	            gl.enable(gl.DEPTH_TEST);
+	            gl.depthFunc(gl.LEQUAL);
+	            gl.depthMask(true);
+	            gl.disable(gl.BLEND);
+	            this.opaque_mesh_ref_lst.forEach(function (mesh) { mesh.renderEvent(parent.blendshape, params, 0, shader, animation, fid); });
+
+	            //for transport object, alpha cut pass one
+	            gl.enable(gl.DEPTH_TEST);
+	            gl.depthMask(true);
+	            shader = s_frag_shader + "vec4 shader_main_OIT(){vec4 c=shader_main();if (c.a>=" + alphaThreshold.toFixed(3) + ") return vec4(c.rgb,1.0);else discard;}";
+	            this.transparent_mesh_ref_lst.forEach(function (mesh) { mesh.renderEvent(parent.blendshape, params, 1, shader, animation, fid); });
+
+	            //for transport object, alpha cut pass two
+	            gl.enable(gl.DEPTH_TEST);
+	            gl.depthMask(false);
+	            gl.enable(gl.BLEND);
+	            gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ZERO);
+	            shader = s_frag_shader + "vec4 shader_main_OIT(){vec4 c=shader_main();if (c.a<=" + alphaThreshold.toFixed(3) + ") return vec4(c.rgb,c.a*" + (1.0 / alphaThreshold).toFixed(3) + ");else return vec4(c.rgb,0.0);}";
+	            this.transparent_mesh_ref_lst.forEach(function (mesh) { mesh.renderEvent(parent.blendshape, params, 2, shader, animation, fid); });
+
+	            gl.depthMask(true);
+	            gl.disable(gl.DEPTH_TEST);
+
+	            this.meshlst.forEach(function (mesh) { mesh.triggerEndEvent(params, now, false, parent.AnimCounter); });
+	        }
+	        FaceUnity.SimpleOITEnd();
+	    } catch (err) {
+	        console.log(err.stack)
+	    }
+	}
+
+    //animation & mesh
+	var AnimationMeshPair = function (meshFilename) {
+	    this.meshName = meshFilename;
+	    this.meshgroup = new MeshGroup(meshFilename);
+	    this.animation = null;
+
+	    this.initMeshAnimation = function () {
+	        if (this.animation != null) {
+	            this.animation.reset_anim_process(this.animation.anim_state);
+	            this.animation.animating = 1;
+	            this.animation.play_count = 0;
+	        }
+	    }
+	    this.calculate_anim_fid = function (frame_id) {
+	        return this.animation.animating ? this.animation.frame_id_callback(this.animation, frame_id) : 0;
+	    }
+	    this.update_animation = function(params) {
+	        if (this.animation.animating) this.animation.update_callback(this.animation, params);
+	    }
+	    this.DoRender = function (params, pass) {
+	        if (this.animation != null) {
+	            var frame_id = 0;
+	            if (frame_id == params.frame_id) return;
+	            frame_id = params.frame_id;
+	            var fid = 0;
+	            this.update_animation(params);
+	            this.meshgroup.renderMesh(params, pass, this.animation, fid);
+	        } else
+	            this.meshgroup.renderMesh(params, pass, null, 0);
+	    }
+	}
+
+	var AnimMeshs = { "avatar": new AnimationMeshPair("avatar") };
+	var fMeshs = fbxmeshs.meshes;
+	for (var i = 0; i < fMeshs.length; i++) {
+	    var meshName = fMeshs[i];
+	    AnimMeshs[meshName] = new AnimationMeshPair(meshName);
+	}
+
+	var animations = require("anim_dq_script.js");
+	var animlist = animations.Anims;
+	
+    //animations trigger
+	var UpdateAnimation = function (anim, params, noface) {
+	    if (anim != undefined && anim != null && "meshName" in anim) {
+	        var istriggerd = false;
+	        if (anim.triggerstart == "alwaysrender" && !anim.betriggered) {
+	            var pair = AnimMeshs[anim.meshName];
+	            if (pair.animation != anim) {
+	                istriggerd = true;
+	                anim.bind(pair);
+	            }
+	        } else if (((anim.triggerstart == "faceaction" && isActionTriggered(anim.startaction, params)) ||
+                    (anim.triggerstart == "newface")) && !noface &&
+                    (!anim.betriggered || anim.startaction == "null")) {
+	            var pair = AnimMeshs[anim.meshName];
+	            if (pair.animation != anim) {
+	                istriggerd = true;
+	                anim.bind(pair);
+	            }
+	        } else if (anim.triggerend == "faceaction" && isActionTriggered(anim.endaction, params)) {
+	            var pair = AnimMeshs[anim.meshName];
+	            if (pair.animation == anim) {
+	                istriggerd = true;
+	                anim.unbind(pair);
+	                TriggerNext(anim);
+	            }
+	        }
+	        if (anim.startaction != "null" && anim.needkeepfaceaction == 1 && !isActionTriggered(anim.startaction, params)) {
+	            var pair = AnimMeshs[anim.meshName];
+	            if (pair.animation == anim) {
+	                istriggerd = true;
+	                anim.unbind(pair);
+	                TriggerNext(anim);
+	            }
+	        }
+	        if (anim.looptype == "loopcnt" && anim.play_count >= anim.loopcnt) {
+	            var pair = AnimMeshs[anim.meshName];
+	            if (pair.animation == anim) {
+	                istriggerd = true;
+	                anim.unbind(pair);
+	                TriggerNext(anim);
+	            }
+	        } else if (anim.looptype == "loop1stay" && anim.play_count >= 1) {
+	            var pair = AnimMeshs[anim.meshName];
+	            if (pair.animation == anim) {
+	                istriggerd = true;
+	                anim.unbind(pair);
+	                TriggerNext(anim);
+	            }
+	        }
+	        if (anim.isactiveonce == 1 && anim.play_count >= 1) {
+	            var pair = AnimMeshs[anim.meshName];
+	            if (pair.animation == anim) {
+	                istriggerd = true;
+	                anim.unbind(pair);
+	                TriggerNext(anim);
+	            }
+	        }
+	        if (istriggerd) {
+	            var pair = AnimMeshs[anim.meshName];
+	            var meshgrp = pair.meshgroup;
+	            var meshlst = meshgrp.meshlst;
+	            for (var i = 0; i < meshlst.length; i++) {
+	                var mesh = meshlst[i];
+	                for (var j = 0; j < 4; j++) {
+	                    mesh["shader_hash_" + j] = undefined;
+	                }
+	            }
+	        }
+	    }
+	}
+
+	var TriggerNext = function (anim) {
+	    if (anim != null && anim != undefined) {
+	        var triggerList = anim.triggerNextNodes;
+	        if (triggerList.length <= 0) return;
+	        for (var i = 0; i < triggerList.length; i++) {
+	            var nextName = triggerList[i];
+	            var animNext = animlist[nextName];
+	            if (animNext != null && animNext != undefined) {
+	                var pair = AnimMeshs[animNext.meshName];
+	                if (pair.animation != animNext) {
+	                    animNext.bind(pair);
+	                }
+	            }
+	        }
+	    }
+	}
+
 	return {
-		CalRef:calTriggerNextNodesRef,
-		meshlst:meshlst,
-		animCounter:AnimCounter,
+	    CalRef:AnimMeshs["avatar"].meshgroup.calTriggerNextNodesRef,
+	    meshlst: AnimMeshs["avatar"].meshgroup.meshlst,
+		animCounter: AnimCounter,
 		//接下来就是道具对象的内容了
 		/// \brief 处理编辑器发起的参数修改
 		SetParam:function(name,value){
 			//特殊参数名'@refresh'表示“刷新一下”
 			if(name=='@refresh'){
-				ReloadThingsForEditor();
+			    ReloadThingsForEditor();
+			    for (var prop in AnimMeshs)
+			        AnimMeshs[prop].meshgroup.ReloadThingsForEditor();
 				return 1;
 			}
 			if(name=='is3DFlipH'){
@@ -603,12 +816,9 @@
 				}catch(err){console.log("non json 3d param");return undefined;}
 				if(desc.thing=="<global>"){
 					globals[desc.param]=value;
-					if (desc.param=="alphaThreshold"){
-						blendshape.drawcalls.forEach(function(dc){
-							dc.shader_hash_0=undefined;
-							dc.shader_hash_1=undefined;
-							dc.shader_hash_2=undefined;
-						});
+					if (desc.param == "alphaThreshold") {
+					    for (var prop in AnimMeshs)
+					        AnimMeshs[prop].meshgroup.setDCHash();
 					}
 					return 1;
 				}else{
@@ -618,7 +828,10 @@
 						return undefined;
 					}
 					dc[desc.param]=value;
-					if(desc.param=="obj_type" || desc.param=="is_hair")reExtractSubLst();
+					if (desc.param == "obj_type" || desc.param == "is_hair") {
+					    for (var prop in AnimMeshs)
+					        AnimMeshs[prop].meshgroup.reExtractSubLst();
+					}
 					return 1;
 				}
 			}catch(err){console.log(err.stack);}
@@ -627,8 +840,8 @@
 		/// \brief 给编辑器提供用来在界面上显示的参数值，或者将需要保存的东西返回给编辑器
 		GetParam:function(name){
 			//前面两个是保存用的
-			if(name=="hasFinish")return AnimCounter.hasFinish();
-			if(name=="allFinish")return AnimCounter.allFinish();
+		    if (name == "hasFinish") return AnimCounter.hasFinish();
+		    if (name == "allFinish") return AnimCounter.allFinish();
 			if(name=='@global_json'){
 				return JSON.stringify(globals,null,2);
 			}
@@ -653,33 +866,60 @@
 			return undefined;
 		},
 		/// \brief 主要的绘制逻辑
-		Render:function(params,pass){
-			if(V(globals.is_fixpos,0)>0.5){
-				params.translation = [V(globals.fixed_x,0),V(globals.fixed_y,0),V(globals.fixed_z,350),1];
+		Render: function (params, pass) {
+			if(V(globals.is_fix_x,0)>0.5){
+				params.translation[0] = V(globals.fixed_x,0);
 			}
-			if(!params.focal_length)params.focal_length = focal_length;
-			DoRender(params,pass);
-		},
-		RenderNonFace:function(params,pass){
-			////fixed section
-			if(params.face_count>0) return;
-			if(last_state==1 && !params.face_count){
-				for(var i = 0; i < meshlst.length; i++)meshlst[i].switchState(last_state,0);
-				last_state = 0;
+			if(V(globals.is_fix_y,0)>0.5){
+				params.translation[1] = V(globals.fixed_y,0);
 			}
-			try{
-				if(V(globals.isnofacerender,0)>0.5){
-					params.translation = [V(globals.fixed_x,0),V(globals.fixed_y,0),V(globals.fixed_z,350),1];
-					params.rotation=[0,0,0,1];
-					params.pupil_pos=[0,0];
-					params.expression=expression;
-					if(!params.focal_length)params.focal_length = focal_length;
-					DoRender(params,pass);
+			if(V(globals.is_fix_z,0)>0.5){
+				params.translation[2] = V(globals.fixed_z,0);
+			}
+			if (!params.focal_length) params.focal_length = focal_length;
+			if(V(globals.expr_clamp,0)>0.5){
+				for(var i =0;i<46;i++){
+					params.expression[i] = Math.max(Math.min(params.expression[i],1.0),0.0);
 				}
-			}catch(err){
-				console.log(err.stack);
+			}
+			
+			//animation trigger
+			for (var prop in animlist) {
+			    UpdateAnimation(animlist[prop], params, false);
+			}
+			//3d item trigger & DoRender
+			for (var prop in AnimMeshs) {
+			    AnimMeshs[prop].DoRender(params, pass);
 			}
 		},
-		name:V(globals.name,"dummy"),
+		RenderNonFace: function (params, pass) {  
+		    ////fixed section
+		    if (params.face_count > 0) return;
+			var isNoFace = V(globals.isnofacerender, 0) > 0.5;
+		    if (isNoFace) {
+		        for (var ap in animlist) 
+		            UpdateAnimation(animlist[ap], params, true);
+		    }
+		    for (var prop in AnimMeshs) {
+		        var meshgrp = AnimMeshs[prop].meshgroup;
+		        if (meshgrp.last_state == 1 && !params.face_count) {
+		            for (var i = 0; i < meshgrp.meshlst.length; i++) meshgrp.meshlst[i].switchState(meshgrp.last_state, 0);
+		            meshgrp.last_state = 0;
+		        }
+		        try {
+		            if (isNoFace) {
+		                params.translation = [V(globals.fixed_nx, 0), V(globals.fixed_ny, 0), V(globals.fixed_nz, 350), 1];
+		                params.rotation = [0, 0, 0, 1];
+		                params.pupil_pos = [0, 0];
+		                params.expression = expression;
+		                if (!params.focal_length) params.focal_length = focal_length;
+		                AnimMeshs[prop].DoRender(params, pass);
+		            }
+		        } catch (err) {
+		            console.log(err.stack);
+		        }
+		    }
+		},
+		name:V(globals.name,"unnamed"),
 	};
 })()

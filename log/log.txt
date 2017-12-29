@@ -1,2 +1,3 @@
-[info][fueditor.cpp:43][14:05:13]: open log
-[info][fueditor.cpp:44][14:05:13]: current path :F:/FUEditor/Distribution/Publish/Github/FUEditor v4.0.8_beta
+[info][fueditor.cpp:44][10:36:05]: open log
+[info][fueditor.cpp:45][10:36:05]: current path :F:/FUEditor/Distribution/Publish/Github/FUEditor v4.1.5
+[info][TreeViewController.cpp:99][13:54:58]: item select: 2D:+

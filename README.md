@@ -1,5 +1,6 @@
 # **FUEditor**
-### \***New Features:**
+### \***New Features:**  
+ - 骨骼动画支持。
  - 2D/3D道具可以混合使用。
  - 背景分割动画，详见文档 _2.2 元素类型_    
  - 高级视频滤镜  
@@ -10,7 +11,7 @@ __FUEditor__ 是一款高效便捷的AR人脸道具编辑工具软件，为[Face
  - 可以高效制作2D道具。贴纸，贴纸动画，动画组，特定脸部动作触发动画。Faceunity的2D贴纸技术本质也是3D的，有前后景深效果，侧脸时仍能紧贴人脸，而不是全部贴纸都在一个平面上。
  - 可以制作AR Mesh面具。
  - 可以制作3D的道具，调整材质，如花环头盔等。  
- ![img](./data/doc/img/gif.gif)
+    ![img](./data/doc/img/gif.gif)
 
 ## 快速教程
 - 系统要求  
@@ -22,7 +23,7 @@ __FUEditor__ 是一款高效便捷的AR人脸道具编辑工具软件，为[Face
   git pull  
 ```
 -	FUEditor无须安装可直接使用，将FUEditor.zip解压到系统适当位置。
--	目录结构解释  
+  -目录结构解释  
 ```C
  +FUEdittor\          //FUEditor根目录
        -FUEditor.bat      //双击点击，启动FUEditor
@@ -44,12 +45,12 @@ __FUEditor__ 是一款高效便捷的AR人脸道具编辑工具软件，为[Face
            ...
 ```
 - 启动程序  
- 双击 FUEditor 目录中 FUEditor.bat 启动程序。显示最近项目列表，可以选择以前的项目，也可以新建项目。
+   双击 FUEditor 目录中 FUEditor.bat 启动程序。显示最近项目列表，可以选择以前的项目，也可以新建项目。
 
   ![img](./data/doc/img/start.png)
 
 - 查看example    
- FUEditor中自带一些示例项目，首次启动时，显示的项目即是示例项目，在最近项目列表中鼠标左键选择打开‘example_2D’项目。
+   FUEditor中自带一些示例项目，首次启动时，显示的项目即是示例项目，在最近项目列表中鼠标左键选择打开‘example_2D’项目。
 
   ![img](./data/doc/img/choice.png)  
  进入示例项目，首先打包道具，点击![button](./data/doc/img/debug.png)。点击![button](./data/doc/img/qt32/play.png)按钮启动摄像头，点击![button](./data/doc/img/qt32/refresh.png)开始预览。
