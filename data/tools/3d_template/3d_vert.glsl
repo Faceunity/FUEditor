@@ -22,6 +22,8 @@ void main(){
 		Ps.x = -Ps.x-7.364;
 	}
 	Ps.z=-Ps.z;
+	Ps = (model_mat*vec4(Ps,1.0)).xyz;
+
 	if(0.5<obj_type&&obj_type<=0.75){
 		vec4 head_quat;
 		vec4 idq = vec4(0.0,0.0,0.0,1.0);
@@ -32,10 +34,10 @@ void main(){
 		Ps = QuatTransformVector(head_quat,Ps);
 		Ps += weightOffset;
 
-		vec4 Pf = model_mat*vec4(Ps,1.0);
+		vec4 Pf = vec4(Ps,1.0);
 		gl_Position=mat_proj*(mat_cam*Pf);
 	}else {
-		vec4 Pf = model_mat*vec4(Ps,1.0);
+		vec4 Pf = vec4(Ps,1.0);
 		gl_Position=mat_proj*(mat_view*Pf);
 	}
 	

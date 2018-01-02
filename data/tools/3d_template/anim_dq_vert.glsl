@@ -83,6 +83,7 @@ void main(){
 	vec3 dPs2 = vec3(0.0);
 	vec3 dPt2 = vec3(0.0);
 
+	//bone transform
 	vec3 drt = vec3(0.0);
 	if (animating == 1.0) {
 		vec3 R048,R372,R156,T;
@@ -102,7 +103,17 @@ void main(){
 		dPt2 = dPt1.xyz;
 	}
 
+	//model transform
+	P2 -= drt;
+	P2 = rotMat*P2;
+	P2 += drt;
+	N2 = rotMat*N2;
+	
+	P2 = (vec4(trans_pos, 0.0) + vec4(P2, 1.0)).xyz;
+	N2 = (vec4(N2, 0.0)).xyz;
 	P2.z = -P2.z;
+
+	//weight transform
 	if(isFlipH>0.5){
 		P2.x = -P2.x-7.364;
 	}
@@ -116,16 +127,6 @@ void main(){
 		vpMat = mat_proj * mat_cam;
 	}else 
 		vpMat = mat_proj * mat_view;
-	P2.z = -P2.z;
-	
-	P2 -= drt;
-	P2 = rotMat*P2;
-	P2 += drt;
-	N2 = rotMat*N2;
-	
-	P2 = (vec4(trans_pos, 0.0) + vec4(P2, 1.0)).xyz;
-	N2 = (vec4(N2, 0.0)).xyz;
-	P2.z = -P2.z;
 
 	gl_Position= vpMat * vec4(P2, 1.0);
 	
