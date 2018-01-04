@@ -781,7 +781,7 @@
 	        }
 	    }
 	}
-
+	AnimMeshs["avatar"].meshgroup.calTriggerNextNodesRef(undefined);
 	return {
 	    CalRef:AnimMeshs["avatar"].meshgroup.calTriggerNextNodesRef,
 	    meshlst: AnimMeshs["avatar"].meshgroup.meshlst,

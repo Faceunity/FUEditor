@@ -440,6 +440,7 @@
 			}
 		}
 	}
+	calTriggerNextNodesRef(undefined);
 	console.log("3d AnimCounter.total",AnimCounter.total);
 	////////////////////////////////////
 	console.log("nama platform:",FaceUnity.m_platform);
