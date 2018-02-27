@@ -21,9 +21,14 @@ void main(){
 	if(isFlipH>0.5){
 		Ps.x = -Ps.x-7.364;
 	}
-	Ps.z=-Ps.z;
-	Ps = (model_mat*vec4(Ps,1.0)).xyz;
 
+	Ps = scale_e * Ps;
+
+	//model transform
+	Ps = (model_mat*vec4(Ps,1.0)).xyz; 
+	Ps.z=-Ps.z;
+
+	//weight transform
 	if(0.5<obj_type&&obj_type<=0.75){
 		vec4 head_quat;
 		vec4 idq = vec4(0.0,0.0,0.0,1.0);
@@ -41,8 +46,7 @@ void main(){
 		gl_Position=mat_proj*(mat_view*Pf);
 	}
 	
-	vec4 Pf = model_mat*vec4(Ps,1.0);
-	Pf.z=-Pf.z;
+	vec4 Pf = vec4(Ps,1.0);
 	V_frag=normalize((mat_view*Pf).xyz);
 
 	vec4 Nf=model_mat*vec4(N.xyz,0.0);

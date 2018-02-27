@@ -126,7 +126,56 @@
 		}
 	"材质名"和blendshape.drawcalls[i].name是一一对应的。
 	*/
-	/////////////////////////util
+    /////////////////////////util
+    var CopySign = function (a, b) {
+        var sign = 1;
+        if (b < 0) sign = -1;
+        return Math.abs(a) * sign;
+    }
+
+    var Quat2Euler = function (quat) {
+        var x = quat[0]; var y = quat[1]; var z = quat[2]; var w = quat[3];
+        // x-axis rotation
+        var sinr = 2.0 * (w * x + y * z);
+        var cosr = 1.0 - 2.0 * (x * x + y * y);
+        var rx = Math.atan2(sinr, cosr);
+
+        // y-axis rotation
+        var sinp = 2.0 * (w * y - z * x);
+        var ry = 0;
+        if (Math.abs(sinp) >= 1)
+            ry = CopySign(Math.PI * 0.5, sinp); // use 90 degrees if out of range
+        else
+            ry = Math.asin(sinp);
+
+        // z-axis rotation
+        var siny = 2.0 * (w * z + x * y);
+        var cosy = 1.0 - 2.0 * (y * y + z * z);  
+        var rz = Math.atan2(siny, cosy);
+
+        var rta = 180.0 / Math.PI;
+        rx *= rta; ry *= rta; rz *= rta;
+        return [rx, ry, rz];
+    }
+
+    // axis = 0 is x, axis = 1 is y, axis = 2 is z
+    // opt = 0 means less, opt = 1 means greater
+    var isRotationTriggered = function (axis, value, opt, params) {
+        var quat = params.rotation;
+        var degree = Quat2Euler(quat)[axis];
+        switch (opt) {
+            case 0:
+                if (degree < value)
+                    return true;
+                break;
+            case 1:
+                if (degree > value)
+                    return true;
+                break;
+        }
+        return false;
+    }
+
 	var isActionTriggered=function (actionname, params){
 		if(params.expression==undefined || params.rotation==undefined)return false;
 		switch (actionname){
@@ -153,6 +202,23 @@
 		for(var i =0; i < 4; i++)qret[i]/=sum;
 		return qret;
 	}
+	var AddVec3 = function (a, b) {
+	    var ret = [0, 0, 0];
+	    ret[0] = a[0] + b[0];
+	    ret[1] = a[1] + b[1];
+	    ret[2] = a[2] + b[2];
+	    return ret;
+	}
+	var SubVec3 = function (a, b) {
+	    var ret = [0, 0, 0];
+	    ret[0] = a[0] - b[0];
+	    ret[1] = a[1] - b[1];
+	    ret[2] = a[2] - b[2];
+	    return ret;
+	}
+	var InvVec3 = function (a) {
+	    return [-a[0], -a[1], -a[2]];
+	}
 	//////////////////////////////
 	var globals=JSON.parse(FaceUnity.ReadFromCurrentItem("globals.json")||"{}");
 	var materials_json=JSON.parse(FaceUnity.ReadFromCurrentItem("materials.json")||"{}");
@@ -163,7 +229,23 @@
     //骨骼动画相关
 	var a_vert_shader = FaceUnity.ReadFromCurrentItem("anim_dq_vert.glsl");
 	var fbxmeshs = JSON.parse(FaceUnity.ReadFromCurrentItem("meshes.json"));
-	
+
+    //物理效果相关
+	var rigidBody_json_string = FaceUnity.ReadFromCurrentItem("bodies.json") || "{}";
+	var joint_json_string = FaceUnity.ReadFromCurrentItem("joints.json") || "{}";
+	var bones_json_string = FaceUnity.ReadFromCurrentItem("bones.json") || "{}";
+	var canUsePhysical = rigidBody_json_string != "{}" && joint_json_string != "{}" && bones_json_string != "{}";
+
+    //全局旋转和缩放
+	var rot_delta = 0.0;
+	var scale_delta = 0.0;
+	var globalRotationQuat = [0.0, 0.0, 0.0, 1.0];
+	var rot_ex = [1, 0, 0, 0,
+                  0, 1, 0, 0,
+                  0, 0, 1, 0,
+                  0, 0, 0, 1];
+	var scale_ex = 1.0;
+
 	var bigtexjson = JSON.parse(FaceUnity.ReadFromCurrentItem("3d_bigtex_desc.json")||"{}");
 	var bigtexcnt = 0;
 	var bigtex = new Array();
@@ -174,6 +256,8 @@
 		}
 	}
 	console.log("bigtexcnt",bigtexcnt);
+	var user_frame_id=0;
+	var filter_array = new Array();
 	var now = Date.now();
 	var expression=[]; for(var i=0; i<46; i++) expression.push(0);
 	var focal_length = 303.64581298828125;
@@ -278,6 +362,45 @@
 		return c;
 	}
 
+	function filterAct(params) {
+	    //filter
+	    var filter_num = 10;
+	    var l0, l1, l2, l3;
+	    if (user_frame_id > filter_num) {
+	        filter_array.shift();
+	        filter_array.push(params.rotation);
+	        //calculate
+	        l0 = l1 = l2 = l3 = 0.0;
+	        // var start_time =  (new Date()).getMilliseconds();
+	        for (var i = filter_array.length - 1; i >= 0; i--) {
+	            l0 += filter_array[i][0];
+	            l1 += filter_array[i][1];
+	            l2 += filter_array[i][2];
+	            l3 += filter_array[i][3];
+	        }
+	        // var delta_time=(new Date()).getMilliseconds()-start_time;
+	        // console.log("delta_time",delta_time);
+	        l0 /= filter_array.length;
+	        l1 /= filter_array.length;
+	        l2 /= filter_array.length;
+	        l3 /= filter_array.length;
+
+	        params.smooth_rotation = [l0, l1, l2, l3];
+	    } else {
+	        filter_array.push(params.rotation);
+	    }
+	    //ease
+	    var input_rot_weight = [0.5, 0.3, 0.1, 0.5];
+
+	    params.smooth_rotation = [0, 0, 0, 1];
+	    params.bt_rot_weight = [1, 1, 1, 0.5];
+	    var w = input_rot_weight;
+	    params.smooth_rotation = [w[0] * params.rotation[0], w[1] * params.rotation[1], w[2] * params.rotation[2], w[3] * params.rotation[3]];
+	    //ease end
+	    user_frame_id++;
+	    //hack end
+	}
+
 	var Mesh = function(dc,anim){
 	    deepCopy(dc, this);
 	    if (anim != null && anim != undefined)
@@ -365,12 +488,30 @@
 		}
 		*/
 		
-		var mat=FaceUnity.CreateViewMatrix(
-			[-rotation[0],-rotation[1],-rotation[2],rotation[3]],
-			params.translation);
-		var mat_cam=FaceUnity.CreateViewMatrix(
-			[0,0,0,1],
-			params.translation);
+		var trans = [0, 0, 0];
+		trans[0] = this.translate[0];
+		trans[1] = this.translate[1];
+		trans[2] = -this.translate[2];
+		
+		var mat = FaceUnity.MatrixTranslate(AddVec3(params.translation, trans));
+		mat = FaceUnity.MatrixMul(rot_ex, mat);
+		mat = FaceUnity.MatrixMul(FaceUnity.MatrixTranslate(InvVec3(trans)), mat);
+
+		var mat_cam = FaceUnity.MatrixTranslate(AddVec3(params.translation, trans));
+		mat_cam = FaceUnity.MatrixMul(rot_ex, mat_cam);
+		mat_cam = FaceUnity.MatrixMul(FaceUnity.MatrixTranslate(InvVec3(trans)), mat_cam);
+
+		var mat_t = FaceUnity.CreateViewMatrix(
+			[-rotation[0], -rotation[1], -rotation[2], rotation[3]],
+			[0, 0, 0]);
+		var mat_cam_t = FaceUnity.CreateViewMatrix(
+			[0, 0, 0, 1],
+			[0, 0, 0]);
+
+		mat = FaceUnity.MatrixMul(mat_t, mat);
+		mat_cam = FaceUnity.MatrixMul(mat_cam_t, mat_cam);
+
+
 		if(V(matex.is_eye,this.is_eye)){
 			mat=FaceUnity.MatrixMul(
 				FaceUnity.CreateEyeMatrix(
@@ -445,6 +586,7 @@
 		}
 		var shaderParams = {
 		    scales: [this.scales[0] * SCALE, this.scales[1] * SCALE, this.scales[2] * SCALE],
+		    scale_e: scale_ex,
 		    mat_view: this.mat,
 		    mat_cam: this.mat_cam,
 		    quatR1:[this.rotation[0],this.rotation[1],this.rotation[2],this.rotation[3]],
@@ -474,21 +616,19 @@
 		    //L2_dir:[0.25,0,-1],L2_color:[2.0,2.0,2.0],
 		};
 
-		var globalTranslation = Vs(FaceUnity.globalTranslation, [0, -98, 1243, 1]);
-		var globalRotationQuat = Vs(FaceUnity.globalRotationQuat, [0, 0, 0, 1]);
-
 		if (animation != null) {
 		    shaderUse = a_vert_shader;
 		    shaderParams.fid = fid;
 		    shaderParams.animating = animation.animating;
-		    shaderParams.tex_deform = animation.tex_deform;
+		    if (animation.use_vtf == 1)
+		        shaderParams.tex_deform = animation.tex_deform;
+		    else {
+		        shaderParams.arrvec4_deform = animation.arrvec4_deform;
+		        shaderParams.cluster_num = animation.cluster_num;
+		    }
 		    shaderParams.deform_width = animation.tex_deform_width;
 		    shaderParams.anim_head = animation.anim_head;
-		    shaderParams.rootBone = animation.root;
-		    //for test
-		    //shaderParams.skrootTrans = [0, 0, 0];
-		    //shaderParams.mat_view = FaceUnity.CreateViewMatrix(globalRotationQuat, globalTranslation);
-		    //shaderParams.mat_proj = FaceUnity.CreateProjectionMatrix_FOV(20, 0.1);
+		    shaderParams.rootBone = animation.root / animation.cluster_num;
 		} else {
 		    shaderUse = s_vert_shader;
 		}
@@ -509,6 +649,10 @@
                                       0, 1, 0, 0,
                                       0, 0, 1, 0,
                                       0, 0, 0, 1];
+		}
+		if (animation != null) {
+		    if (animation.use_vtf == 1) 
+		        shaderUse = "#define USE_VTF\n" + shaderUse;
 		}
 		FaceUnity.RenderBlendshapeComponent_new(blendshape, this, shaderUse, shader, shaderParams, pass);
 	}
@@ -673,14 +817,42 @@
 	    }
 	    this.DoRender = function (params, pass) {
 	        if (this.animation != null) {
+	            if (this.animation.support_vtf == -1) { //check vtf
+	                var ret = 1;
+	                if (FaceUnity.TestVTF != undefined)
+	                    ret = FaceUnity.TestVTF();
+	                this.animation.support_vtf = ret;
+	                this.animation.use_vtf = ret;
+	            }
+
 	            var frame_id = 0;
 	            if (frame_id == params.frame_id) return;
 	            frame_id = params.frame_id;
 	            var fid = 0;
+	            params.physical = this.animation.physical;
+	            if (canUsePhysical && this.animation.physical == 1 && params.main_bone === undefined) {
+	                var json = JSON.parse(bones_json_string);
+	                var count = json.bonesnum.sum;
+	                for (var i = count - 1; i >= 0; i--) {
+	                    var name = json["bone" + i]["name"];
+	                    if (name === "main1") {
+	                        params.main_bone = i;
+	                    }
+	                }
+	                filterAct(params);
+	            }
+                
 	            this.update_animation(params);
 	            this.meshgroup.renderMesh(params, pass, this.animation, fid);
 	        } else
 	            this.meshgroup.renderMesh(params, pass, null, 0);
+	    }
+	}
+
+	if (FaceUnity.InitPhysics != undefined && FaceUnity.IsPhysicsEnabled == undefined) {
+	    if (canUsePhysical) {
+	        FaceUnity.IsPhysicsEnabled = true
+	        FaceUnity.InitPhysics(rigidBody_json_string, joint_json_string, bones_json_string);
 	    }
 	}
 
@@ -803,6 +975,18 @@
 			if(name=="weightOffset"){
 				g_params[name]=value;
 				return 1;
+			}
+
+			if (name == "rot_delta") {
+			    rot_delta += value * Math.PI * 0.5;
+			    globalRotationQuat = [0.0, Math.sin(rot_delta), 0.0, Math.cos(rot_delta)];
+			    rot_ex = FaceUnity.CreateViewMatrix(globalRotationQuat, [0, 0, 0, 1]);
+			    return 1;
+			}
+			if (name == "scale_delta") {
+			    scale_delta = Math.max(Math.min(scale_delta - value, 1.0), -0.26);
+			    scale_ex = 1.0 + scale_delta;
+			    return;
 			}
 			/*
 			否则的话，name里面就是一个JSON对象：{"name":"材质名或<global>"，"param":"参数名"}

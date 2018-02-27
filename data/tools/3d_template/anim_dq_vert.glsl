@@ -21,23 +21,39 @@ void ComputeTransformLinear(out vec3 R048,out vec3 R372,out vec3 R156,out vec3 T
 	vec4 skel_weight = WEIGHT0;
 	Q_hack=vec4(0.0);
 	for (int i = 0; i < 4; i++) {
-		vec4 Q=texture2D(tex_deform, vec2((2.0 * fid + 0.5) / deform_width, skel_id[i]));
+		#ifdef USE_VTF
+		vec4 Q = texture2D(tex_deform, vec2((2.0 * fid + 0.5) / deform_width, skel_id[i]));
+		#else
+		vec4 Q = arrvec4_deform[int(skel_id[i] * cluster_num - 0.0) * 2 + 0];
+		#endif
 		vec4 weighted_Q=skel_weight[i]*Q;
 		x2y2z2+=weighted_Q.xyz*Q.xyz;
 		R372_plus_156+=weighted_Q.xyz*Q.yzx;
 		R372_minus_156+=Q.w*weighted_Q.zxy;
+		#ifdef USE_VTF
 		T+=skel_weight[i]*texture2D(tex_deform, vec2((2.0 * fid + 1.5) / deform_width, skel_id[i])).xyz;
+		#else
+		T+=skel_weight[i]*arrvec4_deform[int(skel_id[i] * cluster_num - 0.0) * 2 + 1].xyz;
+		#endif
 		Q_hack+=weighted_Q;
 	}
 	skel_id = SKEL1;
 	skel_weight = WEIGHT1;
 	for (int i = 0; i < 4; i++) {
-		vec4 Q=texture2D(tex_deform, vec2((2.0 * fid + 0.5) / deform_width, skel_id[i]));
+		#ifdef USE_VTF
+		vec4 Q = texture2D(tex_deform, vec2((2.0 * fid + 0.5) / deform_width, skel_id[i]));
+		#else
+		vec4 Q = arrvec4_deform[int(skel_id[i] * cluster_num - 0.0) * 2 + 0];
+		#endif
 		vec4 weighted_Q=skel_weight[i]*Q;
 		x2y2z2+=weighted_Q.xyz*Q.xyz;
 		R372_plus_156+=weighted_Q.xyz*Q.yzx;
 		R372_minus_156+=Q.w*weighted_Q.zxy;
+		#ifdef USE_VTF
 		T+=skel_weight[i]*texture2D(tex_deform, vec2((2.0 * fid + 1.5) / deform_width, skel_id[i])).xyz;
+		#else
+		T+=skel_weight[i]*arrvec4_deform[int(skel_id[i] * cluster_num - 0.0) * 2 + 1].xyz;
+		#endif
 		Q_hack+=weighted_Q;
 	}
 	R048=1.0+(-2.0)*(x2y2z2.yxx+x2y2z2.zzy);
@@ -46,7 +62,11 @@ void ComputeTransformLinear(out vec3 R048,out vec3 R372,out vec3 R156,out vec3 T
 }
 
 vec3 ComputeBoneTranslate(float bone) {
+	#ifdef USE_VTF
 	vec3 T = texture2D(tex_deform, vec2((2.0 * fid + 1.5) / deform_width, bone)).xyz;
+	#else
+	vec3 T = arrvec4_deform[int(bone * cluster_num - 0.0) * 2 + 1].xyz;
+	#endif
 	return T;
 }
 
@@ -103,6 +123,12 @@ void main(){
 		dPt2 = dPt1.xyz;
 	}
 
+	if(isFlipH>0.5){
+		P2.x = -P2.x-7.364;
+	}
+
+	P2 = scale_e * P2;
+
 	//model transform
 	P2 -= drt;
 	P2 = rotMat*P2;
@@ -111,12 +137,9 @@ void main(){
 	
 	P2 = (vec4(trans_pos, 0.0) + vec4(P2, 1.0)).xyz;
 	N2 = (vec4(N2, 0.0)).xyz;
-	P2.z = -P2.z;
 
+	P2.z = -P2.z;
 	//weight transform
-	if(isFlipH>0.5){
-		P2.x = -P2.x-7.364;
-	}
 	if(0.5<obj_type&&obj_type<=0.75){
 		vec4 head_quat;
 		head_quat=vec4(0.0,0.0,0.0,1.0)-quatR1;
@@ -127,10 +150,10 @@ void main(){
 		vpMat = mat_proj * mat_cam;
 	}else 
 		vpMat = mat_proj * mat_view;
-
 	gl_Position= vpMat * vec4(P2, 1.0);
 	
-	V_frag=normalize((mat_view*vec4(P2,1.0)).xyz);
+	vec4 Pf = vec4(P2,1.0);
+	V_frag=normalize((mat_view*Pf).xyz);
 		
 	if(isFlipH>0.5){
 		N_frag=normalize((mat_view*vec4(-N2.x,N2.y,-N2.z,0.0)).xyz);

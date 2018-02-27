@@ -37,22 +37,23 @@ __FUEditor__ 是一款高效便捷的AR人脸道具编辑工具软件，为[Face
 - 启动程序  
    双击 FUEditor 目录中 FUEditor.bat 启动程序。显示最近项目列表，可以选择以前的项目，也可以新建项目。
 
- ![test](./img/start.png)
+    ![test](./img/start.png)
+
 
 - 查看example    
-   FUEditor中自带一些示例项目，首次启动时，显示的项目即是示例项目，在最近项目列表中鼠标左键选择打开‘example_2D’项目。
+   FUEditor中自带一些示例项目，首次启动时，显示的项目即是示例项目，在最近项目列表中鼠标左键选择打开‘example_2D’项目。  
 
- ![test](./img/choice.png)  
- 进入示例项目，点击![test](./img/qt32/play.png)按钮启动摄像头，点击![test](./img/qt32/refresh.png)开始预览。
+   ![test](./img/choice.png)  
 
- ![test](./img/example.png)  
----
+   ​
+
+ 进入示例项目，点击![test](./img/qt32/play.png)按钮启动摄像头，点击![test](./img/qt32/refresh.png)开始预览。![test](./img/example.png)  
 
 ## 2. 使用  
 #### 2.1 新建项目  
 - 创建：点击菜单__File__>>__New Project__，或者快捷键__Ctrl+N__，或者点击左上边按钮![test](./img/qt32/document-add.png)。弹出对话框，选择创建项目类型，输入项目名称
 
- ![test](./img/createproject.png)  
+   ![test](./img/createproject.png)  
 
  创建完新项目后，界面左上角会显示__FUEditor – 项目名__，项目存放在 _FUEditor/Projects/项目名/_ 目录下。  
 __注意__：所有道具项目存放在 _FUEditor/Projects_ 目录下，新建项目时不要重名。道具名称命名最好以“公司名缩写\_设计师名缩写\_道具名”规范来命名，如“fu\_crt\_maolian”。道具名最好不要和之前的一样，否则会覆盖掉之前打包好的道具。  
@@ -60,19 +61,17 @@ _FUEditor/Projects_ 目录下由程序创建的目录不要随意动。
 
 #### 2.2 2D道具编辑
 - 添加：点击2D类型下"__+__"号创建新的元素；或者在"__2D__"上右键选择"__添加子元素__"；或者选中"__2D__"，点击下面![test](./img/qt32/add.png)按钮添加新元素。  
-- 删除：点击![test](./img/qt32/remove.png)删除当前选中的元素。或者在元素上点右键，选择"__删除__"。  
+- 删除：点击![test](./img/qt32/remove.png)删除当前选中的元素。或者在元素上点右键，选择"__删除__"。    ![test](./img/2daddremove.png)
 
- ![test](./img/2daddremove.png)
 
 
 - 2D元素属性：  
-   修改查看元素的属性，在视窗中选择道具元素，或者再树状元素列表中选择元素，右边会显示对应的元素属性视图  
+   修改查看元素的属性，在视窗中选择道具元素，或者再树状元素列表中选择元素，右边会显示对应的元素属性视图  ![test](./img/attr.png)  
 
- ![test](./img/attr.png)  
 
 - 基本属性释意：
   - 元素名：当前元素的名称，可修改，不同元素元素名不同。
-  - 图片：点击右边图片按钮![test](./img/qt32/image.png)，选择图片纹理。  
+  - 图片：点击右边图片按钮![test](./img/qt32/image.png)，选择图片纹理，图片文件名不能是中文。  
     __注意__：2D元素帧动画序列命名必须是“xxxx_五位数字.扩展名” 例如， xxxx_00000.png, xxxx_00001.png 帧序列，  
     即使没有帧动画，只有一帧也需命名为xxxx_00000.png。图片最大不能超过2000×2000。图片太大，会影响性能,建议控制在1000×1000以下。  
   - 水平翻转：沿元素中心做水平翻转。
@@ -81,7 +80,7 @@ _FUEditor/Projects_ 目录下由程序创建的目录不要随意动。
     - 跟随人脸元素: 跟随人脸的元素，将跟踪人脸移动或旋转。
     - 屏幕元素：屏幕元素，不会跟人脸动，不拉伸，直接绘制在屏幕。不同屏幕分辨率按照(rx,ry)在屏幕上绘制元素，(rx,ry)表示元素中心在屏幕上的比例，左上角为(0,0),右下角为(1,1)。  
     - 背景分割元素：背景分割元素，选择该模式的元素可以在相机画面中自动分割出人像，并替换背景为该元素内容。  
-    __注意__：2D道具的group不能作为背景分割元素，只能用单个道具做背景分割。  
+      __注意__：2D道具的group不能作为背景分割元素，只能用单个道具做背景分割。  
     - 全屏前景元素：全屏前景元素，不会跟人脸动，高宽拉伸绘制在全屏幕。  
     - 全屏背景元素：全屏背景元素，不会跟人脸动，高宽拉伸绘制在全屏幕。
   - __旋转类型__:  
@@ -250,6 +249,7 @@ fuItemSetParamd(item_id, "rotationTexAngle",-90);     //顺时针旋转90度
 - - -
 
 ## 3. AR Mesh 制作
+#### 3.1 普通AR Mesh贴图制作  
 AR Mesh 是拟合人脸的一个3D的mesh, 当需要制作"面具"，可以使用该功能。
 
 - 创建：点击列表中"AR Mesh"下"+"创建新的元素。
@@ -260,6 +260,33 @@ AR Mesh 是拟合人脸的一个3D的mesh, 当需要制作"面具"，可以使�
 AR Mesh 纹理制作方法：
 - 方法一：可以使用 FUEditor/data/ref/ar_demo3.obj 在 3d max/maya 等工具中进行 UV 映射，制作贴图。
 - 方法二：参考 FUEditor/data/ref/ default_ar.png 或 reference_head.png，根据 UV 图 FUEditor/data/ref/ ar-uv.png （半透明可叠加）在 PS 等工具中制作贴图。  
+
+#### 3.2 高级换脸功能   
+换脸使用方法：  
+
+
+- 选择图片：点击“换脸”行的图片选择按钮![test](./img/qt32/image.png)，图片文件名不能是中文，选择一张人脸图片，操作类似下图所示：    ![test](./img/changeface.png)
+
+
+- 高级融合：勾选高级融合选项开启高级融合人脸功能。（仅换脸能够使用该功能）  
+
+- 高精度网格：勾选高精度网格选项生成一张高分辨率人脸。（勾选高分辨率需要开启高级融合，否则会导致贴图错误）。  
+
+  __注意:__ 开启 __高精度网格__ 功能时，Android/iOS/PC客户端需要加载__ardata_ex.bundle__  ，否则会崩溃。
+  ```C++
+  //c++
+  vector<char> bundlebyte;
+  string bundlepath = mdh.m_data_path + "/ref/ardata_ex.bundle";
+  if (false == loadbinary(bundlepath, bundlebyte)){
+  	loge("load bundle failed:%s\n", bundlepath.c_str());
+  }
+  else {
+  	//load ardata_ex.bundle
+  	fuLoadExtendedARData(bundlebyte.data(), bundlebyte.size());
+  }
+  bundlebyte.clear();
+  ```
+
 
 ## 4. 静态3D道具制作
 Faceunity Nama SDK拥有实时跟踪三维人脸的能力，能够实时推算人脸在相机空间中的坐标以及人头的三维模型。所以可以根据[参考人头](#8- )制作3D道具。obj原模型放在"_FUEditor/data/ref/ar_demo3_",制作3D模型时可以参考该模型大小进行制作。首先要制作模型准备素材，再使用FUEditor进行预览打包，以及调整材质。
@@ -283,9 +310,8 @@ Faceunity Nama SDK拥有实时跟踪三维人脸的能力，能够实时推算�
 
   2. 创建新的3D元素：在项目"__元素列表__"中点击"__3D__"类别下"__+__"，创建新的3D元素。  
   3. 加载obj：在"__属性列表__"中，网格项中点击右边按钮，在弹出对话框中选择需要加载的obj。  
-     ![load obj](./img/n3d.png)    
+     ![load obj](./img/n3d.png)      ![load obj](./img/objload.png)  
 
-   ![load obj](./img/objload.png)  
    __注__：在导出的obj的材质mtl，最好也导出贴图信息，并确保路径正确。  
 
    加载fbx：在"__属性列表__"中，网格项中点击右边按钮，在弹出对话框中选择需要加载的fbx文件。
@@ -384,7 +410,8 @@ fuItemSetParamd(2,'is3DFlipH',1);
    ![bind fbx](./img/fbxbind.png)  
 
 __注1__：如需绑定动画则必须对应到正确的网格模型，拓扑一致，否则会导致无法打包。例如：3D元素使用了obj格式导入，那么绑定的动画需要有相同的拓扑结构（即使用相同的obj在maya/max中绑定骨骼系统）。  
-__注2__：骨骼动画元素的‘触发动画逻辑’和3D道具相同。  
+__注2__：骨骼不能有缩放变换，并且影响每个顶点的骨骼数不能超过8根，否则会导致动画错乱。  
+__注3__：骨骼动画元素的‘触发动画逻辑’和3D道具相同。  
 
 ## 6. Avatar制作
 Avatar指的是3D模型，且脸部有跟Nama SDK一致的[Blendshape/Morpher](#8- )，能够被Nama SDK驱动，进行脸部动画跟踪的模型。
@@ -444,3 +471,7 @@ __测试打包、正式打包__：
   ![blenshape formula](./img/bs.png)  
   其中，Bk是指每一个blendshape，B0是指自然基表情，coef是指有Nama SDK提供的每一帧视频提取出来46个表情系数。
 ---
+
+```
+
+```

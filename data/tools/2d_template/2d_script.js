@@ -15,6 +15,55 @@
 	var GL_CONSTANT_ALPHA=0x8003;
 	var GL_ONE_MINUS_CONSTANT_ALPHA=0x8004;
 	/////////////////////////util
+	var CopySign = function (a, b) {
+        var sign = 1;
+        if (b < 0) sign = -1;
+        return Math.abs(a) * sign;
+    }
+
+    var Quat2Euler = function (quat) {
+        var x = quat[0]; var y = quat[1]; var z = quat[2]; var w = quat[3];
+        // x-axis rotation
+        var sinr = 2.0 * (w * x + y * z);
+        var cosr = 1.0 - 2.0 * (x * x + y * y);
+        var rx = Math.atan2(sinr, cosr);
+
+        // y-axis rotation
+        var sinp = 2.0 * (w * y - z * x);
+        var ry = 0;
+        if (Math.abs(sinp) >= 1)
+            ry = CopySign(Math.PI * 0.5, sinp); // use 90 degrees if out of range
+        else
+            ry = Math.asin(sinp);
+
+        // z-axis rotation
+        var siny = 2.0 * (w * z + x * y);
+        var cosy = 1.0 - 2.0 * (y * y + z * z);  
+        var rz = Math.atan2(siny, cosy);
+
+        var rta = 180.0 / Math.PI;
+        rx *= rta; ry *= rta; rz *= rta;
+        return [rx, ry, rz];
+    }
+
+    // axis = 0 is x, axis = 1 is y, axis = 2 is z
+    // opt = 0 means less, opt = 1 means greater
+    var isRotationTriggered = function (axis, value, opt, params) {
+        var quat = params.rotation;
+        var degree = Quat2Euler(quat)[axis];
+        switch (opt) {
+            case 0:
+                if (degree < value)
+                    return true;
+                break;
+            case 1:
+                if (degree > value)
+                    return true;
+                break;
+        }
+        return false;
+    }
+
 	var isActionTriggered=function (actionname, params){
 		if(params.expression==undefined || params.rotation==undefined)return false;
 		switch (actionname){
@@ -36,6 +85,8 @@
 		hasmatp:0,
 		rmode:0,
 		isTracked:0,
+		bgScaleW:1,
+		bgScaleH:1
 	};
 	/////////////////////////res
 	var boards = JSON.parse(FaceUnity.ReadFromCurrentItem("2d_desc.json"));
@@ -100,6 +151,7 @@
 		}
 		return c;
 	}
+	
 	//define Mesh for render objects
 	//constructor Mesh, board for 2d,drawcall for 3d,
 	var Mesh = function(board, drawcall){
@@ -171,11 +223,11 @@
 			if(this.name.search("_fc")!=-1){//full screen items
 				var scalez = 1;
 				if(this.name[this.name.length-2]=='g')scalez = (20000/params.focal_length);//fcbackground
-				for (var j=0;j<this.texture_frames_bk.length;j++){
-					this.texture_frames[j].v=[-scalez*w/2,scalez*h/2,scalez*params.focal_length,
-												+scalez*w/2,scalez*h/2,scalez*params.focal_length,
-												+scalez*w/2,-scalez*h/2,scalez*params.focal_length,
-												-scalez*w/2,-scalez*h/2,scalez*params.focal_length];
+				for (var j = 0; j < this.texture_frames_bk.length; j++) {
+				    this.texture_frames[j].v = [-scalez * w / 2 * g_params.bgScaleW, scalez * h / 2 * g_params.bgScaleH, scalez * params.focal_length,
+												+scalez * w / 2 * g_params.bgScaleW, scalez * h / 2 * g_params.bgScaleH, scalez * params.focal_length,
+												+scalez * w / 2 * g_params.bgScaleW, -scalez * h / 2 * g_params.bgScaleH, scalez * params.focal_length,
+												-scalez * w / 2 * g_params.bgScaleW, -scalez * h / 2 * g_params.bgScaleH, scalez * params.focal_length];
 				}
 				this.matp = ar_mat;
 				this.isFullScreenObj = 1;
@@ -448,7 +500,33 @@
 		g_params.isAndroid=1;
 	}
 	var now = Date.now();
-	////////////////////////////////////
+    ////////////////////////////////////
+
+	var arconf = FaceUnity.ReadFromCurrentItem("armesh.json");
+	var faceconf = null, facetex = null, facemvc = null, face_info = null;
+	var advblend = false, highres = false;
+	var hasface = false;
+	if (arconf && arconf != undefined) {
+	    console.log("has:", arconf);
+	    faceconf = JSON.parse(arconf);
+	    var facename = faceconf["name"];
+	    advblend = faceconf["advblend"];
+	    highres = faceconf["highres"];
+	    if (facename != "") {
+	        hasface = true;
+	        try {
+	            facetex = FaceUnity.LoadTexture(facename + ".webp", 0);
+	            if (facetex) {
+	                facemvc = FaceUnity.LoadMeanValueCoord("mvc.bin", highres);
+	                face_info = FaceUnity.LoadFaceInfo(facename + ".bin");
+	            }
+	        } catch (ex) {
+	            console.log(ex);
+	        }
+	    }
+	}
+	
+
 	return {
 		CalRef:calTriggerNextNodesRef,
 		meshlst:meshlst,
@@ -481,6 +559,12 @@
 				}
 				if(name=="orientation"){
 					g_params.rmode = value;
+				}
+				if(name=="bgScaleW") {
+					g_params.bgScaleW = value;
+				}
+				if(name=="bgScaleH") {
+					g_params.bgScaleH = value;
 				}
 				return 1;
 			}else{
@@ -595,13 +679,15 @@
 					curbg.frame_id = parseInt(elapse * curbg.fps / 1000);
 					if(curbg.force_frame_id!=undefined && curbg.force_frame_id>=0)curbg.frame_id = curbg.force_frame_id;
 					var idx  = (curbg.frame_id)%curbg.texture_frames.length;
+					var is_bgra = (FaceUnity.m_is_bgra==2 ||  FaceUnity.m_is_bgra==4)?1:0;
 					FaceUnity.InsertImageFilter("color",s_visualize_shader,{
 						inv_matrix0123:[this.m_matrix[0]*rsq01,this.m_matrix[1]*rsq01,this.m_matrix[2]*rsq23,this.m_matrix[3]*rsq23],
 						inv_matrix45_image_dim:[this.m_matrix[4],this.m_matrix[5],FaceUnity.g_image_w,FaceUnity.g_image_h],
 						tex_segmentation:this.m_texid,
 						tex_background:bigtex[curbg.texture_frames[idx].bigtexidx],
 						background_uv_lt:curbg.texture_frames[idx].vt.slice(0,4),
-						background_uv_rb:curbg.texture_frames[idx].vt.slice(4)
+						background_uv_rb:curbg.texture_frames[idx].vt.slice(4),
+						is_bgra:is_bgra
 					});	
 				}
 			}
@@ -629,8 +715,26 @@
 					for(var i = 0; i < nonbgseg_bg_mesh_ref_lst.length; i++)nonbgseg_bg_mesh_ref_lst[i].renderEvent(params,now,mat_cam,false);
 					
 				}else if(pass==2){
-					//render armesh
-					for(var i=0;i<arTex.length;i++){ FaceUnity.RenderAR(arTex[i],undefined,undefined,params);}
+				    //render armesh
+				    if (!hasface) {
+				        if (highres==0) {
+				            for (var i = 0; i < arTex.length; i++) { FaceUnity.RenderAR(arTex[i], undefined, undefined, params); }
+				        }
+				        else {
+				            for (var i = 0; i < arTex.length; i++) { FaceUnity.RenderAREx(arTex[i], undefined, undefined, params); }
+				        }
+				    } else {
+				        if (facetex) {
+				            if (advblend != 0)
+				                FaceUnity.FaceTransfer(facetex, face_info, highres);
+				            else {
+				                if (highres == 0)
+				                    FaceUnity.RenderAR(facetex, undefined, undefined, params);
+				                else
+				                    FaceUnity.RenderAREx(facetex, undefined, undefined, params);
+				            }
+				        }
+				    }
 					var mat_cam=FaceUnity.CreateViewMatrix([0,0,0,1],params.translation);
 					//render non bg mesh
 					for(var i = 0; i < nonbgseg_nonbg_mesh_ref_lst.length; i++)nonbgseg_nonbg_mesh_ref_lst[i].renderEvent(params,now,mat_cam,false);

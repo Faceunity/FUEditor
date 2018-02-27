@@ -19,6 +19,8 @@
         this.meshName = ""; // binding mesh name
         this.last_frame = 0;
         this.fid = 0;
+        this.use_vtf = 1;
+        this.support_vtf = -1;
 
         var conf = JSON.parse(FaceUnity.ReadFromCurrentItem(filename + ".json") || "{}");
         loadConf(conf, this);
@@ -65,7 +67,12 @@
             this.fid = fid;
             target.tex_deform = this.animObj.tex_deform;
             target.tex_deform_width = target.tex_deform.w;
-            FaceUnity.LoadAnimationFrame(target.tex_deform, this.animObj.frames, target.tex_deform.h, fid);
+            target.arrvec4_deform = this.animObj.arrvec4_deform;
+            target.cluster_num = this.animObj.cluster_num;
+            if (target.use_vtf == 1) 
+                FaceUnity.LoadAnimationFrame(target.tex_deform, this.animObj.frames, target.tex_deform.h, fid, 1);
+            else
+                FaceUnity.LoadAnimationFrame(target.arrvec4_deform, this.animObj.frames, target.tex_deform.h, fid, 0);
         }
         this.bind = function (pair) {
             pair.animation = this;

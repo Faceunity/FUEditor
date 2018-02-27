@@ -32,9 +32,16 @@
 	}
 	console.log("itemname",itemname);
 	var faces=[];
+	var g_params={
+		isMultiMask: 0,
+	};
 	return {
 		SetParam:function(name,value){
 		    try {
+				if(name=="isMultiMask"){
+					g_params[name] = value;
+					return 1;
+				}
 				var respone = false;
 				for(var i in g_items){
 					var ret = g_items[i].SetParam(name,value);
@@ -73,7 +80,7 @@
 		},
 		Render:function(params){
 			try{
-				if((FaceUnity.renderbillboardv||0)>3.0){
+				if((FaceUnity.renderbillboardv||0)>3.0 && g_params.isMultiMask < 0.5){
 					//this path when multi-people, 2d/ar ok ,3d ok
 					if((params.face_ord < FaceUnity.m_n_valid_faces-1)){
 						faces.push(params);
