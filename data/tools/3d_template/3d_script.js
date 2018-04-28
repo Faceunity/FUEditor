@@ -984,7 +984,7 @@
 			    return 1;
 			}
 			if (name == "scale_delta") {
-			    scale_delta = Math.max(Math.min(scale_delta - value, 1.0), -0.26);
+			    scale_delta = Math.max(Math.min(scale_delta + value, 1.0), -0.26);
 			    scale_ex = 1.0 + scale_delta;
 			    return;
 			}
