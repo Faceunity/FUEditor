@@ -76,17 +76,20 @@
 	//
 	console.log("Platform:",FaceUnity.m_platform);
 	
-	var g_params={
-		isAndroid: 0,
-		isLandscape:0,
-		rotationAngle:0,
-		rotationTexAngle:0,
-		matp:[1,0,0,1],
-		hasmatp:0,
-		rmode:0,
-		isTracked:0,
-		bgScaleW:1,
-		bgScaleH:1
+	var g_params = {
+	    isAndroid: 0,
+	    isLandscape: 0,
+	    rotationAngle: 0,
+	    rotationTexAngle: 0,
+	    matp: [1, 0, 0, 1],
+	    hasmatp: 0,
+	    rmode: 0,
+	    isTracked: 0,
+	    bgScaleW: 1,
+	    bgScaleH: 1,
+	    screenW: 0,
+	    screenH: 0,
+		invBgSeg: 0.0
 	};
 	/////////////////////////res
 	var boards = JSON.parse(FaceUnity.ReadFromCurrentItem("2d_desc.json"));
@@ -220,7 +223,17 @@
 				this.matp = ar_mat;
 				this.isFullScreenObj = 1;
 			}
-			if(this.name.search("_fc")!=-1){//full screen items
+			if (this.name.search("_fc") != -1) {//full screen items
+			    if (g_params.screenW != 0 && g_params.screenH != 0) {
+			        if (g_params.screenH / g_params.screenW > h / w) {
+			            g_params.bgScaleH = 1;
+			            g_params.bgScaleW = (g_params.screenW * h) / (g_params.screenH * w);
+			        } else {
+			            g_params.bgScaleW = 1;
+			            g_params.bgScaleH = (w * g_params.screenH) / (h * g_params.screenW);
+			        }
+			    }
+
 				var scalez = 1;
 				if(this.name[this.name.length-2]=='g')scalez = (20000/params.focal_length);//fcbackground
 				for (var j = 0; j < this.texture_frames_bk.length; j++) {
@@ -526,7 +539,9 @@
 	    }
 	}
 	
-
+	var vtfChecked = false;
+	var vtfSupport = false;
+	
 	return {
 		CalRef:calTriggerNextNodesRef,
 		meshlst:meshlst,
@@ -565,6 +580,15 @@
 				}
 				if(name=="bgScaleH") {
 					g_params.bgScaleH = value;
+				}
+				if (name == "screenW") {
+				    g_params.screenW = value;
+				}
+				if (name == "screenH") {
+				    g_params.screenH = value;
+				}
+				if(name=="invBgSeg") {
+					g_params.invBgSeg = value;
 				}
 				return 1;
 			}else{
@@ -687,7 +711,8 @@
 						tex_background:bigtex[curbg.texture_frames[idx].bigtexidx],
 						background_uv_lt:curbg.texture_frames[idx].vt.slice(0,4),
 						background_uv_rb:curbg.texture_frames[idx].vt.slice(4),
-						is_bgra:is_bgra
+						is_bgra:is_bgra,
+						invBgSeg:g_params.invBgSeg
 					});	
 				}
 			}
@@ -697,8 +722,18 @@
 		//back#2ground_seg*/
 		////////////////////////////////
 		Render:function(params,pass){
-			
 			try{
+				if(!vtfChecked) { // check vtf first
+					var ret = 0;
+	                if (FaceUnity.TestVTF != undefined)
+	                    ret = FaceUnity.TestVTF();
+					if (ret > 0)
+						vtfSupport = true;
+					else 
+						console.log("vtf unsupported, can not change face!!!");
+					vtfChecked = true;
+				}
+				
 				g_params.isTracked = 1;
 				now = Date.now();
 				if(pass==1){
@@ -725,9 +760,10 @@
 				        }
 				    } else {
 				        if (facetex) {
-				            if (advblend != 0)
-				                FaceUnity.FaceTransfer(facetex, face_info, highres);
-				            else {
+				            if (advblend != 0) {
+								if (vtfSupport)
+									FaceUnity.FaceTransfer(facetex, face_info, highres);
+				            } else {
 				                if (highres == 0)
 				                    FaceUnity.RenderAR(facetex, undefined, undefined, params);
 				                else

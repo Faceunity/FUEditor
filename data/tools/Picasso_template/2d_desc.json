@@ -1,0 +1,31 @@
+[
+	{
+		"name":"default_3_fcbgp",
+		"type":"billboard_ex2",
+		"path":"",
+		"fps":20,
+		"frameCnt1Loop":1,
+		"rotationType":0,
+		"triggerstart":"alwaysrender",
+		"startaction":"null",
+		"needkeepfaceaction":1,
+		"triggerend":"default",
+		"endaction":"null",
+		"looptype":"infinite",
+		"loopcnt":1,
+		"nodetype":0,
+		"root":-1,
+		"enable_depth_test":1,
+		"isactiveonce":0,
+		"triggerNextNodes":[],
+		"childNodes":[],
+		"base_vertex":-2,
+		"texture_frames":[
+			{
+				"v":[-312.500000,537.454590,518.000000,311.279297,537.454590,518.000000,311.279297,-571.625000,518.000000,-312.500000,-571.625000,518.000000],
+				"vt":[0.000488,0.998055,0.250488,0.998055,0.250488,0.001946,0.000488,0.001946],
+				"bigtexidx":0
+			}
+		]
+	}
+]

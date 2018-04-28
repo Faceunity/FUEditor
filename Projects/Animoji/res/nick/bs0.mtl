@@ -1,6 +1,0 @@
-newmtl nick:Material #269
-	map_Kd nickteeth.png
-newmtl nick:Material #271
-	map_Kd nickeye.png
-newmtl nick:lambert7
-	map_Kd nick.png
