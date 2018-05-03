@@ -1,3 +1,4 @@
 {
-    "g_formalSignUrl":"https://192.168.0.118:8334/file-upload"
+    "g_formalSignUrl":"https://in-house.faceunity.com:8334/file-upload",
+    "g_picassoSignUrl":"https://api-test.faceunity.com:20182/picasso"
 }
