@@ -46,11 +46,11 @@
         },
         {
             "name": "zhuantou_zuo",
-            "condition": "params.rotation[1] >= 0.1"
+            "condition": "isRotationTriggered(1, 20, 1, params)"
         },
         {
             "name": "zhuantou_you",
-            "condition": "params.rotation[1] >= 0.1"
+            "condition": "isRotationTriggered(1, -20, 0, params)"
         }
     ]
 }

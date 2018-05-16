@@ -3,7 +3,12 @@ vec4 shader_main(vec2 st_src,vec4 C){
 	vec2 delta=st_src*inv_matrix45_image_dim.zw-inv_matrix45_image_dim.xy;
 	vec4 mul=delta.xyxy*inv_matrix0123;
 	vec2 uv = mul.xz+mul.yw;
+	
 	float alpha=texture2D(tex_segmentation,uv).w;
+	
+	//inverse
+	if(flipx != 0.0) uv.x = 1.0 - uv.x;
+	if(flipy != 0.0) uv.y = 1.0 - uv.y;
 	
 	if(alpha>0.8){
 		return C;
@@ -15,8 +20,7 @@ vec4 shader_main(vec2 st_src,vec4 C){
 	vec2 bglb = background_uv_rb.zw;
 	vec2 bgwh = bgrt - bglb;
 	vec2 bguv = vec2(bglb.x + bgwh.x*(1.0-uv.x), 1.0-(bglb.y + bgwh.y*(1.0-uv.y)));
-	if (invBgSeg != 0.0)
-		bguv.x = 1.0 - bguv.x;
+
 	vec4 bg_color = texture2D(tex_background,bguv);
 	float bg_alpha = bg_color.w;
 	vec4 retcol;

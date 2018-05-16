@@ -1,0 +1,7 @@
+{
+	"file_init":"init_net_v2.pb",
+	"file_predict":"predict_net_v2.pb",
+	"input_width":300,
+	"input_height":300,
+	"input_channels":3
+}

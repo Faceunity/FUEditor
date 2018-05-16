@@ -3,6 +3,7 @@
 	var g_items = [];
 	var item2ds;
 	var item3ds;
+	var handTrigger;
 	var require=function(fn){
 		var jsstr = FaceUnity.ReadFromCurrentItem(fn);
 		if(jsstr == undefined){
@@ -16,6 +17,7 @@
 	try{
 	    item2ds = require("2d_script.js");
 		item3ds = require("3d_script.js");
+		handTrigger = require("hands_script.js");
 		
 		if(item3ds!=undefined){
 			g_items.push(item3ds);
@@ -47,6 +49,10 @@
 					var ret = g_items[i].SetParam(name,value);
 					if(ret!=undefined)respone=true;
 				}
+				
+				var ret = handTrigger.SetParam(name,value); //set hand trigger params
+				if(ret!=undefined)respone=true;
+				
 				if(respone)return 1;
 				return undefined;
 			}catch(err){
@@ -70,16 +76,22 @@
 				var ret = g_items[i].GetParam(name);
 				if(ret!=undefined)return ret;
 			}
+			
+			var ret = handTrigger.GetParam(name); //get hand trigger params
+			if(ret!=undefined)return ret;
+			
 			return undefined;
 		},
 		OnGeneralExtraDetector:function(){
 			if(item2ds.OnGeneralExtraDetector)item2ds.OnGeneralExtraDetector();
 		},
-		FilterEntireImage:function(){
-			if(item2ds.FilterEntireImage)item2ds.FilterEntireImage();
+		FilterEntireImage:function(w,h,e,flip_x,flip_y){
+			if(item2ds.FilterEntireImage)item2ds.FilterEntireImage(flip_x,flip_y);
 		},
 		Render:function(params){
 			try{
+				if(handTrigger && item2ds) handTrigger.TriggerHand(item2ds, params);//trigger hand
+				
 				if((FaceUnity.renderbillboardv||0)>3.0 && g_params.isMultiMask < 0.5){
 					//this path when multi-people, 2d/ar ok ,3d ok
 					if((params.face_ord < FaceUnity.m_n_valid_faces-1)){
@@ -105,10 +117,18 @@
 					if(item3ds)item3ds.Render(params,2);//3d item
 					if(item2ds)item2ds.Render(params,2);//non bg item
 				}
+				
+				if(handTrigger && item2ds) handTrigger.CheckHand(item2ds, params);//trigger hand end
 			}
 			catch(err){
 				console.log(err.stack);
 			}
+		},
+		OnGeneralSSDDetector: function() {
+			if(handTrigger) handTrigger.OnGeneralSSDDetector();
+		},
+		OnDetect:function(boxes) {
+			if(handTrigger) handTrigger.OnDetect(boxes);
 		},
 		RenderNonFace:function(params){
 			//for(var i in g_items)g_items[i].RenderNonFace(params);

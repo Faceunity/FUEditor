@@ -103,7 +103,8 @@
 	//@mparam is_eye {"type":"slider","min":0,"max":1,"default_value":0}
 	//这个材质是不是头发的标记
 	//@mparam is_hair {"type":"slider","min":0,"max":1,"default_value":0}
-	
+	//这个是需不需要背面剔除的标记
+	//@mparam back_cull {"type":"slider","min":0,"max":1,"default_value":1}
 	
 	/*
 	编辑器保存的结果会存放在"globals.json"和"materials.json"两个文件中。
@@ -654,7 +655,11 @@
 		    if (animation.use_vtf == 1) 
 		        shaderUse = "#define USE_VTF\n" + shaderUse;
 		}
+		
+		var cull = V((materials_json[this.name] || {}).back_cull, 0);
+		if(cull>0.5) gl.enable(gl.CULL_FACE);
 		FaceUnity.RenderBlendshapeComponent_new(blendshape, this, shaderUse, shader, shaderParams, pass);
+		if(cull>0.5) gl.disable(gl.CULL_FACE);
 	}
 
 	//meshgroup

@@ -89,7 +89,6 @@
 	    bgScaleH: 1,
 	    screenW: 0,
 	    screenH: 0,
-		invBgSeg: 0.0
 	};
 	/////////////////////////res
 	var boards = JSON.parse(FaceUnity.ReadFromCurrentItem("2d_desc.json"));
@@ -169,6 +168,11 @@
 		if(this.betriggered==undefined)this.isActive = true;
 		this.isFullScreenObj = 0;
 		this.isFinished = 0;
+		this.hand = -1;
+		this.handTriggerd = false;
+		this.handx = 0;
+		this.handy = 0;
+		this.triggerTime = 0;
 	}
 	Mesh.prototype.reExtract=function (params){
 		try{
@@ -348,16 +352,37 @@
 		console.log("thriggerThis2d",this.name);
 	}
 	Mesh.prototype.triggerStartEvent=function(params,now,isNoneFace){
-		if(this.triggered || !this.isActive || !(this.nodetype == 0 || this.nodetype == 1))return;
+		if(this.triggered || this.handTriggerd || !this.isActive || !(this.nodetype == 0 || this.nodetype == 1)) return;
 		if((!isNoneFace && (this.triggerstart=="newface" || (this.triggerstart=="faceaction" && isActionTriggered(this.startaction,params))))
-			||(isNoneFace && this.triggerstart=="alwaysrender")){		 
-				this.triggerThis(now);
+				||(isNoneFace && this.triggerstart=="alwaysrender")
+				||(!isNoneFace && this.hand >= 0)){ // trigger hand	
+			this.triggerThis(now);
+			if(this.hand >= 0) this.handTriggerd = true;
 			if(this.nodetype == 1){
 				if(this.looptype=="loopcnt")this.loopcountdown = this.loopcnt;
 				for(var j = 0;j<this.childNodesRef.length;j++){
 					this.childNodesRef[j].triggerThis(now);
 				}
 			}
+		}
+	}
+	Mesh.prototype.triggerHand = function(params, now, handi, handx, handy) {
+		if(this.triggered || !this.isActive || !(this.nodetype == 0 || this.nodetype == 1)) return;
+		if(this.hand >= 0) return;
+		if(this.triggerstart == "handaction") {
+			console.log("hand trigger!", handi);
+			this.hand = handi;
+			this.handx = handx;
+			this.handy = handy;
+			return;
+		}
+		return;
+	}
+	Mesh.prototype.triggerNoHand = function(params, now, handi){
+		if(this.hand >= 0) {
+			console.log("trigger hand end!!!", handi);
+			this.hand = -1;
+			this.handTriggerd = false;
 		}
 	}
 	Mesh.prototype.renderEvent=function(params,now,mat_cam,isNoneFace){
@@ -372,7 +397,7 @@
 			}
 		}
 		*/
-		if(this.nodetype!=1){//non group root node
+		if(this.nodetype!=1 && this.name.search("_bgseg")==-1){//non group root node
 			if(this.looptype=="infinite" || (this.frame_id < this.texture_frames.length * this.loopcnt)){
 				var idx  = (this.frame_id)%this.texture_frames.length;
 				FaceUnity.RenderBillboard(bigtex[this.texture_frames[idx].bigtexidx],this,this.texture_frames[idx],this.matp,this.rotationType?mat_cam:undefined,this.isFullScreenObj,params);
@@ -466,10 +491,13 @@
 		return mesh.name.search("_bgseg")==-1;
 	});
 	var nonbgseg_nonbg_mesh_ref_lst = non_bgseg_mesh_ref_lst.filter(function pred(mesh){
-		return mesh.name.search("_fcbg")==-1;
+		return mesh.name.search("_fcbg")==-1 && mesh.name.search("_hnd")==-1;
 	});
 	var nonbgseg_bg_mesh_ref_lst = non_bgseg_mesh_ref_lst.filter(function pred(mesh){
 		return mesh.name.search("_fcbg")!=-1;
+	});
+	var nonbgseg_nonbg_hnd_mesh_ref_lst = non_bgseg_mesh_ref_lst.filter(function pred(mesh){
+		return mesh.name.search("_hnd")!=-1;
 	});
 	//redirect index
 	for(var i = 0;i<meshlst.length;i++){
@@ -490,6 +518,7 @@
 	var alwaysrender_nonfcbg_mesh_ref_lst = alwaysrender_mesh_ref_lst.filter(function pred(mesh){
 		return mesh.name.search("_fcbg")==-1;
 	});
+	
 	//part may involve with 3d meshs
 	var calTriggerNextNodesRef=function(meshlst_3d){
 		for(var i = 0;i<meshlst.length;i++){
@@ -586,9 +615,6 @@
 				}
 				if (name == "screenH") {
 				    g_params.screenH = value;
-				}
-				if(name=="invBgSeg") {
-					g_params.invBgSeg = value;
 				}
 				return 1;
 			}else{
@@ -690,7 +716,7 @@
 		}catch(err){
 			console.log(err.stack);
 		}},
-		FilterEntireImage:function(){try{
+		FilterEntireImage:function(flip_x,flip_y){try{
 			//console.log('FilterEntireImage',this.m_texid)
 			if(!this.m_texid){return;}
 			now = Date.now();
@@ -712,7 +738,8 @@
 						background_uv_lt:curbg.texture_frames[idx].vt.slice(0,4),
 						background_uv_rb:curbg.texture_frames[idx].vt.slice(4),
 						is_bgra:is_bgra,
-						invBgSeg:g_params.invBgSeg
+						flipx: (flip_x!=undefined)?flip_x:0.0,
+						flipy: (flip_y!=undefined)?flip_y:0.0
 					});	
 				}
 			}
@@ -774,6 +801,21 @@
 					var mat_cam=FaceUnity.CreateViewMatrix([0,0,0,1],params.translation);
 					//render non bg mesh
 					for(var i = 0; i < nonbgseg_nonbg_mesh_ref_lst.length; i++)nonbgseg_nonbg_mesh_ref_lst[i].renderEvent(params,now,mat_cam,false);
+					
+					//render hand track mesh
+					for(var i = 0; i < nonbgseg_nonbg_hnd_mesh_ref_lst.length; i++) {
+						var meshToRender = nonbgseg_nonbg_hnd_mesh_ref_lst[i];
+						var w = params.w;
+						var h = params.h;
+						var x0=w/2-meshToRender.handx;
+						var y0=h/2-meshToRender.handy;
+						var x = x0;
+						var y = y0;
+						var z = params.focal_length;
+						var mat_hnd = FaceUnity.CreateViewMatrix([0,0,0,1],[x,y,z]);
+						meshToRender.renderEvent(params,now,mat_hnd,true);
+					}
+					
 					for(var i = 0; i < meshlst.length; i++)meshlst[i].triggerEndEvent(params,now,false);
 				}
 				
@@ -800,12 +842,45 @@
 					if(!params.face_count)for(var i = 0; i < alwaysrender_fcbg_mesh_ref_lst.length; i++)alwaysrender_fcbg_mesh_ref_lst[i].renderEvent(params,now,undefined,true);	
 				}else if(pass == 2){
 					if(!params.face_count)for(var i = 0; i < alwaysrender_nonfcbg_mesh_ref_lst.length; i++)alwaysrender_nonfcbg_mesh_ref_lst[i].renderEvent(params,now,undefined,true);
+					
+					//TODO
+					
 					for(var i = 0; i < meshlst.length; i++)meshlst[i].triggerEndEvent(params,now,true);			
 				}
 			}catch(err){
 				console.log(err.stack)
 			}
 		},
+		
+		TriggerHand:function(params, handi, handx, handy) {
+			for(var i = 0; i < meshlst.length; i++){
+				meshlst[i].triggerHand(params, now, handi, handx, handy);
+			}
+		},
+		
+		TriggerNoHand:function(params, handi) {
+			for(var i = 0; i < meshlst.length; i++){
+				meshlst[i].triggerNoHand(params,now, handi);
+			}
+		},
+		
+		UpdateHand:function(handi, handx, handy) {
+			for(var i = 0; i < meshlst.length; i++) {
+				if(handi == meshlst[i].hand && meshlst[i].handTriggerd) {
+					meshlst[i].handx = handx;
+					meshlst[i].handy = handy;
+				}
+			}
+		},
+		
+		CheckTriggerEnd:function(handi) {
+			for(var i = 0; i < meshlst.length; i++){
+				if(meshlst[i].handTriggerd && !meshlst[i].triggered)
+					return true;
+			}
+			return false;
+		},
+		
 		name:"dummy",
 	};
 })()
