@@ -81,6 +81,7 @@
 	    isLandscape: 0,
 	    rotationAngle: 0,
 	    rotationTexAngle: 0,
+		rotationBGTexAngle: 0,
 	    matp: [1, 0, 0, 1],
 	    hasmatp: 0,
 	    rmode: 0,
@@ -173,6 +174,7 @@
 		this.handx = 0;
 		this.handy = 0;
 		this.triggerTime = 0;
+		this.mat_seg = [1,0,0,1];
 	}
 	Mesh.prototype.reExtract=function (params){
 		try{
@@ -276,6 +278,17 @@
 					this.texture_frames[j].vt[i*4+3] = tmpy;
 				}
 			}
+		}
+	}
+	Mesh.prototype.recalUVBGSeg = function(angle){
+		if(Math.abs(angle-0) < 0.01){
+			this.mat_seg = [1,0,0,1];
+		}else if(Math.abs(angle-90) < 0.01){
+			this.mat_seg = [0,1,-1,0];
+		}else if(Math.abs(angle-180) < 0.01){
+			this.mat_seg = [-1,0,0,-1];
+		}else if(Math.abs(angle-270) < 0.01){
+			this.mat_seg = [0,-1,1,0];
 		}
 	}
 	Mesh.prototype.switchState = function(lst,now){
@@ -601,6 +614,10 @@
 					g_params["rotationTexAngle"] = value;
 					fc_mesh_ref_lst.forEach(function(mesh){mesh.recalUV();});//notify full screen object
 				}
+				if(name == "rotationBGTexAngle") {
+					g_params["rotationBGTexAngle"] = value;
+					bgseg_mesh_ref_lst.forEach(function(mesh){mesh.recalUVBGSeg(g_params.rotationBGTexAngle);});//notify bg segement object
+				}
 				if(name=="orientation"){
 					g_params.rmode = value;
 				}
@@ -739,7 +756,8 @@
 						background_uv_rb:curbg.texture_frames[idx].vt.slice(4),
 						is_bgra:is_bgra,
 						flipx: (flip_x!=undefined)?flip_x:0.0,
-						flipy: (flip_y!=undefined)?flip_y:0.0
+						flipy: (flip_y!=undefined)?flip_y:0.0,
+						mat_seg: curbg.mat_seg
 					});	
 				}
 			}
