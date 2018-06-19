@@ -6,7 +6,8 @@
 		detected:0,
         loc_x_flip:0,
         loc_y_flip:0,
-		boxes:[]
+		boxes:[],
+		clearFrame: 30
 	};
 	var g_params=JSON.parse(JSON.stringify(g_default_params));
 	var playVelocity = 1;
@@ -16,6 +17,10 @@
 	//console.log("nn:"+FaceUnity.LoadNNModelThread);
 	var model=FaceUnity.LoadNNModelThread("nn.json");
 	var base_color=new Float32Array([-104,-117,-123]);
+	
+	var Handboxes = new Float32Array([0,0,0,0]);
+	var UseState = false;
+    var nowFrame = 0;
 	
 	return {
 		m_hands:[],
@@ -99,14 +104,15 @@
             this.m_matrix=matrix;
 			var input=FaceUnity.ExtractSSDInput(model.w,model.h,model.channels, matrix,base_color);
             var output=FaceUnity.RunNNModelThread(model,input);
-			var dim=FaceUnity.RunObjectDetector(output);
+			output.length=output.length-1;
+            this.OnDetect(output);
 			}catch(err){
 			console.log(err.stack);
 			}
 		},
 		OnDetect:function(boxes) {
 			try {
-				//boxes is a Float32Array with 1 or more x,y,w,h bounding boxes
+				//boxes is a Float32Array with 1 or more x,y,w,h bounding boxes			
 				var hands=this.m_hands;
 				var matrix=this.m_matrix;
 				var rotation_mode=FaceUnity.g_current_rmode;
@@ -129,9 +135,17 @@
 					
 					var r=Math.sqrt(w*w+h*h)*0.5;
 					var is_dup=0;
+					if(hands.length>0 && !isNaN(x)) UseState = true;
 					for(var j=0;j<hands.length;j++){
+						if(!isNaN(x) && UseState) {
+							Handboxes[0]=x;
+							Handboxes[1]=y;
+							Handboxes[2]=w;
+							Handboxes[3]=h;
+						}
 						var dx=x-hands[j].x;
 						var dy=y-hands[j].y;
+						
 						if(Math.sqrt(dx*dx+dy*dy)<(r+hands[j].r)*0.5){
 							is_dup=1;
 							hands[j].repeat=hands[j].repeat+1;
@@ -153,6 +167,28 @@
 			}
 		},
 		GetParam:function(name){
+			if (name == "box_x") { 
+				if (UseState)
+					return Handboxes[0];
+				else 
+					return undefined;
+			} else if (name == "box_y") {
+				if (UseState)
+					return Handboxes[1];
+				else 
+					return undefined;
+			} else if (name == "box_w") { 
+				if (UseState)
+					return Handboxes[2];
+				else
+					return undefined;
+			} else if (name == "box_h") {
+				if (UseState)
+					return Handboxes[3];
+				else
+					return undefined;
+			}
+			
 			if(g_params[name]!=undefined)        
 				return g_params[name];
 			else
@@ -271,6 +307,18 @@
 			} catch(ex) {
 				console.log(ex.stack);
 			}
+		},
+		FlushHands:function() {
+			if (UseState)
+				console.log("hand:",Handboxes[0],Handboxes[1],Handboxes[2],Handboxes[3]);
+			else
+				console.log("nohand");
+			
+			if (nowFrame > g_params.clearFrame) {
+				UseState = false;
+				nowFrame = 0;
+			}
+			nowFrame++;
 		}
 	};
 })()

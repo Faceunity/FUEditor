@@ -90,6 +90,7 @@
 	    bgScaleH: 1,
 	    screenW: 0,
 	    screenH: 0,
+		resetFlag: 0
 	};
 	/////////////////////////res
 	var boards = JSON.parse(FaceUnity.ReadFromCurrentItem("2d_desc.json"));
@@ -175,6 +176,9 @@
 		this.handy = 0;
 		this.triggerTime = 0;
 		this.mat_seg = [1,0,0,1];
+		this.paused = false;
+		this.pauseTime = 0;
+		this.pauseSum = 0;
 	}
 	Mesh.prototype.reExtract=function (params){
 		try{
@@ -315,6 +319,8 @@
 		this.triggered =0;
 		this.frame_id = 0;
 		this.last = now;
+		this.pauseTime = 0;
+		this.pauseSum = 0;
 		this.activateNext();
 		if(this.triggerstart=="newface"||this.triggerstart=="alwaysrender"){
 			this.isActive = false;
@@ -348,13 +354,35 @@
 	}
 	Mesh.prototype.updateEvent=function(params,now){
 		if(this.triggered){
-			var elapse = now - this.last;
-			this.frame_id = parseInt(elapse * this.fps / 1000);
+			var elapse = now - this.last - this.pauseSum;
+			if(!this.paused) 
+				this.frame_id = parseInt(elapse * this.fps / 1000);
 			if(this.force_frame_id!=undefined && this.force_frame_id>=0)this.frame_id = this.force_frame_id;
 		}
 			
 		if (this.name == "EyeL" && params.expression)this.uniforms={scale:1-params.expression[0]};
 		if (this.name == "EyeR" && params.expression)this.uniforms={scale:1-params.expression[1]};
+	}
+	Mesh.prototype.pauseThis=function(now) {
+		if(!this.paused && this.triggered) {
+			this.pauseTime = now;
+			this.paused = true;
+		}
+	}
+	Mesh.prototype.resumeThis=function(now) {
+		if(this.paused && this.triggered) {
+			this.pauseSum += now - this.pauseTime;
+			this.paused = false;
+		}
+	}
+	Mesh.prototype.resetThis=function(now) {
+		this.stop(now);
+		if(this.betriggered==undefined) {
+			this.isFinished=0;
+			this.isActive=1;
+		}
+		//this.last = now;
+		this.pauseSum = 0;
 	}
 	Mesh.prototype.triggerThis=function(now){
 		if(this.isFinished==1)return;
@@ -633,6 +661,11 @@
 				if (name == "screenH") {
 				    g_params.screenH = value;
 				}
+				if (name=="resetFlag") {
+					if(value != 0) {
+						meshlst.forEach(function(mesh){mesh.resetThis(Date.now());});
+					}
+				}
 				return 1;
 			}else{
 				try{
@@ -789,6 +822,8 @@
 						last_state = 1;
 					}
 					for(var i = 0; i < meshlst.length; i++){
+						if(params.isPause) meshlst[i].pauseThis(now);
+						else meshlst[i].resumeThis(now);
 						meshlst[i].updateEvent(params,now);
 						meshlst[i].triggerStartEvent(params,now,false);
 					}
@@ -854,6 +889,8 @@
 					}
 					
 					for(var i = 0; i < meshlst.length; i++){
+						if(params.isPause) meshlst[i].pauseThis(now);
+						else meshlst[i].resumeThis(now);
 						meshlst[i].updateEvent(params,now);
 						meshlst[i].triggerStartEvent(params,now,true);
 					}

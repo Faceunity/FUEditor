@@ -4,6 +4,21 @@
 	var item2ds;
 	var item3ds;
 	var handTrigger;
+	
+	var deepCopy =function(p, c){
+		var c = c || {};
+		for (var i in p) {
+			if (typeof p[i] === 'object') {
+				c[i] = (p[i].constructor === Array) ? [] : {};
+				deepCopy(p[i], c[i]);
+			} else {
+				c[i] = p[i];
+			}
+		}
+		return c;
+	}
+	var current_frame = 0;
+	
 	var require=function(fn){
 		var jsstr = FaceUnity.ReadFromCurrentItem(fn);
 		if(jsstr == undefined){
@@ -36,6 +51,7 @@
 	var faces=[];
 	var g_params={
 		isMultiMask: 0,
+		isPause: 0
 	};
 	return {
 		SetParam:function(name,value){
@@ -44,14 +60,20 @@
 					g_params[name] = value;
 					return 1;
 				}
+				if(name=="isPause") {
+					g_params[name] = value;
+					return 1;
+ 				}
 				var respone = false;
 				for(var i in g_items){
 					var ret = g_items[i].SetParam(name,value);
 					if(ret!=undefined)respone=true;
 				}
 				
-				var ret = handTrigger.SetParam(name,value); //set hand trigger params
-				if(ret!=undefined)respone=true;
+				if(handTrigger!=undefined && handTrigger) {
+					var ret = handTrigger.SetParam(name,value); //set hand trigger params
+					if(ret!=undefined)respone=true;
+				}
 				
 				if(respone)return 1;
 				return undefined;
@@ -90,6 +112,11 @@
 		},
 		Render:function(params){
 			try{
+				if(g_params.isPause == 0)
+					current_frame++;
+				params.frame_id = current_frame;
+				params.isPause = g_params.isPause;
+				
 				if(handTrigger && item2ds) handTrigger.TriggerHand(item2ds, params);//trigger hand
 				
 				if((FaceUnity.renderbillboardv||0)>3.0 && g_params.isMultiMask < 0.5){
@@ -133,10 +160,15 @@
 		RenderNonFace:function(params){
 			//for(var i in g_items)g_items[i].RenderNonFace(params);
 			try{
+				params.frame_id = current_frame;
+				params.isPause = g_params.isPause; 
+				
 				if(item3ds)item3ds.RenderNonFace(params,1);//face hack
 				if(item2ds)item2ds.RenderNonFace(params,1);//bg item
 				if(item3ds)item3ds.RenderNonFace(params,2);//3d item
 				if(item2ds)item2ds.RenderNonFace(params,2);//non bg item
+				
+				if(handTrigger) handTrigger.FlushHands();
 			}catch(err){
 				console.log(err.stack);
 			}

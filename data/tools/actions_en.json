@@ -1,0 +1,64 @@
+{
+    "actions": [
+        {
+            "name": "BrowsUp",
+            "condition": "params.expression[16] >= 0.4 || params.expression[17] >= 0.4 || params.expression[18] >= 0.4"
+        },
+        {
+            "name": "MouthRight",
+            "condition": "params.expression[24] >= 0.4 || params.expression[28] >= 0.4"
+        },
+        {
+            "name": "MouthLeft",
+            "condition": "params.expression[23] >= 0.4 || params.expression[27] >= 0.4"
+        },
+        {
+            "name": "Sneer",
+            "condition": "params.expression[42] >= 0.2"
+        },
+        {
+            "name": "LipsFunnel",
+            "condition": "params.expression[38] >= 0.2"
+        },
+        {
+            "name": "JawOpen",
+            "condition": "params.expression[21] >= 0.4"
+        },
+        {
+            "name": "LipsPucker",
+            "condition": "params.expression[39] >= 0.4"
+        },
+        {
+            "name": "LipsUpperClose",
+            "condition": "params.expression[33] >= 0.5 || params.expression[34] >= 0.5"
+        },
+        {
+            "name": "Puff",
+            "condition": "params.expression[43] >= 0.4"
+        },
+        {
+            "name": "EyeBlink R",
+            "condition": "params.expression[1] >= 0.6"
+        },
+        {
+            "name": "EyeBlink L",
+            "condition": "params.expression[0] >= 0.6"
+        },
+        {
+            "name": "TurningHead R",
+            "condition": "isRotationTriggered(1, 20, 1, params)"
+        },
+        {
+            "name": "TurningHead L",
+            "condition": "isRotationTriggered(1, -20, 0, params)"
+        },
+		{
+			"name": "smile",
+			"condition": "(params.expression[28] >= 0.2 || params.expression[30] >= 0.2) && (params.expression[27] >= 0.2 || params.expression[29] >= 0.2)"
+		},
+		{
+			"name": "yawn",
+			"condition": "params.expression[21] >= 0.2 && params.expression[0] >= 0.1 && params.expression[1] >= 0.1"
+		}
+    ]
+}

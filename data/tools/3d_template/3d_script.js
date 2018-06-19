@@ -414,6 +414,9 @@
 			this.has_tex_albedo_frames = false;
 		}
 		this.isFinished = 0;
+		this.paused = false;
+		this.pauseTime = 0;
+		this.pauseSum = 0;
 	}
 	Mesh.prototype.switchState = function(lst,now){
 		if(this.betriggered || this.isFinished)return;
@@ -541,9 +544,26 @@
 		this.mat = mat;
 		this.mat_cam = mat_cam;
 		if(this.triggered){
-			var elapse = now - this.last;
-			this.frame_id = parseInt(elapse * this.fps / 1000);
+			var elapse = now - this.last - this.pauseSum;
+			if(!this.paused) 
+				this.frame_id = parseInt(elapse * this.fps / 1000);
 			if(this.force_frame_id!=undefined && this.force_frame_id>=0)this.frame_id = this.force_frame_id;
+		}
+	}
+	Mesh.prototype.resetThis=function(now) {
+		this.last = now;
+		this.pauseSum = 0;
+	}
+	Mesh.prototype.pauseThis=function(now) {
+		if(!this.paused) {
+			this.pauseTime = now;
+			this.paused = true;
+		}
+	}
+	Mesh.prototype.resumeThis=function(now) {
+		if(this.paused) {
+			this.pauseSum += now - this.pauseTime;
+			this.paused = false;
 		}
 	}
 	Mesh.prototype.triggerEndEvent = function (params, now, isNoneFace, animCounter) {
@@ -742,6 +762,12 @@
 	        if (nmesh.isactiveonce) this.AnimCounter.total++;
 	    }
 	}
+	MeshGroup.prototype.resetMesh = function () {
+		var now = Date.now();
+		this.meshlst.forEach(function(mesh) {
+			mesh.resetThis(now);
+		});
+	}
 	MeshGroup.prototype.renderMesh = function (params, pass, animation, fid) {
 	    try {
 	        //for tex animation
@@ -755,6 +781,8 @@
 	        var parent = this;
 	        //update for all mesh
 	        this.meshlst.forEach(function (mesh) {
+				if(params.isPause) mesh.pauseThis(now);
+				else mesh.resumeThis(now);
 	            mesh.triggerStartEvent(params, now, false);
 	            mesh.updateEvent(params, now);
 	        });
@@ -992,6 +1020,13 @@
 			    scale_delta = Math.max(Math.min(scale_delta + value, 1.0), -0.26);
 			    scale_ex = 1.0 + scale_delta;
 			    return;
+			}
+			
+			if(name=="resetFlag") {
+				if(value != 0) {
+					for (var prop in AnimMeshs)
+						AnimMeshs[prop].meshgroup.resetMesh();
+				}
 			}
 			/*
 			否则的话，name里面就是一个JSON对象：{"name":"材质名或<global>"，"param":"参数名"}

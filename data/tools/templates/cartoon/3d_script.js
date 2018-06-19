@@ -567,6 +567,9 @@
 			this.has_tex_albedo_frames = false;
 		}
 		this.isFinished = 0;
+		this.paused = false;
+		this.pauseTime = 0;
+		this.pauseSum = 0;
 	}
 	Mesh.prototype.switchState = function(lst,now){
 		if(this.betriggered || this.isFinished)return;
@@ -698,9 +701,22 @@
 		this.mat = mat;
 		this.mat_cam = mat_cam;
 		if(this.triggered){
-			var elapse = now - this.last;
-			this.frame_id = parseInt(elapse * this.fps / 1000);
+			var elapse = now - this.last - this.pauseSum;
+			if(!this.paused) 
+				this.frame_id = parseInt(elapse * this.fps / 1000);
 			if(this.force_frame_id!=undefined && this.force_frame_id>=0)this.frame_id = this.force_frame_id;
+		}
+	}
+	Mesh.prototype.pauseThis=function(now) {
+		if(!this.paused) {
+			this.pauseTime = now;
+			this.paused = true;
+		}
+	}
+	Mesh.prototype.resumeThis=function(now) {
+		if(this.paused) {
+			this.pauseSum += now - this.pauseTime;
+			this.paused = false;
 		}
 	}
 	Mesh.prototype.triggerEndEvent = function (params, now, isNoneFace, animCounter) {
@@ -943,6 +959,8 @@
 	        var parent = this;
 	        //update for all mesh
 	        this.meshlst.forEach(function (mesh) {
+				if(params.isPause) mesh.pauseThis(now);
+				else mesh.resumeThis(now);
 	            mesh.triggerStartEvent(params, now, false);
 	            mesh.updateEvent(params, now);
 	        });

@@ -1,4 +1,4 @@
-{
+{ 
     "actions": [
         {
             "name": "taimei",
@@ -14,19 +14,19 @@
         },
         {
             "name": "nu",
-            "condition": "params.expression[42] >= 0.5"
+            "condition": "params.expression[42] >= 0.2"
         },
         {
             "name": "zuixing_o",
-            "condition": "params.expression[38] >= 0.4"
+            "condition": "params.expression[38] >= 0.2"
         },
         {
             "name": "zuixing_a",
-            "condition": "params.expression[21] >= 0.3"
+            "condition": "params.expression[21] >= 0.4"
         },
         {
             "name": "zuixing_du",
-            "condition": "params.expression[39] >= 0.5"
+            "condition": "params.expression[39] >= 0.4"
         },
         {
             "name": "zuixing_min",
@@ -34,15 +34,15 @@
         },
         {
             "name": "zuixing_guqi",
-            "condition": "params.expression[43] >= 0.5"
+            "condition": "params.expression[43] >= 0.4"
         },
         {
             "name": "biyan_zuo",
-            "condition": "params.expression[1] >= 0.5"
+            "condition": "params.expression[1] >= 0.6"
         },
         {
             "name": "biyan_you",
-            "condition": "params.expression[0] >= 0.5"
+            "condition": "params.expression[0] >= 0.6"
         },
         {
             "name": "zhuantou_zuo",
@@ -51,6 +51,14 @@
         {
             "name": "zhuantou_you",
             "condition": "isRotationTriggered(1, -20, 0, params)"
-        }
+        },
+		{
+			"name": "weixiao",
+			"condition": "(params.expression[28] >= 0.2 || params.expression[30] >= 0.2) && (params.expression[27] >= 0.2 || params.expression[29] >= 0.2)"
+		},
+		{
+			"name": "haqian",
+			"condition": "params.expression[21] >= 0.2 && params.expression[0] >= 0.1 && params.expression[1] >= 0.1"
+		}
     ]
 }

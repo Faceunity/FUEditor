@@ -249,6 +249,8 @@ fuItemSetParamd(item_id, "rotationTexAngle",-90);     //顺时针旋转90度
 
 ![test](./img/follow_hand.png)  
 
+每个bundle只能支持一种手势，多手势可以添加不同的bundle，但是会导致识别效率下降的问题。  
+
 - - -
 
 #### 2.6 组动画
@@ -513,7 +515,49 @@ cartoon模板下的材质参数
 
 ![test](./img/example_cartoon.png)  
 
-animoji模板和simple模板材质参数是一样的  
+animoji模板的材质参数  
+
+![test](./img/temp_animoji1.png)  
+
+ambient_light_intensity:  ambient光照强度  
+
+L0_yaw: 主光源左右方向调节  
+
+L0_Pitch:主光源上下方向调节，0.45表示从上方45度角照亮模型  
+
+L0_R，L0_G，L0_B: 主光源颜色  
+
+L0Intensity:主光源强度  
+
+![test](./img/temp_animoji2.png)  
+
+Tex_ao：    ao贴图  
+
+Tex_albedo:  颜色贴图  
+
+Tex_specular:高光贴图  
+
+Tex_emission:自发光贴图  
+
+Ao_intensity:  AO图作用强度  
+
+Diffuse_intensity:diffuse图作用强度  
+
+Diffuse_wrap:漫反射的过渡强度。下图分别为同等光照下，值为0.0和0.5的效果。Wrap值越大，背面越通透  
+
+Diffuse_light_add:加强漫反射的光照  
+
+Specular_intensity:高光的强度  
+
+material_shiness_max:高光最光滑部分的shiness系数  
+
+material_shiness_min:高光最粗糙部分的shiness系数  
+
+Emission_intensity:自发光强度  
+
+**animoji效果**  
+
+![test](./img/temp_animoji_result.png)  
 
 ## 13. 实时预览  
  - 打开摄像头，点击 ![test](./img/qt/play.png)按钮。
