@@ -517,10 +517,17 @@
 
 
 		if(V(matex.is_eye,this.is_eye)){
-			mat=FaceUnity.MatrixMul(
-				FaceUnity.CreateEyeMatrix(
+			var temp_mat = FaceUnity.CreateEyeMatrix(
 					[this.P_center[0]*SCALE,this.P_center[1]*SCALE,-this.P_center[2]*SCALE],
-					[params.pupil_pos[0]*V(globals.eyeRscale,1.5),params.pupil_pos[1]]),
+					[params.pupil_pos[0]*V(globals.eyeRscale,1.5),params.pupil_pos[1]]);
+			if (g_params['is3DFlipH']) {
+
+				temp_mat = FaceUnity.CreateEyeMatrix(
+					[(-this.P_center[0]-7.364)*SCALE,this.P_center[1]*SCALE,-this.P_center[2]*SCALE],
+					[params.pupil_pos[0]*V(globals.eyeRscale,1.5),params.pupil_pos[1]]);
+			}
+			mat=FaceUnity.MatrixMul(
+				temp_mat,
 				mat);
 		}
 		this.use_custom_gl_states=1;
@@ -655,12 +662,14 @@
 		}
 		if (this.translate != null && this.translate != undefined &&
             this.rotate != null && this.rotate != undefined &&
-            this.transform != null && this.transform != undefined) {
+            this.transform != null && this.transform != undefined &&
+			this.scale != null && this.scale != undefined) {
 		    shaderParams.trans_pos = this.translate;
 		    shaderParams.rot_mat1 = [this.rotate[0], this.rotate[1], this.rotate[2]];
 		    shaderParams.rot_mat2 = [this.rotate[3], this.rotate[4], this.rotate[5]];
 		    shaderParams.rot_mat3 = [this.rotate[6], this.rotate[7], this.rotate[8]];
 		    shaderParams.model_mat = this.transform;
+			shaderParams.scale = this.scale;
 		} else {
 		    shaderParams.rot_mat1 = [1, 0, 0];
 		    shaderParams.rot_mat2 = [0, 1, 0];
@@ -670,6 +679,7 @@
                                       0, 1, 0, 0,
                                       0, 0, 1, 0,
                                       0, 0, 0, 1];
+			shaderParams.scale = [1, 1, 1];
 		}
 		if (animation != null) {
 		    if (animation.use_vtf == 1) 

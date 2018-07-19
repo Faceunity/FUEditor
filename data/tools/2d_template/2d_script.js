@@ -179,8 +179,9 @@
 		this.paused = false;
 		this.pauseTime = 0;
 		this.pauseSum = 0;
+		this.focal_length = (this.focal_length==undefined || Math.abs(this.focal_length)<0.001)?742.0:this.focal_length;
 	}
-	Mesh.prototype.reExtract=function (params){
+	Mesh.prototype.reExtract=function (params){ 
 		try{
 			var w = params.w;
 			var h = params.h; 
@@ -245,12 +246,12 @@
 			    }
 
 				var scalez = 1;
-				if(this.name[this.name.length-2]=='g')scalez = (20000/params.focal_length);//fcbackground
+				if(this.name[this.name.length-2]=='g') scalez = (20000/this.focal_length);//fcbackground
 				for (var j = 0; j < this.texture_frames_bk.length; j++) {
-				    this.texture_frames[j].v = [-scalez * w / 2 * g_params.bgScaleW, scalez * h / 2 * g_params.bgScaleH, scalez * params.focal_length,
-												+scalez * w / 2 * g_params.bgScaleW, scalez * h / 2 * g_params.bgScaleH, scalez * params.focal_length,
-												+scalez * w / 2 * g_params.bgScaleW, -scalez * h / 2 * g_params.bgScaleH, scalez * params.focal_length,
-												-scalez * w / 2 * g_params.bgScaleW, -scalez * h / 2 * g_params.bgScaleH, scalez * params.focal_length];
+				    this.texture_frames[j].v = [-scalez * w / 2 * g_params.bgScaleW, scalez * h / 2 * g_params.bgScaleH, scalez * this.focal_length,
+												+scalez * w / 2 * g_params.bgScaleW, scalez * h / 2 * g_params.bgScaleH, scalez * this.focal_length,
+												+scalez * w / 2 * g_params.bgScaleW, -scalez * h / 2 * g_params.bgScaleH, scalez * this.focal_length,
+												-scalez * w / 2 * g_params.bgScaleW, -scalez * h / 2 * g_params.bgScaleH, scalez * this.focal_length];
 				}
 				this.matp = ar_mat;
 				this.isFullScreenObj = 1;
@@ -348,7 +349,8 @@
 		if(this.triggerNextNodesRef==undefined || this.triggerNextNodesRef.length==0)return;
 		for(var idx in this.triggerNextNodesRef){
 			if(this.triggerNextNodesRef[idx].isFinished==0){
-				this.triggerNextNodesRef[idx].isActive=true;
+				//this.triggerNextNodesRef[idx].isActive=true;
+				this.triggerNextNodesRef[idx].triggerThis(Date.now());
 			}
 		}
 	}
@@ -393,7 +395,7 @@
 		console.log("thriggerThis2d",this.name);
 	}
 	Mesh.prototype.triggerStartEvent=function(params,now,isNoneFace){
-		if(this.triggered || this.handTriggerd || !this.isActive || !(this.nodetype == 0 || this.nodetype == 1)) return;
+		if(this.triggered || this.handTriggerd || !this.isActive || !(this.nodetype == 0 || this.nodetype == 1) || this.betriggered!=undefined) return;
 		if((!isNoneFace && (this.triggerstart=="newface" || (this.triggerstart=="faceaction" && isActionTriggered(this.startaction,params))))
 				||(isNoneFace && this.triggerstart=="alwaysrender")
 				||(!isNoneFace && this.hand >= 0)){ // trigger hand	
@@ -493,7 +495,7 @@
 						root.childNodesRef[j].triggerThis(now);
 					}
 				}
-			}else if(this.nodetype==2){
+			}else if(this.nodetype==0||this.nodetype==1||this.nodetype==2){
 				//start next node
 				for(var j = 0;j<this.childNodes.length;j++){
 					this.childNodesRef[j].triggerThis(now);

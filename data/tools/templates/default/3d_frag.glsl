@@ -1,4 +1,4 @@
-varying vec3 N_frag,dPds_frag,dPdt_frag;
+varying vec3 N_frag,dPds_frag,dPdt_frag; 
 varying vec2 st_frag;
 varying vec3 V_frag;
 
@@ -105,7 +105,9 @@ vec4 shader_main(){
 	//L=-L2_dir;C_diff+=max(dot(N,L),0.0)*L2_color; C_spec+=LightingFuncGGX_REF(N,V,L,roughness,0.08);
 	float smoothness=sqr(texture2D(tex_smoothness,st_frag).x)*has_tex_smoothness+(1.0-has_tex_smoothness);
 	vec4 C_tex=sqr(texture2D(tex_albedo,st_frag));
-	vec3 C_brdf=(C_diff*Kd+vec3(Ka))*C_tex.xyz+vec3(Ks*smoothness)*(C_spec);
+	vec3 spec = vec3(Ks*smoothness)*(C_spec);
+	if(Ks < 0.0001) spec = vec3(0.0);
+	vec3 C_brdf=(C_diff*Kd+vec3(Ka))*C_tex.xyz+spec;
 	vec3 C_refl=sampleEnv(R);
 	return vec4(sqrt(C_brdf+(C_refl-C_brdf)*(fresnel(dotNV)*Kr*smoothness)),C_tex.w);
 }

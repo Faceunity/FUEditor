@@ -186,7 +186,6 @@ fuItemSetParamd(item_id, "rotationTexAngle",-90);     //顺时针旋转90度
   - 触发结束 - 屏幕初始化【未定义操作】
   - 触发结束 - 特定脸部动作，当出现特定人脸动作特定脸部动作End时，停止绘制元素，当脸部动作FaceActtionStart再次被触发时，再次绘制。当没有特定人脸特定脸部动作End出现时，按needtokeep特定脸部动作优先条件判断是否绘制，如果绘制按照循环类型控制逻辑。  
 
-
 ---
 #### 2.4 特定脸部动作
 当道具元素选择触发开始类型为："特定脸部动作"，然后在触发开始动作列表中选择一个动作，能够根据人脸的特定表情触发元素播放。  
@@ -207,6 +206,8 @@ fuItemSetParamd(item_id, "rotationTexAngle",-90);     //顺时针旋转90度
 - "biyan_you" 为闭右眼![test](./img/bq/11.png)   
 - "zhuantou_zuo" 为头往左边转![test](./img/bq/12.png)   
 - "zhuantou_you" 为头往右边转![test](./img/bq/13.png)  
+- “weixiao” 为微笑表情  
+- “haqian” 为打哈欠表情  
 
 
 ###### 2.4.2 自定义脸部动作
@@ -280,7 +281,8 @@ AR Mesh 是拟合人脸的一个3D的mesh, 当需要制作"面具"，可以使�
 
 - 创建：点击列表中"AR Mesh"下"+"创建新的元素。
 - 删除：右键点击"删除"删除当前选中的元素。
-- 调整：可以通过右键调整元素的先后顺序。  
+- 调整：可以通过右键调整元素的先后顺序。
+- 变形：AR mesh可以选择是否参与瘦脸等美颜效果的变形，勾选变形AR mesh表示参与变形。  
   __注__：支持多层 AR mesh，前后关系由在序列中先后顺序决定。  
 
 AR Mesh 纹理制作方法：
@@ -320,15 +322,15 @@ Faceunity Nama SDK拥有实时跟踪三维人脸的能力，能够实时推算�
 - 模型制作  
   根据参考人头obj，在3D Max/Maya等三维建模软件中制作想要的道具,最后导出obj文件。下面以maya为例，
   1. 一定要导出材质和组  
-    材质在导出之后肯定是要重新调整过的，但是编辑器仍然需要知道 Maya 里哪些面 绑的材质是一样的，哪些面是不一样的。要不然到编辑器里所有的面就会合到一起， 不能分开调了。组也是一样的道理。  
-    __注__：一个组内只能使用一个材质。      
-     ![maya export](./img/mayae.png)  
+      材质在导出之后肯定是要重新调整过的，但是编辑器仍然需要知道 Maya 里哪些面 绑的材质是一样的，哪些面是不一样的。要不然到编辑器里所有的面就会合到一起， 不能分开调了。组也是一样的道理。  
+      __注__：一个组内只能使用一个材质。      
+        ![maya export](./img/mayae.png)  
 
   2. 一定要对着参考人头调好模型大小，对于道具更要调整好位置  
-    导入参考人头到maya中  
-    ![maya import](./img/mayai.png)  
-    编辑器有一定的位置和大小调整功能，但如果道具小了/大了几十倍上百倍肯定就不行了。  
-    ![maya model](./img/mayam.png)  
+      导入参考人头到maya中  
+      ![maya import](./img/mayai.png)  
+      编辑器有一定的位置和大小调整功能，但如果道具小了/大了几十倍上百倍肯定就不行了。  
+      ![maya model](./img/mayam.png)  
 
 - 创建3D项目  
   1. 点击创建项目，项目类型选择3D，输入项目名称，点击"OK"创建项目。  
@@ -465,7 +467,7 @@ Picasso让照片活起来的技术。用户选择一张照片，经过自动的�
 - 需要带有picasso的权限的证书  
 
 #### 7.4 人像驱动道具制作
-在创建项目时，项目类型选择“Picasso”，输入项目名，创建工程。再选择图片，等待生成内容。需要联网，大概需要等待几秒，内容生成完后，进行打包预览即可。
+在创建项目时，项目类型选择“Picasso”，输入项目名，创建工程。再选择图片，等待生成内容。需要联网，大概需要等待几秒，内容生成完后，进行打包预览即可。目前只支持图片内容为单个人脸，不支持多人脸生成。
 ![p03](./img/picasso1.png)  
 
 ## 8. 高级视频滤镜  
@@ -484,6 +486,7 @@ __测试打包、正式打包__：
 - 通过 ![test](./img/release.png) 打包出来的bundle即是正式发布bundle，道具打包后在“FUEditor/Projects/当前道具/__release__/”目录中。  
    __注：__ 1.正式发布前需要确保测试打包正常。2.正式发布需要__网络连接__，需要正式证书。
 - 点击![test](./img/dir.png) 直接打开当前项目目录。
+- 支持显示道具的签名类型![checkitem](img\checkitem.png)，黑色为正在开发的bundle。红色为测试打包，蓝色为正式打包。如需查看可点击![loadBTN](img\loadBTN.png)按钮添加到这个列表后来查看bundle道具签名类型。
 
 ## 10. 项目保存与切换
 - 点击![test](./img/qt32/notes.png) ，保存当前项目xxxx，工程文件在Project/xxxx/xxxx.fuproj。保存后可以打开重新读取。
@@ -501,23 +504,33 @@ __测试打包、正式打包__：
 
 在新建项目时选择对应的模板名即可使用相应的模板，不同的模板下模型可以调节的材质参数是不同的，用户可以自己制作模板放入该目录下即可在新建项目时使用，simple模板是最简单的模板采用phong光照模型，自定义模板可以参考simple模板进行制作，default模板则是默认模板，光照模型用的是默认的ggx。  
 
+目前共有10个预设模板，以下为模板介绍：  
+
+default模板是默认模板，采用默认的ggx光照，兼容以前版本的道具；  
+
+simple模板是简易模板，采用Lambert光照，使用精简的输入项；  
+
+cartoon模板是卡通风格模板，采用卡通渲染；  
+
+shadow模板可以让模型产生阴影；  
+
+blinn模板采用blinn光照模型；  
+
+lambert模板使用lambert光照模型；  
+
+phong模板使用phong光照模型；  
+
+ward模板使用ward光照模型；  
+
+animoji用于制作animoji道具；  
+
+advance模板为ggx模型加入ao效果；  
+
+使用模板：  
+
 ![test](./img/template.png)  
 
-default模板下的材质参数  
-
-![test](./img/example_default.png)     
-
-simple模板下的材质参数  
-
-![test](./img/example_simple.png)  
-
-cartoon模板下的材质参数  
-
-![test](./img/example_cartoon.png)  
-
-animoji模板的材质参数  
-
-![test](./img/temp_animoji1.png)  
+animoji模板的材质参数：    
 
 ambient_light_intensity:  ambient光照强度  
 
@@ -527,9 +540,7 @@ L0_Pitch:主光源上下方向调节，0.45表示从上方45度角照亮模型
 
 L0_R，L0_G，L0_B: 主光源颜色  
 
-L0Intensity:主光源强度  
-
-![test](./img/temp_animoji2.png)  
+L0Intensity:主光源强度    
 
 Tex_ao：    ao贴图  
 
@@ -559,9 +570,24 @@ Emission_intensity:自发光强度
 
 ![test](./img/temp_animoji_result.png)  
 
+**animoji+shadow 阴影效果**
+
+
+
+![baimao](.\img\baimao.gif)
+
+可以在猫胡须下和后脑勺看到明显的阴影效果。
+
+**animoji+物理动效**
+
+![douniuquan1](.\img\douniuquan1.gif)
+
+斗牛犬的耳朵可以随着摇头而自由摆动。物理动效的制作详细查看[链接](./FUEditor Physics User Specification.md)
+
 ## 13. 实时预览  
  - 打开摄像头，点击 ![test](./img/qt/play.png)按钮。
  - 暂停播放，点击 ![test](./img/qt/pause.png)按钮。
+ - 切换预览分辨率，在预览窗口单击右键，弹出菜单如图，可选项为相机输入分辨率的一倍（1X）、二倍（1X）、四倍（1X）、八倍（1X）的大小，倍数越大渲染分辨率越高，相应也要求更高品质的硬件设备。普通配置的PC建议最高在二倍分辨率使用。![resolution](.\img\resolution.png)
  - 多摄像头切换，点击选择菜单“摄像头”，在“相机列表”中选择对应的摄像头。
  - 选择本地视频作为输入视频，点击选择菜单“摄像头”，点击“捕捉视频文件”，选择视频文件。
  - 关闭释放摄像头，选择菜单“摄像头”，点击“关闭相机”。  

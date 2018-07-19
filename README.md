@@ -1,9 +1,10 @@
 # **FUEditor**
 ### \***New Features:**
- - 修复模型不存在导致的Crash 。
- - 更新表情触发系数。
- - 更新Animoji模板。
- - 新增[打哈欠][微笑]两个触发表情。
+ - 新增shadow map阴影模板 
+ - 支持debug道具检测 
+ - 修复2D动画触发bug 
+ - 支持物理效果的渲染 
+ - 支持修改渲染分辨率 
 
 ## 简介
 __FUEditor__ 是一款高效便捷的AR人脸道具编辑工具软件，为[Faceunity](http://www.faceunity.com/)公司的Nama SDK提供支持。
@@ -22,7 +23,7 @@ __FUEditor__ 是一款高效便捷的AR人脸道具编辑工具软件，为[Face
   git pull
 ```
 -	FUEditor无须安装可直接使用，将FUEditor.zip解压到系统适当位置。
-  -目录结构解释
+    -目录结构解释
 ```C
  +FUEdittor\          //FUEditor根目录
        -FUEditor.bat      //双击点击，启动FUEditor

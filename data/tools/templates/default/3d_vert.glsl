@@ -19,7 +19,7 @@ void main(){
 	
 	vec3 Ps=P*scales;
 	if(isFlipH>0.5){
-		Ps.x = -Ps.x-7.364;
+		Ps.x = -Ps.x-7.364/scale[0];
 	}
 
 	Ps = scale_e * Ps;

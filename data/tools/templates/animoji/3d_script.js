@@ -1,4 +1,4 @@
-(function(){
+﻿(function(){
 	/*
 	以下的注释用来给编辑器提供参数。格式为：
 		gparam或mparam 名字 控件信息
@@ -12,22 +12,15 @@
 	*/
 	//物体名，别忘了设哦～ 千万别忘了设哦～～ 如果设成了"unnamed"可是会打警告的哦～～～
 	//@#gparam name {"type":"edit","default_value":"unnamed"}
-	//环境图
-	//@gparam tex_light_probe {"type":"texture","default_value":"beach_1_4.jpg"}
-	//环境图的旋转角度
-	//@gparam envmap_shift {"type":"slider","min":0,"max":1,"default_value":0.75}
-	//环境图的视角
-	//@gparam envmap_fov {"type":"slider","min":0.5,"max":5,"default_value":1.0}
-	//道具整体缩放的比例，用对数调节是为了方便
-	//@gparam log_scale {"type":"slider","min":-5,"max":5,"default_value":0}
-	//眼球左右旋转的倍率
-	//@gparam eyeRscale {"type":"slider","min":0.0,"max":3.0,"default_value":1.5}
 	///////////////////////////
 	/*
 	以下是光源参数。出于节省起见，现在只用了两个光。主光L0负责主要的照明，补光L1把侧面补亮。只有主光会产生高光。
 	将来有需求的话可以把shader里L2的注释去掉，加个背光什么的。
 	现在的光源都没有产生阴影。有需求请联系我们，在系统里加一下。
 	*/
+	//高光颜色r
+	//@gparam ambient_light_intensity {"type":"slider","min":0,"max":1,"default_value":0}
+
 	//主光的航向角，也就是左右转的那个角
 	//@gparam L0_yaw {"type":"slider","min":0,"max":1,"default_value":0}
 	//主光的俯仰角，也就是上下转的那个角
@@ -38,34 +31,25 @@
 	//@gparam L0_B {"type":"slider","min":0,"max":1,"default_value":1}
 	//主光的强度，用对数调还是为了方便
 	//@gparam L0Intensity {"type":"slider","min":-4,"max":4,"default_value":0}
-	//补光的参数，和主光一样的。再次重申，补光不产生高光。
-	//@gparam L1_yaw {"type":"slider","min":-0.5,"max":0.5,"default_value":0}
-	//@gparam L1_pitch {"type":"slider","min":-1,"max":1,"default_value":0}
-	//@gparam L1_R {"type":"slider","min":0,"max":1,"default_value":1}
-	//@gparam L1_G {"type":"slider","min":0,"max":1,"default_value":1}
-	//@gparam L1_B {"type":"slider","min":0,"max":1,"default_value":1}
-	//@gparam L1Intensity {"type":"slider","min":-4,"max":4,"default_value":-2}
+
 	//半透明算法阈值，设为1.0适合普通简单的半透明物体，设为0.5适合头发
 	//@gparam alphaThreshold {"type":"edit","default_value":"1.0"}
 	//是否固定位置,不跟随人脸运动，固定位置如下fixed_x/y/z
 	//在没有人脸的时候的固定位置
-	//@gparam is_fix_x {"type":"slider","min":0,"max":1,"default_value":0}
-	//@gparam is_fix_y {"type":"slider","min":0,"max":1,"default_value":0}
-	//@gparam is_fix_z {"type":"slider","min":0,"max":1,"default_value":0}
+	//@gparam is_fix_x {"type":"slider","min":0,"max":1,"default_value":1}
+	//@gparam is_fix_y {"type":"slider","min":0,"max":1,"default_value":1}
+	//@gparam is_fix_z {"type":"slider","min":0,"max":1,"default_value":1}
 	//@gparam fixed_x {"type":"slider","min":-600,"max":600,"default_value":0}
 	//@gparam fixed_y {"type":"slider","min":-600,"max":600,"default_value":0}
-	//@gparam fixed_z {"type":"slider","min":0,"max":2000,"default_value":350}
+	//@gparam fixed_z {"type":"slider","min":0,"max":2000,"default_value":1036}
 	//在没有人脸的时候是否绘制
-	//@gparam isnofacerender {"type":"slider","min":0,"max":1,"default_value":0}
-	//@gparam fixed_nx {"type":"slider","min":-600,"max":600,"default_value":0}
-	//@gparam fixed_ny {"type":"slider","min":-600,"max":600,"default_value":0}
-	//@gparam fixed_nz {"type":"slider","min":0,"max":2000,"default_value":350}
-	
+	//@gparam isnofacerender {"type":"slider","min":0,"max":1,"default_value":1}
+
 	//@gparam use_fov {"type":"slider","min":0,"max":1,"default_value":0}
 	//@gparam camera_fov {"type":"slider","min":5,"max":90,"default_value":20}
 	//控制旋转的幅度，rot_weight=1完全按照人头旋转，rot_weight=0不跟人头旋转
-	//@gparam rot_weight {"type":"slider","min":0,"max":1,"default_value":1}	
-	//@gparam expr_clamp {"type":"slider","min":0,"max":1,"default_value":0}	
+	//@gparam rot_weight {"type":"slider","min":0,"max":1,"default_value":1}
+	//@gparam expr_clamp {"type":"slider","min":0,"max":1,"default_value":1}
 	///////////////////////////
 	//以下是材质参数
 	/*物体的类型,一是镂空,[0,0.25]；
@@ -74,18 +58,27 @@
 				四是只会跟着脑袋位移变化和大小的缩放，例如身体(0.75,1]。
 	*/
 	//@mparam obj_type {"type":"slider","min":0,"max":1,"default_value":0.3}
-	
-	//颜色贴图，默认的white.png是白的。建议先弄好贴图再去调光哦。
+
 	//@mparam tex_albedo {"type":"texture","default_value":"white.png","isTex":1}
-	//自发光强度
-	//@mparam Ka {"type":"slider","min":0,"max":1,"default_value":0}
-	//漫反射强度
-	//@mparam Kd {"type":"slider","min":0,"max":1,"default_value":0.3}
-	//高光强度，注意高光不受颜色贴图影响
-	//@mparam Ks {"type":"slider","min":0,"max":1,"default_value":0.2}
-	//这个是需不需要背面剔除的标记
-	//@mparam back_cull {"type":"slider","min":0,"max":1,"default_value":1}
-	
+	//@mparam tex_ao {"type":"texture","default_value":"white.png"}
+	//@mparam tex_specular {"type":"texture","default_value":"black.png"}
+	//@mparam tex_emission {"type":"texture","default_value":"black.png"}
+
+	// param
+	//@mparam ao_intensity  {"type":"slider","min":0,"max":1,"default_value":1.0}
+	//@mparam diffuse_intensity  {"type":"slider","min":0,"max":2,"default_value":1.0}
+	//@mparam diffuse_wrap       {"type":"slider","min":0,"max":1,"default_value":0.0}
+	//@mparam diffuse_light_add  {"type":"slider","min":-1,"max":1,"default_value":0.0}
+	//@mparam specular_intensity {"type":"slider","min":0,"max":2,"default_value":1.0}
+	//@mparam material_shiness_max {"type":"slider","min":0,"max":200,"default_value":100}
+	//@mparam material_shiness_min {"type":"slider","min":0,"max":200,"default_value":15}
+	//@mparam emission_intensity {"type":"slider","min":0,"max":2,"default_value":0.0}
+
+	//@mparam is_eye {"type":"slider","min":0,"max":1,"default_value":0}
+	//这个材质是不是头发的标记
+	//@mparam is_hair {"type":"slider","min":0,"max":1,"default_value":0}
+
+
 	/*
 	编辑器保存的结果会存放在"globals.json"和"materials.json"两个文件中。
 	但在保存之前这两个文件是不存在的，所以要考虑到ReadFromCurrentItem失败的情况。
@@ -131,7 +124,7 @@
 
         // z-axis rotation
         var siny = 2.0 * (w * z + x * y);
-        var cosy = 1.0 - 2.0 * (y * y + z * z);  
+        var cosy = 1.0 - 2.0 * (y * y + z * z);
         var rz = Math.atan2(siny, cosy);
 
         var rta = 180.0 / Math.PI;
@@ -160,7 +153,59 @@
 	var isActionTriggered=function (actionname, params){
 		if(params.expression==undefined || params.rotation==undefined)return false;
 		switch (actionname){
-			//#action
+
+			case "taimei":
+				return params.expression[16] >= 0.4 || params.expression[17] >= 0.4 || params.expression[18] >= 0.4;
+				break;
+
+			case "taizuijiao_zuo":
+				return params.expression[24] >= 0.4 || params.expression[28] >= 0.4;
+				break;
+
+			case "taizuijiao_you":
+				return params.expression[23] >= 0.4 || params.expression[27] >= 0.4;
+				break;
+
+			case "nu":
+				return params.expression[42] >= 0.5;
+				break;
+
+			case "zuixing_o":
+				return params.expression[38] >= 0.4;
+				break;
+
+			case "zuixing_a":
+				return params.expression[21] >= 0.3;
+				break;
+
+			case "zuixing_du":
+				return params.expression[39] >= 0.5;
+				break;
+
+			case "zuixing_min":
+				return params.expression[33] >= 0.5 || params.expression[34] >= 0.5;
+				break;
+
+			case "zuixing_guqi":
+				return params.expression[43] >= 0.5;
+				break;
+
+			case "biyan_zuo":
+				return params.expression[1] >= 0.5;
+				break;
+
+			case "biyan_you":
+				return params.expression[0] >= 0.5;
+				break;
+
+			case "zhuantou_zuo":
+				return params.rotation[1] >= 0.1;
+				break;
+
+			case "zhuantou_you":
+				return params.rotation[1] >= 0.1;
+				break;
+
 			default:
 				return false;
 				break;
@@ -201,6 +246,34 @@
 	    return [-a[0], -a[1], -a[2]];
 	}
 	//////////////////////////////
+	
+	var TextureMapping = {
+		"grey.png":"vec3(0.5)",
+		"white.png":"vec3(1.0)",
+		"black.png":"vec3(0.0)",
+		"blue.png":"vec3(0.0,0.0,1.0)",
+		"zero.png":"vec3(0.0)"
+	};
+	
+	function AttachTexture(matex,tex_map,name,uniform,macroname,defaulttex) {
+		var marcro="#define "+macroname+"\n";
+		for(var prop in TextureMapping) {
+			if(defaulttex==prop) 
+				marcro+="vec3 "+macroname.toLowerCase()+"="+TextureMapping[prop]+";\n";
+		}
+		if(matex[name]==undefined || tex_map[matex[name]]==undefined) {
+			return marcro;
+		} else {
+			if(matex[name]==defaulttex)
+				return marcro;
+			else
+				uniform[name]=tex_map[matex[name]];
+		}
+		return "";
+	}
+
+	var tracked = 0;
+
 	var globals=JSON.parse(FaceUnity.ReadFromCurrentItem("globals.json")||"{}");
 	var materials_json=JSON.parse(FaceUnity.ReadFromCurrentItem("materials.json")||"{}");
 	//下面是正常的三维道具绘制流程
@@ -216,6 +289,8 @@
 	var joint_json_string = FaceUnity.ReadFromCurrentItem("joints.json") || "{}";
 	var bones_json_string = FaceUnity.ReadFromCurrentItem("bones.json") || "{}";
 	var canUsePhysical = rigidBody_json_string != "{}" && joint_json_string != "{}" && bones_json_string != "{}";
+    var g_main_bone = -1;
+	var g_is_physics_init = false;
 
     //全局旋转和缩放
 	var rot_delta = 0.0;
@@ -253,6 +328,9 @@
 	var g_params={
 		is3DFlipH: 0.0,
 		weightOffset:[0.0,0.0,0.0],
+		matp:[0.0,0.0,0.0,1.0],
+		rotation_mode: -1,
+		baked: 0,
 	};
 	var faces = [];
 	var tex_map={};
@@ -310,7 +388,7 @@
 		"enable_depth_test":1,
 		//"shader":FaceUnity.ReadFromCurrentItem("bg.glsl"),
 	};
-	
+
 	var AnimCounter={
 		names:{},
 		count:0,
@@ -329,7 +407,7 @@
 			return (this.count >= this.total && this.total!=0) ? 1 : 0;
 		}
 	}
-	
+
 	var deepCopy =function(p, c){
 		var c = c || {};
 		for (var i in p) {
@@ -347,6 +425,7 @@
 	    //filter
 	    var filter_num = 10;
 	    var l0, l1, l2, l3;
+	    params.smooth_rotation = [0, 0, 0, 1];
 	    if (user_frame_id > filter_num) {
 	        filter_array.shift();
 	        filter_array.push(params.rotation);
@@ -371,10 +450,17 @@
 	        filter_array.push(params.rotation);
 	    }
 	    //ease
-	    var input_rot_weight = [0.5, 0.3, 0.1, 0.5];
+	    // var input_rot_weight = [0.5, 0.3, 0.1, 0.5];
+	    var input_rot_weight = [1.0, 1.0, 0.3, 1.0];
 
-	    params.smooth_rotation = [0, 0, 0, 1];
-	    params.bt_rot_weight = [1, 1, 1, 0.5];
+
+	    if (FaceUnity.m_n_valid_faces == 1) {
+	    	 g_dde_rot=params.smooth_rotation;
+	    }
+	    else
+	    {
+	    	params.smooth_rotation=g_dde_rot;
+	    }
 	    var w = input_rot_weight;
 	    params.smooth_rotation = [w[0] * params.rotation[0], w[1] * params.rotation[1], w[2] * params.rotation[2], w[3] * params.rotation[3]];
 	    //ease end
@@ -394,9 +480,6 @@
 			this.has_tex_albedo_frames = false;
 		}
 		this.isFinished = 0;
-		this.paused = false;
-		this.pauseTime = 0;
-		this.pauseSum = 0;
 	}
 	Mesh.prototype.switchState = function(lst,now){
 		if(this.betriggered || this.isFinished)return;
@@ -416,7 +499,7 @@
 		this.activateNext();
 		if(this.triggerstart=="newface"||this.triggerstart=="alwaysrender"){
 			this.isActive = false;
-		}	
+		}
 		if(this.isactiveonce==1){
 			this.isFinished=1;
 			animCounter.finish(this.name);
@@ -444,15 +527,15 @@
 	Mesh.prototype.triggerStartEvent = function (params, now, isNoneFace) {
 		if(this.triggered || !this.isActive)return;
 		if((!isNoneFace && (this.triggerstart=="newface" || (this.triggerstart=="faceaction" && isActionTriggered(this.startaction,params))))
-			||(isNoneFace && this.triggerstart=="alwaysrender")){		 
+			||(isNoneFace && this.triggerstart=="alwaysrender")){
 				this.triggerThis(now);
 		}
 	}
 	Mesh.prototype.updateEvent = function(params,now){
 		var matex=(materials_json[this.name]||{});
-		
+
 		var rotation = params.rotation.slice();
-		
+
 		if(V(globals.rot_weight,1.0) < 0.05){
 			rotation = [0,0,0,1];
 		}else if(V(globals.rot_weight,1.0) < 0.95){
@@ -471,12 +554,12 @@
 			}
 		}
 		*/
-		
+
 		var trans = [0, 0, 0];
 		trans[0] = this.translate[0];
 		trans[1] = this.translate[1];
 		trans[2] = -this.translate[2];
-		
+
 		var mat = FaceUnity.MatrixTranslate(AddVec3(params.translation, trans));
 		mat = FaceUnity.MatrixMul(rot_ex, mat);
 		mat = FaceUnity.MatrixMul(FaceUnity.MatrixTranslate(InvVec3(trans)), mat);
@@ -524,22 +607,9 @@
 		this.mat = mat;
 		this.mat_cam = mat_cam;
 		if(this.triggered){
-			var elapse = now - this.last - this.pauseSum;
-			if(!this.paused) 
-				this.frame_id = parseInt(elapse * this.fps / 1000);
+			var elapse = now - this.last;
+			this.frame_id = parseInt(elapse * this.fps / 1000);
 			if(this.force_frame_id!=undefined && this.force_frame_id>=0)this.frame_id = this.force_frame_id;
-		}
-	}
-	Mesh.prototype.pauseThis=function(now) {
-		if(!this.paused) {
-			this.pauseTime = now;
-			this.paused = true;
-		}
-	}
-	Mesh.prototype.resumeThis=function(now) {
-		if(this.paused) {
-			this.pauseSum += now - this.pauseTime;
-			this.paused = false;
 		}
 	}
 	Mesh.prototype.triggerEndEvent = function (params, now, isNoneFace, animCounter) {
@@ -552,19 +622,19 @@
 			    this.stop(now, animCounter);
 			}
 			if(this.triggerstart=="alwaysrender")return;
-			
+
 			if(/*action keep*/this.triggerstart=="faceaction" && this.needkeepfaceaction== 1 && !isActionTriggered(this.startaction,params)){
 			    this.stop(now, animCounter);
 			}
 		}else{
 			if(this.triggerstart!="alwaysrender")return;
 		}
-		
+
 		if(/*loop end*/this.looptype=="loopcnt" && ((this.frame_id +1) >= this.tex_albedo_frames.length * this.loopcnt)){
 		    this.stop(now, animCounter);
 		}
 	}
-	
+
 	Mesh.prototype.renderEvent = function (blendshape, params, pass, shader, animation, fid) {
 	    if (!this.triggered || !this.isActive) return;
 		var matex=(materials_json[this.name]||{});
@@ -579,18 +649,90 @@
 		if(V(globals.use_fov,0)>0.5){
 			var mat_proj = FaceUnity.CreateProjectionMatrix_FOV(V(globals.camera_fov,20));
 		}else{
-			var mat_proj = FaceUnity.CreateProjectionMatrix();
+			var mat_proj = FaceUnity.CreateProjectionMatrix_FOV();
+		if(tracked<0.5){
+			//console.log("js: use rmode ", g_params["rotation_mode"]);
+			var rmode = g_params["rotation_mode"];
+			if (rmode == -1)
+				rmode = 0;
+			mat_proj = FaceUnity.CreateProjectionMatrix_FOV(20,10,30000,rmode);
+		}
 		}
 		var shaderParams = {
-		  	scales: [this.scales[0] * SCALE, this.scales[1] * SCALE, this.scales[2] * SCALE],
-			scale_e: scale_ex,
+		    scales: [this.scales[0] * SCALE, this.scales[1] * SCALE, this.scales[2] * SCALE],
+		    scale_e: scale_ex,
 		    mat_view: this.mat,
+		    mat_cam: this.mat_cam,
+		    quatR1:[this.rotation[0],this.rotation[1],this.rotation[2],this.rotation[3]],
+		    quatT1: [0, 0, 0],//[params.translation[0],params.translation[1],params.translation[2],1],
+		    quatR2: [0, 0, 0, 1],
+		    quatT2: [0, 0, 0],//[mat2[12]-center[0],mat2[13]-center[1],mat2[14]-center[2]],
+		    obj_type: V(matex.obj_type, 0.3),
 		    mat_proj: mat_proj,
 		    tex_albedo: albedo,
-		    Ka: V(matex.Ka, 0.0), Kd: V(matex.Kd, 0.3), Ks: V(matex.Ks, 0.2),
+		    lbrt: lbrt,
+			/*
+			tex_mask: tex_map[V(matex.tex_mask, "grey.png")],
+		    tex_normal: tex_map[V(matex.tex_normal, "grey.png")],
+		    tex_smoothness: tex_map[V(matex.tex_smoothness, "grey.png")],
+		    tex_ao: tex_map[V(matex.tex_ao, "grey.png")],
+		    tex_specular: tex_map[V(matex.tex_specular, "black.png")],
+		    tex_emission: tex_map[V(matex.tex_emission, "black.png")],
+			//*/
+		    normal_strength: V(matex.normal_strength, 0.0),
+
+		    ambient_intensity: V(matex.ambient_intensity, 0.0),
+			ao_intensity: V(matex.ao_intensity, 1.0),
+			diffuse_intensity: V(matex.diffuse_intensity, 1.0),
+			diffuse_wrap: V(matex.diffuse_wrap, 0.0),
+			diffuse_light_add: V(matex.diffuse_light_add, 0.0),
+			shininess_wrap: V(matex.shininess_wrap, 0.0),
+			specular_intensity: V(matex.specular_intensity, 1.0),
+			normal_intensity: V(matex.normal_intensity, 1.0),
+			emission_intensity: V(matex.emission_intensity, 0.0),
+			selfillumination_intensity: V(matex.selfillumination_intensity, 0.0),
+			reflective_intensity: V(matex.reflective_intensity, 0.0),
+			multiply_intensity: V(matex.multiply_intensity, 1.0),
+			transparent_intensity: V(matex.transparent_intensity, 1.0),
+
+			material_shiness_max: V(matex.material_shiness_max, 128.0),
+			material_shiness_min: V(matex.material_shiness_min, 15.0),
+			fresnel_f0: V(matex.fresnel_f0, 0.04),
+			fresnel_exponent: V(matex.fresnel_exponent, 5.0),
+
+			enable_edge_dark: V(matex.enable_edge_dark, 0.0),
+			SpecularColor: [V(matex.spec_r, 255.0)/255.0, V(matex.spec_g, 255.0)/255.0, V(matex.spec_b, 255.0)/255.0],
+			EdgesDarkeningColor: [V(matex.EdgesDarkeningColor_r, 255.0)/255.0, V(matex.EdgesDarkeningColor_g, 255.0)/255.0, V(matex.EdgesDarkeningColor_b, 255.0)/255.0],
+			edgeDark_rimLight: [V(matex.edgeDark_rimLight_x, 0.0), V(matex.edgeDark_rimLight_y, 0.0), V(matex.edgeDark_rimLight_z, 1.0), V(matex.edgeDark_rimLight_w, 1.0)],
+
+			tex_light_probe: tex_light_probe,
+		    light_probe_rotate: V(globals.light_probe_rotate, 0.25),
+		    light_probe_intensity: V(globals.light_probe_intensity, 0.1),
+		    envmap_shift: V(globals.envmap_shift, 0.75),
+		    envmap_fov: V(globals.envmap_fov, 1.0),
+			spec_color: [V(matex.spec_r, 255.0)/255.0, V(matex.spec_g, 255.0)/255.0, V(matex.spec_b, 255.0)/255.0],
+
+		    Ka: V(matex.Ka, 0.0), Kd: V(matex.Kd, 0.3), Ks: V(matex.Ks, 0.2), Kr: V(matex.Kr, 0.0),
+		    roughness: V(matex.roughness, 0.5),
+		    has_tex_smoothness: V(matex.has_tex_smoothness, 0.0),
+		    is_hair: pass > 0,
+		    ior: V(matex.ior, 1.33),
+		    F0: V(matex.F0, 1.0),
+
+		    ambient_light_intensity: V(globals.ambient_light_intensity, 0.0),
 		    L0_dir: L0_dir, L0_color: L0_color,
-		    L1_dir: L1_dir, L1_color: L1_color
+		    L1_dir: L1_dir, L1_color: L1_color,
+		    isFlipH: g_params['is3DFlipH'],
+		    weightOffset: g_params['weightOffset'],
+		    //L2_dir:[0.25,0,-1],L2_color:[2.0,2.0,2.0],
 		};
+		
+		shader = AttachTexture(matex,tex_map,"tex_mask",shaderParams,"TX_MASK","grey.png") + shader;
+		shader = AttachTexture(matex,tex_map,"tex_normal",shaderParams,"TX_NORMAL","grey.png") + shader;
+		shader = AttachTexture(matex,tex_map,"tex_smoothness",shaderParams,"TX_SMOOTH","grey.png") + shader;
+		shader = AttachTexture(matex,tex_map,"tex_ao",shaderParams,"TX_AO","white.png") + shader;
+		shader = AttachTexture(matex,tex_map,"tex_specular",shaderParams,"TX_SPEC","black.png") + shader;
+		shader = AttachTexture(matex,tex_map,"tex_emission",shaderParams,"TX_EMIT","black.png") + shader;
 
 		if (animation != null) {
 		    shaderUse = a_vert_shader;
@@ -627,14 +769,10 @@
                                       0, 0, 0, 1];
 		}
 		if (animation != null) {
-		    if (animation.use_vtf == 1) 
+		    if (animation.use_vtf == 1)
 		        shaderUse = "#define USE_VTF\n" + shaderUse;
 		}
-		
-		var cull = V((materials_json[this.name] || {}).back_cull, 0);
-		if(cull>0.5) gl.enable(gl.CULL_FACE);
 		FaceUnity.RenderBlendshapeComponent_new(blendshape, this, shaderUse, shader, shaderParams, pass);
-		if(cull>0.5) gl.disable(gl.CULL_FACE);
 	}
 
 	//meshgroup
@@ -730,23 +868,47 @@
 	        var parent = this;
 	        //update for all mesh
 	        this.meshlst.forEach(function (mesh) {
-				if(params.isPause) mesh.pauseThis(now);
-				else mesh.resumeThis(now);
 	            mesh.triggerStartEvent(params, now, false);
 	            mesh.updateEvent(params, now);
 	        });
 	        if (pass == 1) {
 	            FaceUnity.ComputeBlendshapeGeometry(this.blendshape, params);
-	        } else if (pass == 2) {
-	        	//for opaque object
+	            //for facehack
 	            gl.enable(gl.DEPTH_TEST);
 	            gl.depthFunc(gl.LEQUAL);
+	            gl.enable(gl.BLEND);
+	            gl.blendFunc(gl.ZERO, gl.ONE);
+	            this.facehack_mesh_ref_lst.forEach(function (mesh) { mesh.renderEvent(parent.blendshape, params, -1, shader, animation, fid); });
+	            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+	        } else if (pass == 2) {
+	            //for opaque object
+	            gl.enable(gl.DEPTH_TEST);
+	            gl.depthFunc(gl.LEQUAL);
+	            gl.depthMask(true);
 	            gl.disable(gl.BLEND);
-	            gl.enable(gl.CULL_FACE);
 	            this.opaque_mesh_ref_lst.forEach(function (mesh) { mesh.renderEvent(parent.blendshape, params, 0, shader, animation, fid); });
-	            gl.disable(gl.CULL_FACE);
+
+	            //for transport object, alpha cut pass one
+	            gl.enable(gl.DEPTH_TEST);
+	            gl.depthMask(true);
+	            shader = s_frag_shader + "vec4 shader_main_OIT(){vec4 c=shader_main();if (c.a>=" + alphaThreshold.toFixed(3) + ") return vec4(c.rgb,1.0);else discard;}";
+	            this.transparent_mesh_ref_lst.forEach(function (mesh) { mesh.renderEvent(parent.blendshape, params, 1, shader, animation, fid); });
+
+	            //for transport object, alpha cut pass two
+	            gl.enable(gl.DEPTH_TEST);
+	            gl.depthMask(false);
+	            gl.enable(gl.BLEND);
+	            gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ZERO);
+	            shader = s_frag_shader + "vec4 shader_main_OIT(){vec4 c=shader_main();if (c.a<=" + alphaThreshold.toFixed(3) + ") return vec4(c.rgb,c.a*" + (1.0 / alphaThreshold).toFixed(3) + ");else return vec4(c.rgb,0.0);}";
+	            this.transparent_mesh_ref_lst.forEach(function (mesh) { mesh.renderEvent(parent.blendshape, params, 2, shader, animation, fid); });
+
+	            gl.depthMask(true);
 	            gl.disable(gl.DEPTH_TEST);
-			}
+
+	            this.meshlst.forEach(function (mesh) { mesh.triggerEndEvent(params, now, false, parent.AnimCounter); });
+	        }
+	        FaceUnity.SimpleOITEnd();
 	    } catch (err) {
 	        console.log(err.stack)
 	    }
@@ -777,6 +939,8 @@
 	                var ret = 1;
 	                if (FaceUnity.TestVTF != undefined)
 	                    ret = FaceUnity.TestVTF();
+					//if(gl.getParameter(gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS)<=8)
+					//	ret = 0; //check image slot
 	                this.animation.support_vtf = ret;
 	                this.animation.use_vtf = ret;
 	            }
@@ -786,18 +950,26 @@
 	            frame_id = params.frame_id;
 	            var fid = 0;
 	            params.physical = this.animation.physical;
-	            if (canUsePhysical && this.animation.physical == 1 && params.main_bone === undefined) {
-	                var json = JSON.parse(bones_json_string);
-	                var count = json.bonesnum.sum;
-	                for (var i = count - 1; i >= 0; i--) {
-	                    var name = json["bone" + i]["name"];
-	                    if (name === "main1") {
-	                        params.main_bone = i;
-	                    }
-	                }
+	            if (canUsePhysical && this.animation.physical == 1 ) {
+                    if (g_main_bone === -1)
+                    {
+                        var json = JSON.parse(bones_json_string);
+                        var count = json.bonesnum.sum;
+                        for (var i = count - 1; i >= 0; i--) {
+                            var name = json["bone" + i]["name"];
+                            if (name === "main1") {
+                                params.main_bone = i;
+                                g_main_bone = i;
+                            }
+                        }
+                    }else
+                    {
+                        params.main_bone  = g_main_bone;
+                    }
+
 	                filterAct(params);
 	            }
-                
+
 	            this.update_animation(params);
 	            this.meshgroup.renderMesh(params, pass, this.animation, fid);
 	        } else
@@ -805,12 +977,6 @@
 	    }
 	}
 
-	if (FaceUnity.InitPhysics != undefined && FaceUnity.IsPhysicsEnabled == undefined) {
-	    if (canUsePhysical) {
-	        FaceUnity.IsPhysicsEnabled = true
-	        FaceUnity.InitPhysics(rigidBody_json_string, joint_json_string, bones_json_string);
-	    }
-	}
 
 	var AnimMeshs = { "avatar": new AnimationMeshPair("avatar") };
 	var fMeshs = fbxmeshs.meshes;
@@ -820,8 +986,14 @@
 	}
 
 	var animations = require("anim_dq_script.js");
-	var animlist = (animations!=undefined && animations!=null)?animations.Anims:undefined;
-	
+	var animlist = animations.Anims;
+
+	var hasPhysicsAnimation =false;
+    for (var prop in animlist) {
+        hasPhysicsAnimation |= animlist[prop].animObj.physical;
+        if (hasPhysicsAnimation) break;
+    }
+
     //animations trigger
 	var UpdateAnimation = function (anim, params, noface) {
 	    if (anim != undefined && anim != null && "meshName" in anim) {
@@ -897,7 +1069,6 @@
 	    if (anim != null && anim != undefined) {
 	        var triggerList = anim.triggerNextNodes;
 	        if (triggerList.length <= 0) return;
-			if(animlist==undefined) return;
 	        for (var i = 0; i < triggerList.length; i++) {
 	            var nextName = triggerList[i];
 	            var animNext = animlist[nextName];
@@ -933,17 +1104,52 @@
 				g_params[name]=value;
 				return 1;
 			}
-
-			if (name == "rot_delta") {
-			    rot_delta += value * Math.PI * 0.5;
-			    globalRotationQuat = [0.0, Math.sin(rot_delta), 0.0, Math.cos(rot_delta)];
-			    rot_ex = FaceUnity.CreateViewMatrix(globalRotationQuat, [0, 0, 0, 1]);
-			    return 1;
+			if(name=="rotationAngle3d"){
+				if(Math.abs(value - g_params["rotationAngle3d"])>1){
+					tracked = 0;
+				}
+				if(Math.abs(value-0) < 0.01){
+					g_params["matp"] = [0,0,0,1];
+				}else if(Math.abs(value-90) < 0.01){
+					g_params["matp"] = [0,0,1,1];
+				}else if(Math.abs(value-180) < 0.01){
+					g_params["matp"] = [0,0,1,0];
+				}else if(Math.abs(value-270) < 0.01){
+					g_params["matp"] = [0,0,-1,1];
+				}else return;
+				g_params["rotationAngle3d"] = value;
+				console.log("")
+				return 1;
 			}
-			if (name == "scale_delta") {
-			    scale_delta = Math.max(Math.min(scale_delta + value, 1.0), -0.26);
-			    scale_ex = 1.0 + scale_delta;
-			    return;
+			if (name=="rotation_mode"){
+				if (g_params["rotation_mode"]==-1){
+					g_params["rotation_mode"] = value;
+					//console.log("js: setparam set rmode to ", value);
+				}
+				return 1;
+			}
+			if (name == "camera_change"){
+				g_params["rotation_mode"] = -1;
+				/*
+				if (value > 0){
+					//g_params["rotation_mode"] = (g_params["rotation_mode"] + 2) % 4; // wtf just goes wrong
+					var rmode0 = g_params["rotation_mode"];
+					var rmode2;
+					if (rmode0==0)
+						rmode2 = 2;
+					else if(rmode0 == 1)
+						rmode2 = 3;
+					else if(rmode0 == 2)
+						rmode2 = 0;
+					else
+						rmode2 = 1;
+					g_params["rotation_mode"] = rmode2;
+					//console.log("js: change rmode from ", rmode0, " to ", g_params["rotation_mode"]);
+				}
+				*/
+			}
+			if(name=="reset"){
+				tracked = 0;
 			}
 			/*
 			否则的话，name里面就是一个JSON对象：{"name":"材质名或<global>"，"param":"参数名"}
@@ -1008,6 +1214,13 @@
 		},
 		/// \brief 主要的绘制逻辑
 		Render: function (params, pass) {
+			tracked = 1;
+			if (FaceUnity.InitPhysics != undefined && g_is_physics_init === false && hasPhysicsAnimation) {
+			    if (canUsePhysical) {
+			        FaceUnity.InitPhysics(rigidBody_json_string, joint_json_string, bones_json_string);
+			        g_is_physics_init =true;
+			    }
+			}
 			if(V(globals.is_fix_x,0)>0.5){
 				params.translation[0] = V(globals.fixed_x,0);
 			}
@@ -1023,27 +1236,30 @@
 					params.expression[i] = Math.max(Math.min(params.expression[i],1.0),0.0);
 				}
 			}
-			
+			g_params["rotation_mode"] = params.rotation_mode;
+			g_params["bk_translation"] = params.translation;
+			g_params["bk_rotation"] = params.rotation;
+			g_params["bk_pupil_pos"] = params.pupil_pos;
+			g_params["bk_expression"] = params.expression;
+			g_params["baked"]
+ = 1;
 			//animation trigger
-			if(animlist!=undefined) {
-				for (var prop in animlist) {
-					UpdateAnimation(animlist[prop], params, false);
-				}
+			for (var prop in animlist) {
+			    UpdateAnimation(animlist[prop], params, false);
 			}
 			//3d item trigger & DoRender
 			for (var prop in AnimMeshs) {
 			    AnimMeshs[prop].DoRender(params, pass);
 			}
 		},
-		RenderNonFace: function (params, pass) {  
+		RenderNonFace: function (params, pass) {
 		    ////fixed section
 		    if (params.face_count > 0) return;
+			tracked = 0;
 			var isNoFace = V(globals.isnofacerender, 0) > 0.5;
 		    if (isNoFace) {
-				if(animlist!=undefined) {
-					for (var ap in animlist) 
-						UpdateAnimation(animlist[ap], params, true);
-				}
+		        for (var ap in animlist)
+		            UpdateAnimation(animlist[ap], params, true);
 		    }
 		    for (var prop in AnimMeshs) {
 		        var meshgrp = AnimMeshs[prop].meshgroup;
@@ -1053,10 +1269,17 @@
 		        }
 		        try {
 		            if (isNoFace) {
-		                params.translation = [V(globals.fixed_nx, 0), V(globals.fixed_ny, 0), V(globals.fixed_nz, 350), 1];
-		                params.rotation = [0, 0, 0, 1];
-		                params.pupil_pos = [0, 0];
-		                params.expression = expression;
+		                if (g_params["baked"]>0){
+		                	params.translation = g_params["bk_translation"];
+							params.rotation = g_params["bk_rotation"];
+							params.pupil_pos = g_params["bk_pupil_pos"];
+			                params.expression = g_params["bk_expression"];
+		                }else{
+		                	params.translation = [V(globals.fixed_x, 0), V(globals.fixed_y, 0), V(globals.fixed_z, 350), 1];
+							params.rotation = [0,0,0,1];
+							params.pupil_pos = [0, 0];
+			            	params.expression = expression;
+		                }
 		                if (!params.focal_length) params.focal_length = focal_length;
 		                AnimMeshs[prop].DoRender(params, pass);
 		            }
