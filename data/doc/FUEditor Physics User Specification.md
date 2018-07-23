@@ -30,5 +30,5 @@
 
 1.maya 里 bullet的使用教程https://c4dsky.com/9524.html
 
-2.bullet 信息导出插件 [位置](../ref/MayaPlugin_bullet_.mll)
+2.bullet 信息导出插件 FUEditor/data/ref/MayaPlugin_bullet_.mll
 

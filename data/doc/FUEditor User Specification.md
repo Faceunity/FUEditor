@@ -486,7 +486,7 @@ __测试打包、正式打包__：
 - 通过 ![test](./img/release.png) 打包出来的bundle即是正式发布bundle，道具打包后在“FUEditor/Projects/当前道具/__release__/”目录中。  
    __注：__ 1.正式发布前需要确保测试打包正常。2.正式发布需要__网络连接__，需要正式证书。
 - 点击![test](./img/dir.png) 直接打开当前项目目录。
-- 支持显示道具的签名类型![checkitem](img/checkitem.png)，黑色为正在开发的bundle。红色为测试打包，蓝色为正式打包。如需查看可点击![loadBTN](img\loadBTN.png)按钮添加到这个列表后来查看bundle道具签名类型。
+- 支持显示道具的签名类型![checkitem](img/checkitem.png)，黑色为正在开发的bundle。红色为测试打包，蓝色为正式打包。如需查看可点击![loadBTN](./img/loadBTN.png)按钮添加到这个列表后来查看bundle道具签名类型。
 
 ## 10. 项目保存与切换
 - 点击![test](./img/qt32/notes.png) ，保存当前项目xxxx，工程文件在Project/xxxx/xxxx.fuproj。保存后可以打开重新读取。
@@ -582,7 +582,7 @@ Emission_intensity:自发光强度
 
 ![douniuquan1](./img/douniuquan1.gif)
 
-斗牛犬的耳朵可以随着摇头而自由摆动。物理动效的制作详细查看[链接](./FUEditor Physics User Specification.html)
+斗牛犬的耳朵可以随着摇头而自由摆动。物理动效的制作详细查看FUEditor/data/doc/FUEditor Physics User Specification.html
 
 ## 13. 实时预览  
  - 打开摄像头，点击 ![test](./img/qt/play.png)按钮。
