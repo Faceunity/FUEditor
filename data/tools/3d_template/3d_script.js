@@ -60,12 +60,12 @@
 	//@gparam fixed_nx {"type":"slider","min":-600,"max":600,"default_value":0}
 	//@gparam fixed_ny {"type":"slider","min":-600,"max":600,"default_value":0}
 	//@gparam fixed_nz {"type":"slider","min":0,"max":2000,"default_value":350}
-	
+
 	//@gparam use_fov {"type":"slider","min":0,"max":1,"default_value":0}
 	//@gparam camera_fov {"type":"slider","min":5,"max":90,"default_value":20}
 	//控制旋转的幅度，rot_weight=1完全按照人头旋转，rot_weight=0不跟人头旋转
-	//@gparam rot_weight {"type":"slider","min":0,"max":1,"default_value":1}	
-	//@gparam expr_clamp {"type":"slider","min":0,"max":1,"default_value":0}	
+	//@gparam rot_weight {"type":"slider","min":0,"max":1,"default_value":1}
+	//@gparam expr_clamp {"type":"slider","min":0,"max":1,"default_value":0}
 	///////////////////////////
 	//以下是材质参数
 	/*物体的类型,一是镂空,[0,0.25]；
@@ -74,13 +74,15 @@
 				四是只会跟着脑袋位移变化和大小的缩放，例如身体(0.75,1]。
 	*/
 	//@mparam obj_type {"type":"slider","min":0,"max":1,"default_value":0.3}
-	
+
 	//法向贴图，就是蓝了吧唧的那种，不是bump map哦～bump map要先转一下哦～～ 默认的grey.png等于没有贴图
 	//@mparam tex_normal {"type":"texture","default_value":"grey.png"}
 	//法向贴图的强度，为了照顾没有法向贴图的模型，强度默认是0，所以设了法向贴图之后要把强度拽高点才能看到效果
 	//@mparam normal_strength {"type":"slider","min":0,"max":1,"default_value":0}
 	//颜色贴图，默认的white.png是白的。建议先弄好贴图再去调光哦。
 	//@mparam tex_albedo {"type":"texture","default_value":"white.png","isTex":1}
+	//@mparam tex_ao {"type":"texture","default_value":"white.png"}
+	//@mparam tex_spec {"type":"texture","default_value":"white.png"}
 	//自发光强度
 	//@mparam Ka {"type":"slider","min":0,"max":1,"default_value":0}
 	//漫反射强度
@@ -105,7 +107,7 @@
 	//@mparam is_hair {"type":"slider","min":0,"max":1,"default_value":0}
 	//这个是需不需要背面剔除的标记
 	//@mparam back_cull {"type":"slider","min":0,"max":1,"default_value":1}
-	
+
 	/*
 	编辑器保存的结果会存放在"globals.json"和"materials.json"两个文件中。
 	但在保存之前这两个文件是不存在的，所以要考虑到ReadFromCurrentItem失败的情况。
@@ -151,7 +153,7 @@
 
         // z-axis rotation
         var siny = 2.0 * (w * z + x * y);
-        var cosy = 1.0 - 2.0 * (y * y + z * z);  
+        var cosy = 1.0 - 2.0 * (y * y + z * z);
         var rz = Math.atan2(siny, cosy);
 
         var rta = 180.0 / Math.PI;
@@ -258,7 +260,7 @@
 	}
 	console.log("bigtexcnt",bigtexcnt);
 	var user_frame_id=0;
-	var filter_array = new Array();
+	//var filter_array = new Array();
 	var now = Date.now();
 	var expression=[]; for(var i=0; i<46; i++) expression.push(0);
 	var focal_length = 303.64581298828125;
@@ -330,7 +332,7 @@
 		"enable_depth_test":1,
 		//"shader":FaceUnity.ReadFromCurrentItem("bg.glsl"),
 	};
-	
+
 	var AnimCounter={
 		names:{},
 		count:0,
@@ -349,7 +351,7 @@
 			return (this.count >= this.total && this.total!=0) ? 1 : 0;
 		}
 	}
-	
+
 	var deepCopy =function(p, c){
 		var c = c || {};
 		for (var i in p) {
@@ -362,39 +364,73 @@
 		}
 		return c;
 	}
+	
+	var QueueArray = function(size) {
+		this.data = new Array(size);
+		this.first = 0;
+		this.last = size-1;
+		this.count = 0;
+		this.push = function(value) {
+			if(this.count<size) {
+				this.data[this.first+this.count] = value;
+				this.count++;
+			} else {
+				this.first = (this.first+1)%this.count;
+				this.last = (this.last+1)%this.count;
+				this.data[this.last] = value;
+			}
+		}
+		this.get = function(i) {
+			if(this.count<=size)
+				return this.data[i];
+			else {
+				var id = (this.first + i)%this.count;
+				return this.data[id];
+			}
+		}
+	}
+	
+	var filter_array = new QueueArray(10);
 
 	function filterAct(params) {
 	    //filter
 	    var filter_num = 10;
 	    var l0, l1, l2, l3;
 	    if (user_frame_id > filter_num) {
-	        filter_array.shift();
+	        //filter_array.shift();
 	        filter_array.push(params.rotation);
 	        //calculate
 	        l0 = l1 = l2 = l3 = 0.0;
 	        // var start_time =  (new Date()).getMilliseconds();
-	        for (var i = filter_array.length - 1; i >= 0; i--) {
-	            l0 += filter_array[i][0];
-	            l1 += filter_array[i][1];
-	            l2 += filter_array[i][2];
-	            l3 += filter_array[i][3];
+	        for (var i = filter_array.count - 1; i >= 0; i--) {
+	            l0 += filter_array.get(i)[0];
+	            l1 += filter_array.get(i)[1];
+	            l2 += filter_array.get(i)[2];
+	            l3 += filter_array.get(i)[3];
 	        }
 	        // var delta_time=(new Date()).getMilliseconds()-start_time;
 	        // console.log("delta_time",delta_time);
-	        l0 /= filter_array.length;
-	        l1 /= filter_array.length;
-	        l2 /= filter_array.length;
-	        l3 /= filter_array.length;
+	        l0 /= filter_array.count;
+	        l1 /= filter_array.count;
+	        l2 /= filter_array.count;
+	        l3 /= filter_array.count;
 
 	        params.smooth_rotation = [l0, l1, l2, l3];
 	    } else {
 	        filter_array.push(params.rotation);
 	    }
-	    //ease
-	    var input_rot_weight = [0.5, 0.3, 0.1, 0.5];
+		//ease
+	    // var input_rot_weight = [0.5, 0.3, 0.1, 0.5];
+	    var input_rot_weight = [1.0, 1.0, 0.3, 1.0];
 
-	    params.smooth_rotation = [0, 0, 0, 1];
-	    params.bt_rot_weight = [1, 1, 1, 0.5];
+
+	    if (FaceUnity.m_n_valid_faces == 1) {
+	    	 g_dde_rot=params.smooth_rotation;
+	    }
+	    else
+	    {
+	    	params.smooth_rotation=g_dde_rot;
+	    }
 	    var w = input_rot_weight;
 	    params.smooth_rotation = [w[0] * params.rotation[0], w[1] * params.rotation[1], w[2] * params.rotation[2], w[3] * params.rotation[3]];
 	    //ease end
@@ -436,7 +472,7 @@
 		this.activateNext();
 		if(this.triggerstart=="newface"||this.triggerstart=="alwaysrender"){
 			this.isActive = false;
-		}	
+		}
 		if(this.isactiveonce==1){
 			this.isFinished=1;
 			animCounter.finish(this.name);
@@ -464,15 +500,15 @@
 	Mesh.prototype.triggerStartEvent = function (params, now, isNoneFace) {
 		if(this.triggered || !this.isActive)return;
 		if((!isNoneFace && (this.triggerstart=="newface" || (this.triggerstart=="faceaction" && isActionTriggered(this.startaction,params))))
-			||(isNoneFace && this.triggerstart=="alwaysrender")){		 
+			||(isNoneFace && this.triggerstart=="alwaysrender")){
 				this.triggerThis(now);
 		}
 	}
 	Mesh.prototype.updateEvent = function(params,now){
 		var matex=(materials_json[this.name]||{});
-		
+
 		var rotation = params.rotation.slice();
-		
+
 		if(V(globals.rot_weight,1.0) < 0.05){
 			rotation = [0,0,0,1];
 		}else if(V(globals.rot_weight,1.0) < 0.95){
@@ -491,12 +527,12 @@
 			}
 		}
 		*/
-		
+
 		var trans = [0, 0, 0];
 		trans[0] = this.translate[0];
 		trans[1] = this.translate[1];
 		trans[2] = -this.translate[2];
-		
+
 		var mat = FaceUnity.MatrixTranslate(AddVec3(params.translation, trans));
 		mat = FaceUnity.MatrixMul(rot_ex, mat);
 		mat = FaceUnity.MatrixMul(FaceUnity.MatrixTranslate(InvVec3(trans)), mat);
@@ -545,7 +581,7 @@
 		this.mat_cam = mat_cam;
 		if(this.triggered){
 			var elapse = now - this.last - this.pauseSum;
-			if(!this.paused) 
+			if(!this.paused)
 				this.frame_id = parseInt(elapse * this.fps / 1000);
 			if(this.force_frame_id!=undefined && this.force_frame_id>=0)this.frame_id = this.force_frame_id;
 		}
@@ -576,19 +612,19 @@
 			    this.stop(now, animCounter);
 			}
 			if(this.triggerstart=="alwaysrender")return;
-			
+
 			if(/*action keep*/this.triggerstart=="faceaction" && this.needkeepfaceaction== 1 && !isActionTriggered(this.startaction,params)){
 			    this.stop(now, animCounter);
 			}
 		}else{
 			if(this.triggerstart!="alwaysrender")return;
 		}
-		
+
 		if(/*loop end*/this.looptype=="loopcnt" && ((this.frame_id +1) >= this.tex_albedo_frames.length * this.loopcnt)){
 		    this.stop(now, animCounter);
 		}
 	}
-	
+
 	Mesh.prototype.renderEvent = function (blendshape, params, pass, shader, animation, fid) {
 	    if (!this.triggered || !this.isActive) return;
 		var matex=(materials_json[this.name]||{});
@@ -672,10 +708,10 @@
                                       0, 0, 0, 1];
 		}
 		if (animation != null) {
-		    if (animation.use_vtf == 1) 
+		    if (animation.use_vtf == 1)
 		        shaderUse = "#define USE_VTF\n" + shaderUse;
 		}
-		
+
 		var cull = V((materials_json[this.name] || {}).back_cull, 0);
 		if(cull>0.5) gl.enable(gl.CULL_FACE);
 		FaceUnity.RenderBlendshapeComponent_new(blendshape, this, shaderUse, shader, shaderParams, pass);
@@ -874,7 +910,7 @@
 	                }
 	                filterAct(params);
 	            }
-                
+
 	            this.update_animation(params);
 	            this.meshgroup.renderMesh(params, pass, this.animation, fid);
 	        } else
@@ -898,7 +934,7 @@
 
 	var animations = require("anim_dq_script.js");
 	var animlist = animations.Anims;
-	
+
     //animations trigger
 	var UpdateAnimation = function (anim, params, noface) {
 	    if (anim != undefined && anim != null && "meshName" in anim) {
@@ -1021,7 +1057,7 @@
 			    scale_ex = 1.0 + scale_delta;
 			    return;
 			}
-			
+
 			if(name=="resetFlag") {
 				if(value != 0) {
 					for (var prop in AnimMeshs)
@@ -1106,7 +1142,7 @@
 					params.expression[i] = Math.max(Math.min(params.expression[i],1.0),0.0);
 				}
 			}
-			
+
 			//animation trigger
 			for (var prop in animlist) {
 			    UpdateAnimation(animlist[prop], params, false);
@@ -1116,12 +1152,12 @@
 			    AnimMeshs[prop].DoRender(params, pass);
 			}
 		},
-		RenderNonFace: function (params, pass) {  
+		RenderNonFace: function (params, pass) {
 		    ////fixed section
 		    if (params.face_count > 0) return;
 			var isNoFace = V(globals.isnofacerender, 0) > 0.5;
 		    if (isNoFace) {
-		        for (var ap in animlist) 
+		        for (var ap in animlist)
 		            UpdateAnimation(animlist[ap], params, true);
 		    }
 		    for (var prop in AnimMeshs) {

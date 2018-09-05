@@ -112,6 +112,10 @@ void main(){
 		P2 = Pb.xyz;
 		N2 = N1.xyz;
 	}
+	
+	if(isFlipH>0.5){
+		P2.x = -P2.x-7.364;
+	}
 
 	P2 = scale_e * P2;
 
@@ -133,7 +137,10 @@ void main(){
 	vec4 Pf = vec4(P2,1.0);
 	V_frag=normalize((mat_view*Pf).xyz);
 	
-	N_frag=normalize((mat_view*vec4(N2.x,N2.y,-N2.z,0.0)).xyz);
+	if(isFlipH>0.5)
+		N_frag=normalize((mat_view*vec4(-N2.x,-N2.y,-N2.z,0.0)).xyz);
+	else
+		N_frag=normalize((mat_view*vec4(N2.x,N2.y,-N2.z,0.0)).xyz);
 	
 	st_frag=st;
 }

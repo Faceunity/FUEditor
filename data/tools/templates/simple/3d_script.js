@@ -240,7 +240,7 @@
 	var user_frame_id=0;
 	var filter_array = new Array();
 	var now = Date.now();
-	var expression=[]; for(var i=0; i<46; i++) expression.push(0);
+	var expression=[]; for(var i=0; i<56; i++) expression.push(0);
 	var focal_length = 303.64581298828125;
 	//背景动画
 	//var bg_board=JSON.parse(FaceUnity.ReadFromCurrentItem("desc.json"));
@@ -736,7 +736,7 @@
 	            mesh.updateEvent(params, now);
 	        });
 	        if (pass == 1) {
-	            FaceUnity.ComputeBlendshapeGeometry(this.blendshape, params);
+	            FaceUnity.ComputeBlendshapeGeometry(this.blendshape, params, 56);
 	        } else if (pass == 2) {
 	        	//for opaque object
 	            gl.enable(gl.DEPTH_TEST);
@@ -812,7 +812,11 @@
 	    }
 	}
 
-	var AnimMeshs = { "avatar": new AnimationMeshPair("avatar") };
+	var AnimMeshs = {};
+	var avatarJson = JSON.parse(FaceUnity.ReadFromCurrentItem("avatar.json")||"{}");
+	if(avatarJson["drawcalls"] && avatarJson["drawcalls"].length>0)
+		AnimMeshs["avatar"] = new AnimationMeshPair("avatar");
+	
 	var fMeshs = fbxmeshs.meshes;
 	for (var i = 0; i < fMeshs.length; i++) {
 	    var meshName = fMeshs[i];
@@ -910,10 +914,12 @@
 	        }
 	    }
 	}
-	AnimMeshs["avatar"].meshgroup.calTriggerNextNodesRef(undefined);
+	if(AnimMeshs["avatar"])
+		AnimMeshs["avatar"].meshgroup.calTriggerNextNodesRef(undefined);
+	
 	return {
-	    CalRef:AnimMeshs["avatar"].meshgroup.calTriggerNextNodesRef,
-	    meshlst: AnimMeshs["avatar"].meshgroup.meshlst,
+	    CalRef: AnimMeshs[0] ? AnimMeshs[0].meshgroup.calTriggerNextNodesRef:undefined,
+	    meshlst: AnimMeshs[0] ? AnimMeshs[0].meshgroup.meshlst:undefined,
 		animCounter: AnimCounter,
 		//接下来就是道具对象的内容了
 		/// \brief 处理编辑器发起的参数修改
@@ -1019,7 +1025,8 @@
 			}
 			if (!params.focal_length) params.focal_length = focal_length;
 			if(V(globals.expr_clamp,0)>0.5){
-				for(var i =0;i<46;i++){
+				for(var i =0;i<56;i++){
+					if(params.expression[i]==undefined) params.expression[i] = 0.0;
 					params.expression[i] = Math.max(Math.min(params.expression[i],1.0),0.0);
 				}
 			}

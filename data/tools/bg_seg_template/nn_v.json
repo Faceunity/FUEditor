@@ -1,6 +1,6 @@
 {
-	"file_init":"init_net_rgb_3ms.pb",
-	"file_predict":"predict_net_rgb_3ms.pb",
+	"file_init":"init_net_v148.pb",
+	"file_predict":"predict_net_v148.pb",
 	"input_width":64,
 	"input_height":64,
 	"input_channels":3

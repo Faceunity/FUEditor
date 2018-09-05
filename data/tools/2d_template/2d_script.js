@@ -109,6 +109,7 @@
 	var cnn_running_time_count = 0;
 	//back#1ground_seg*/
 	
+	var jump = 0
 	var bigtexcnt = 0;
 	var bigtex = new Array();
 	for(var i=0;i<bigtexjson["bigtexs"].length;i++){
@@ -246,7 +247,8 @@
 			    }
 
 				var scalez = 1;
-				if(this.name[this.name.length-2]=='g') scalez = (20000/this.focal_length);//fcbackground
+				this.focal_length = (params.focal_length==undefined || Math.abs(params.focal_length)<0.001)?742.0:params.focal_length;
+				if(this.name[this.name.length-2]=='g') scalez = (20000.0/this.focal_length);//fcbackground
 				for (var j = 0; j < this.texture_frames_bk.length; j++) {
 				    this.texture_frames[j].v = [-scalez * w / 2 * g_params.bgScaleW, scalez * h / 2 * g_params.bgScaleH, scalez * this.focal_length,
 												+scalez * w / 2 * g_params.bgScaleW, scalez * h / 2 * g_params.bgScaleH, scalez * this.focal_length,
@@ -441,6 +443,7 @@
 		}
 		*/
 		if(this.nodetype!=1 && this.name.search("_bgseg")==-1){//non group root node
+			this["focal_length"] = params.focal_length;
 			if(this.looptype=="infinite" || (this.frame_id < this.texture_frames.length * this.loopcnt)){
 				var idx  = (this.frame_id)%this.texture_frames.length;
 				FaceUnity.RenderBillboard(bigtex[this.texture_frames[idx].bigtexidx],this,this.texture_frames[idx],this.matp,this.rotationType?mat_cam:undefined,this.isFullScreenObj,params);
@@ -613,6 +616,7 @@
 	
 	var vtfChecked = false;
 	var vtfSupport = false;
+	var faceCount = 0;
 	
 	return {
 		CalRef:calTriggerNextNodesRef,
@@ -697,77 +701,95 @@
 		m_texid:0,
 		m_matrix:undefined,
 		enable_trackerless:1,
-		OnGeneralExtraDetector:function(){try{
-			//we first compute the letterboxing / rotation matrix
-			var matrix=new Float32Array(6);
-			var rotation_mode=FaceUnity.g_current_rmode;
-			if (cur_rotation_mode == -1 || cur_rotation_mode!=rotation_mode)
-			{
-				cur_rotation_mode=rotation_mode;
-				cnn_prob.length=0;
-			}
-			//console.log("rotation_mode: ",rotation_mode);
-			var w=FaceUnity.g_image_w;
-			var h=FaceUnity.g_image_h;
-			var dw_letterbox,dh_letterbox;
-			if(!(rotation_mode&1)){
-				var conceptual_h_letterboxed=Math.max(w/0.5625,h);
-				var conceptual_w_letterboxed=conceptual_h_letterboxed*0.5625;
-				dw_letterbox=(conceptual_w_letterboxed-w);
-				dh_letterbox=(conceptual_h_letterboxed-h);
-			}else{
-				var conceptual_h_letterboxed=Math.max(h/0.5625,w);
-				var conceptual_w_letterboxed=conceptual_h_letterboxed*0.5625;
-				dw_letterbox=(conceptual_h_letterboxed-w);
-				dh_letterbox=(conceptual_w_letterboxed-h);
-			}
-			switch(rotation_mode){
-				default:{console.log('invalid rotation mode',rotation_mode);}break;
-				case 0:{matrix[0]=w;matrix[1]=0;matrix[2]=0;matrix[3]=h;matrix[4]=0;matrix[5]=0;}break;
-				case 1:{matrix[0]=0;matrix[1]=h;matrix[2]=-w;matrix[3]=0;matrix[4]=w;matrix[5]=0;}break;
-				case 2:{matrix[0]=-w;matrix[1]=0;matrix[2]=0;matrix[3]=-h;matrix[4]=w;matrix[5]=h}break;
-				case 3:{matrix[0]=0;matrix[1]=-h;matrix[2]=w;matrix[3]=0;matrix[4]=0;matrix[5]=h;}
-			}
-			//console.log("w/h"+1.*w/h);
-			//console.log("rotation mode: "+rotation_mode);
-			//console.log("w/h<1: "+w/h<1);
-			if ((rotation_mode&1)^(w/h<1))
-			{
-				var input_v=FaceUnity.ExtractNNModelInput(model_v.w,model_v.h,model_v.channels, matrix,base_color);
-				var output_v=FaceUnity.RunNNModelRaw(model_v,input_v);
-				this.m_texid=FaceUnity.UploadBackgroundSegmentationResult(model_v,output_v);
-				//console.log("vertical");
-				cnn_running_time_sum+=output_v[output_v.length-1];
-				cnn_running_time_count++;
-				//console.log("average running time:"+cnn_running_time_sum/cnn_running_time_count+"ms");
-				if (cnn_prob.length==0){
-					for(var i=0;i<output_v.length;i++){cnn_prob[i] = output_v[i];}
+		OnGeneralExtraDetector:function(){
+			jump = jump +1;
+			if (jump == 2)jump = 0;
+			if (jump != 0)return 0;
+
+			try{
+				//we first compute the letterboxing / rotation matrix
+				var matrix=new Float32Array(6);
+				var rotation_mode=FaceUnity.g_current_rmode;
+				if (cur_rotation_mode == -1 || cur_rotation_mode!=rotation_mode)
+				{
+
+					cur_rotation_mode=rotation_mode;
+					cnn_prob.length=0;
 				}
-				else{
-					for(var i=0;i<output_v.length;i++){cnn_prob[i] = 0.5*output_v[i]+0.5*cnn_prob[i]; output_v[i]=cnn_prob[i];}
+				//console.log("rotation_mode: ",rotation_mode);
+				var w=FaceUnity.g_image_w;
+				var h=FaceUnity.g_image_h;
+				var dw_letterbox,dh_letterbox;
+				if(!(rotation_mode&1)){
+					var conceptual_h_letterboxed=Math.max(w/0.5625,h);
+					var conceptual_w_letterboxed=conceptual_h_letterboxed*0.5625;
+					dw_letterbox=(conceptual_w_letterboxed-w);
+					dh_letterbox=(conceptual_h_letterboxed-h);
+				}else{
+					var conceptual_h_letterboxed=Math.max(h/0.5625,w);
+					var conceptual_w_letterboxed=conceptual_h_letterboxed*0.5625;
+					dw_letterbox=(conceptual_h_letterboxed-w);
+					dh_letterbox=(conceptual_w_letterboxed-h);
 				}
+				switch(rotation_mode){
+					default:{console.log('invalid rotation mode',rotation_mode);}break;
+					case 0:{matrix[0]=w;matrix[1]=0;matrix[2]=0;matrix[3]=h;matrix[4]=0;matrix[5]=0;}break;
+					case 1:{matrix[0]=0;matrix[1]=h;matrix[2]=-w;matrix[3]=0;matrix[4]=w;matrix[5]=0;}break;
+					case 2:{matrix[0]=-w;matrix[1]=0;matrix[2]=0;matrix[3]=-h;matrix[4]=w;matrix[5]=h}break;
+					case 3:{matrix[0]=0;matrix[1]=-h;matrix[2]=w;matrix[3]=0;matrix[4]=0;matrix[5]=h;}
+				}
+				//console.log("w/h"+1.*w/h);
+				//console.log("rotation mode: "+rotation_mode);
+				//console.log("w/h<1: "+w/h<1);
+				if ((rotation_mode&1)^(w/h<1))
+				{
+
+					var input_v=FaceUnity.ExtractNNModelInput(model_v.w,model_v.h,model_v.channels, matrix,base_color);
+					var output_v=FaceUnity.RunNNModelRaw(model_v,input_v);
+
+					//console.log("vertical");
+					cnn_running_time_sum+=output_v[output_v.length-1];
+					cnn_running_time_count++;
+					console.log("average running time:"+cnn_running_time_sum/cnn_running_time_count+"ms");
+					if (cnn_prob.length==0){
+
+						for(var i=0;i<output_v.length;i++){
+							cnn_prob[i] = output_v[i];
+						}
+					}
+					else{
+						for(var i=0;i<output_v.length;i++)
+						{
+							cnn_prob[i] = 0.7*output_v[i]+0.3*cnn_prob[i]; 
+							output_v[i]=cnn_prob[i];
+						}
+					}
+					this.m_texid=FaceUnity.UploadBackgroundSegmentationResult(model_v,output_v);
+				}
+				else
+				{
+					var input_h=FaceUnity.ExtractNNModelInput(model_h.w,model_h.h,model_h.channels, matrix,base_color);
+					var output_h=FaceUnity.RunNNModelRaw(model_h,input_h);
+					
+					//console.log("horizontal");
+					cnn_running_time_sum+=output_h[output_h.length-1];
+					cnn_running_time_count++;
+					//console.log("average running time:"+cnn_running_time_sum/cnn_running_time_count+"ms");
+					if (cnn_prob.length==0){
+						for(var i=0;i<output_h.length;i++){cnn_prob[i] = output_h[i];}
+					}
+					else{
+						for(var i=0;i<output_h.length;i++){cnn_prob[i] = 0.7*output_v[i]+0.3*cnn_prob[i]; output_h[i]=cnn_prob[i];}
+					}
+					this.m_texid=FaceUnity.UploadBackgroundSegmentationResult(model_h,output_h);
+				}
+				
+				this.m_matrix=matrix;
+			}catch(err){
+				console.log(err.stack);
 			}
-			else
-			{
-				var input_h=FaceUnity.ExtractNNModelInput(model_h.w,model_h.h,model_h.channels, matrix,base_color);
-				var output_h=FaceUnity.RunNNModelRaw(model_h,input_h);
-				this.m_texid=FaceUnity.UploadBackgroundSegmentationResult(model_h,output_h);
-				//console.log("horizontal");
-				cnn_running_time_sum+=output_h[output_h.length-1];
-				cnn_running_time_count++;
-				//console.log("average running time:"+cnn_running_time_sum/cnn_running_time_count+"ms");
-				if (cnn_prob.length==0){
-					for(var i=0;i<output_h.length;i++){cnn_prob[i] = output_h[i];}
-				}
-				else{
-					for(var i=0;i<output_h.length;i++){cnn_prob[i] = 0.5*output_h[i]+0.5*cnn_prob[i]; output_h[i]=cnn_prob[i];}
-				}
-			}
-			
-			this.m_matrix=matrix;
-		}catch(err){
-			console.log(err.stack);
-		}},
+
+		},
 		FilterEntireImage:function(flip_x,flip_y){try{
 			//console.log('FilterEntireImage',this.m_texid)
 			if(!this.m_texid){return;}
@@ -776,6 +798,7 @@
 			var rsq23=1.0/(this.m_matrix[2]*this.m_matrix[2]+this.m_matrix[3]*this.m_matrix[3]);
 			for(var i=0;i<bgseg_mesh_ref_lst.length;i++){
 				var curbg = bgseg_mesh_ref_lst[i];
+				if(curbg.triggerstart == "newface" && !faceCount) continue;
 				if(curbg.triggered && curbg.isActive){
 					elapse = now - curbg.last;
 					curbg.frame_id = parseInt(elapse * curbg.fps / 1000);
@@ -881,6 +904,7 @@
 		
 		RenderNonFace:function(params,pass){
 			try{
+				faceCount = params.face_count;
 				now = Date.now();
 				if(pass==1){
 					for(var i = 0; i < reextract_mesh_ref_lst.length; i++)reextract_mesh_ref_lst[i].reExtract(params);

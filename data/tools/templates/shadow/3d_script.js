@@ -850,69 +850,69 @@
 		    scale_e: scale_ex,
 		    //mat_view: this.mat,
 		    mat_view: L0_view,
-		    mat_cam: this.mat_cam,
-		    quatR1:[this.rotation[0],this.rotation[1],this.rotation[2],this.rotation[3]],
-		    quatT1: [0, 0, 0],//[params.translation[0],params.translation[1],params.translation[2],1],
-		    quatR2: [0, 0, 0, 1],
-		    quatT2: [0, 0, 0],//[mat2[12]-center[0],mat2[13]-center[1],mat2[14]-center[2]],
-		    obj_type: V(matex.obj_type, 0.3),
+		    // mat_cam: this.mat_cam,
+		    // quatR1:[this.rotation[0],this.rotation[1],this.rotation[2],this.rotation[3]],
+		    // quatT1: [0, 0, 0],//[params.translation[0],params.translation[1],params.translation[2],1],
+		    // quatR2: [0, 0, 0, 1],
+		    // quatT2: [0, 0, 0],//[mat2[12]-center[0],mat2[13]-center[1],mat2[14]-center[2]],
+		    // obj_type: V(matex.obj_type, 0.3),
 		    //mat_proj: mat_proj,
 		    mat_proj: L0_proj,
-		    tex_albedo: albedo,
-		    lbrt: lbrt,
+		 //    tex_albedo: albedo,
+		 //    lbrt: lbrt,
 
-			tex_mask: tex_map[V(matex.tex_mask, "grey.png")],
-		    tex_normal: tex_map[V(matex.tex_normal, "grey.png")],
-		    tex_smoothness: tex_map[V(matex.tex_smoothness, "grey.png")],
-		    tex_ao: tex_map[V(matex.tex_ao, "grey.png")],
-		    tex_specular: tex_map[V(matex.tex_specular, "black.png")],
-		    tex_emission: tex_map[V(matex.tex_emission, "black.png")],
+			// tex_mask: tex_map[V(matex.tex_mask, "grey.png")],
+		 //    tex_normal: tex_map[V(matex.tex_normal, "grey.png")],
+		 //    tex_smoothness: tex_map[V(matex.tex_smoothness, "grey.png")],
+		 //    tex_ao: tex_map[V(matex.tex_ao, "grey.png")],
+		 //    tex_specular: tex_map[V(matex.tex_specular, "black.png")],
+		 //    tex_emission: tex_map[V(matex.tex_emission, "black.png")],
 
-		    normal_strength: V(matex.normal_strength, 0.0),
+		 //    normal_strength: V(matex.normal_strength, 0.0),
 
-		    ambient_intensity: V(matex.ambient_intensity, 0.0),
-			ao_intensity: V(matex.ao_intensity, 1.0),
-			diffuse_intensity: V(matex.diffuse_intensity, 1.0),
-			diffuse_wrap: V(matex.diffuse_wrap, 0.0),
-			diffuse_light_add: V(matex.diffuse_light_add, 0.0),
-			shininess_wrap: V(matex.shininess_wrap, 0.0),
-			specular_intensity: V(matex.specular_intensity, 1.0),
-			normal_intensity: V(matex.normal_intensity, 1.0),
-			emission_intensity: V(matex.emission_intensity, 0.0),
-			selfillumination_intensity: V(matex.selfillumination_intensity, 0.0),
-			reflective_intensity: V(matex.reflective_intensity, 0.0),
-			multiply_intensity: V(matex.multiply_intensity, 1.0),
-			transparent_intensity: V(matex.transparent_intensity, 1.0),
+		 //    ambient_intensity: V(matex.ambient_intensity, 0.0),
+			// ao_intensity: V(matex.ao_intensity, 1.0),
+			// diffuse_intensity: V(matex.diffuse_intensity, 1.0),
+			// diffuse_wrap: V(matex.diffuse_wrap, 0.0),
+			// diffuse_light_add: V(matex.diffuse_light_add, 0.0),
+			// shininess_wrap: V(matex.shininess_wrap, 0.0),
+			// specular_intensity: V(matex.specular_intensity, 1.0),
+			// normal_intensity: V(matex.normal_intensity, 1.0),
+			// emission_intensity: V(matex.emission_intensity, 0.0),
+			// selfillumination_intensity: V(matex.selfillumination_intensity, 0.0),
+			// reflective_intensity: V(matex.reflective_intensity, 0.0),
+			// multiply_intensity: V(matex.multiply_intensity, 1.0),
+			// transparent_intensity: V(matex.transparent_intensity, 1.0),
 
-			material_shiness_max: V(matex.material_shiness_max, 128.0),
-			material_shiness_min: V(matex.material_shiness_min, 15.0),
-			fresnel_f0: V(matex.fresnel_f0, 0.04),
-			fresnel_exponent: V(matex.fresnel_exponent, 5.0),
+			// material_shiness_max: V(matex.material_shiness_max, 128.0),
+			// material_shiness_min: V(matex.material_shiness_min, 15.0),
+			// fresnel_f0: V(matex.fresnel_f0, 0.04),
+			// fresnel_exponent: V(matex.fresnel_exponent, 5.0),
 
-			enable_edge_dark: V(matex.enable_edge_dark, 0.0),
-			SpecularColor: [V(matex.spec_r, 255.0)/255.0, V(matex.spec_g, 255.0)/255.0, V(matex.spec_b, 255.0)/255.0],
-			EdgesDarkeningColor: [V(matex.EdgesDarkeningColor_r, 255.0)/255.0, V(matex.EdgesDarkeningColor_g, 255.0)/255.0, V(matex.EdgesDarkeningColor_b, 255.0)/255.0],
-			edgeDark_rimLight: [V(matex.edgeDark_rimLight_x, 0.0), V(matex.edgeDark_rimLight_y, 0.0), V(matex.edgeDark_rimLight_z, 1.0), V(matex.edgeDark_rimLight_w, 1.0)],
+			// enable_edge_dark: V(matex.enable_edge_dark, 0.0),
+			// SpecularColor: [V(matex.spec_r, 255.0)/255.0, V(matex.spec_g, 255.0)/255.0, V(matex.spec_b, 255.0)/255.0],
+			// EdgesDarkeningColor: [V(matex.EdgesDarkeningColor_r, 255.0)/255.0, V(matex.EdgesDarkeningColor_g, 255.0)/255.0, V(matex.EdgesDarkeningColor_b, 255.0)/255.0],
+			// edgeDark_rimLight: [V(matex.edgeDark_rimLight_x, 0.0), V(matex.edgeDark_rimLight_y, 0.0), V(matex.edgeDark_rimLight_z, 1.0), V(matex.edgeDark_rimLight_w, 1.0)],
 
-			tex_light_probe: tex_light_probe,
-		    light_probe_rotate: V(globals.light_probe_rotate, 0.25),
-		    light_probe_intensity: V(globals.light_probe_intensity, 0.1),
-		    envmap_shift: V(globals.envmap_shift, 0.75),
-		    envmap_fov: V(globals.envmap_fov, 1.0),
-			spec_color: [V(matex.spec_r, 255.0)/255.0, V(matex.spec_g, 255.0)/255.0, V(matex.spec_b, 255.0)/255.0],
+			// tex_light_probe: tex_light_probe,
+		 //    light_probe_rotate: V(globals.light_probe_rotate, 0.25),
+		 //    light_probe_intensity: V(globals.light_probe_intensity, 0.1),
+		 //    envmap_shift: V(globals.envmap_shift, 0.75),
+		 //    envmap_fov: V(globals.envmap_fov, 1.0),
+			// spec_color: [V(matex.spec_r, 255.0)/255.0, V(matex.spec_g, 255.0)/255.0, V(matex.spec_b, 255.0)/255.0],
 
-		    Ka: V(matex.Ka, 0.0), Kd: V(matex.Kd, 0.3), Ks: V(matex.Ks, 0.2), Kr: V(matex.Kr, 0.0),
-		    roughness: V(matex.roughness, 0.5),
-		    has_tex_smoothness: V(matex.has_tex_smoothness, 0.0),
-		    is_hair: pass > 0,
-		    ior: V(matex.ior, 1.33),
-		    F0: V(matex.F0, 1.0),
+		 //    Ka: V(matex.Ka, 0.0), Kd: V(matex.Kd, 0.3), Ks: V(matex.Ks, 0.2), Kr: V(matex.Kr, 0.0),
+		 //    roughness: V(matex.roughness, 0.5),
+		 //    has_tex_smoothness: V(matex.has_tex_smoothness, 0.0),
+		 //    is_hair: pass > 0,
+		 //    ior: V(matex.ior, 1.33),
+		 //    F0: V(matex.F0, 1.0),
 
-		    ambient_light_intensity: V(globals.ambient_light_intensity, 0.0),
-		    L0_dir: L0_dir, L0_color: L0_color,
-		    L1_dir: L1_dir, L1_color: L1_color,
-		    isFlipH: g_params['is3DFlipH'],
-		    weightOffset: g_params['weightOffset'],
+		 //    ambient_light_intensity: V(globals.ambient_light_intensity, 0.0),
+		 //    L0_dir: L0_dir, L0_color: L0_color,
+		 //    L1_dir: L1_dir, L1_color: L1_color,
+		 //    isFlipH: g_params['is3DFlipH'],
+		 //    weightOffset: g_params['weightOffset'],
 		    //L2_dir:[0.25,0,-1],L2_color:[2.0,2.0,2.0],
 		};
 
@@ -1169,8 +1169,11 @@
 	    }
 	}
 
-
-	var AnimMeshs = { "avatar": new AnimationMeshPair("avatar") };
+	var AnimMeshs = {};
+	var avatarJson = JSON.parse(FaceUnity.ReadFromCurrentItem("avatar.json")||"{}");
+	if(avatarJson["drawcalls"] && avatarJson["drawcalls"].length>0)
+		AnimMeshs["avatar"] = new AnimationMeshPair("avatar");
+	
 	var fMeshs = fbxmeshs.meshes;
 	for (var i = 0; i < fMeshs.length; i++) {
 	    var meshName = fMeshs[i];
@@ -1267,10 +1270,12 @@
 	        }
 	    }
 	}
-	AnimMeshs["avatar"].meshgroup.calTriggerNextNodesRef(undefined);
+	if(AnimMeshs["avatar"])
+		AnimMeshs["avatar"].meshgroup.calTriggerNextNodesRef(undefined);
+	
 	return {
-	    CalRef:AnimMeshs["avatar"].meshgroup.calTriggerNextNodesRef,
-	    meshlst: AnimMeshs["avatar"].meshgroup.meshlst,
+	    CalRef: AnimMeshs[0] ? AnimMeshs[0].meshgroup.calTriggerNextNodesRef:undefined,
+	    meshlst: AnimMeshs[0] ? AnimMeshs[0].meshgroup.meshlst:undefined,
 		animCounter: AnimCounter,
 		//接下来就是道具对象的内容了
 		/// \brief 处理编辑器发起的参数修改

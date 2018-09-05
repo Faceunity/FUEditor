@@ -258,9 +258,9 @@
 	}
 	console.log("bigtexcnt",bigtexcnt);
 	var user_frame_id=0;
-	var filter_array = new Array();
+	//var filter_array = new Array();
 	var now = Date.now();
-	var expression=[]; for(var i=0; i<46; i++) expression.push(0);
+	var expression=[]; for(var i=0; i<56; i++) expression.push(0);
 	var focal_length = 303.64581298828125;
 	//背景动画
 	//var bg_board=JSON.parse(FaceUnity.ReadFromCurrentItem("desc.json"));
@@ -363,38 +363,72 @@
 		return c;
 	}
 
+	var QueueArray = function(size) {
+		this.data = new Array(size);
+		this.first = 0;
+		this.last = size-1;
+		this.count = 0;
+		this.push = function(value) {
+			if(this.count<size) {
+				this.data[this.first+this.count] = value;
+				this.count++;
+			} else {
+				this.first = (this.first+1)%this.count;
+				this.last = (this.last+1)%this.count;
+				this.data[this.last] = value;
+			}
+		}
+		this.get = function(i) {
+			if(this.count<=size)
+				return this.data[i];
+			else {
+				var id = (this.first + i)%this.count;
+				return this.data[id];
+			}
+		}
+	}
+	
+	var filter_array = new QueueArray(10);
+
 	function filterAct(params) {
 	    //filter
 	    var filter_num = 10;
 	    var l0, l1, l2, l3;
 	    if (user_frame_id > filter_num) {
-	        filter_array.shift();
+	        //filter_array.shift();
 	        filter_array.push(params.rotation);
 	        //calculate
 	        l0 = l1 = l2 = l3 = 0.0;
 	        // var start_time =  (new Date()).getMilliseconds();
-	        for (var i = filter_array.length - 1; i >= 0; i--) {
-	            l0 += filter_array[i][0];
-	            l1 += filter_array[i][1];
-	            l2 += filter_array[i][2];
-	            l3 += filter_array[i][3];
+	        for (var i = filter_array.count - 1; i >= 0; i--) {
+	            l0 += filter_array.get(i)[0];
+	            l1 += filter_array.get(i)[1];
+	            l2 += filter_array.get(i)[2];
+	            l3 += filter_array.get(i)[3];
 	        }
 	        // var delta_time=(new Date()).getMilliseconds()-start_time;
 	        // console.log("delta_time",delta_time);
-	        l0 /= filter_array.length;
-	        l1 /= filter_array.length;
-	        l2 /= filter_array.length;
-	        l3 /= filter_array.length;
+	        l0 /= filter_array.count;
+	        l1 /= filter_array.count;
+	        l2 /= filter_array.count;
+	        l3 /= filter_array.count;
 
 	        params.smooth_rotation = [l0, l1, l2, l3];
 	    } else {
 	        filter_array.push(params.rotation);
 	    }
-	    //ease
-	    var input_rot_weight = [0.5, 0.3, 0.1, 0.5];
+		//ease
+	    // var input_rot_weight = [0.5, 0.3, 0.1, 0.5];
+	    var input_rot_weight = [1.0, 1.0, 0.3, 1.0];
 
-	    params.smooth_rotation = [0, 0, 0, 1];
-	    params.bt_rot_weight = [1, 1, 1, 0.5];
+
+	    if (FaceUnity.m_n_valid_faces == 1) {
+	    	 g_dde_rot=params.smooth_rotation;
+	    }
+	    else
+	    {
+	    	params.smooth_rotation=g_dde_rot;
+	    }
 	    var w = input_rot_weight;
 	    params.smooth_rotation = [w[0] * params.rotation[0], w[1] * params.rotation[1], w[2] * params.rotation[2], w[3] * params.rotation[3]];
 	    //ease end
@@ -686,6 +720,11 @@
 		        shaderUse = "#define USE_VTF\n" + shaderUse;
 		}
 		
+		if(g_params['is3DFlipH']<0.5)
+			gl.cullFace(gl.BACK); 
+		else
+			gl.cullFace(gl.FRONT);
+		
 		var cull = V((materials_json[this.name] || {}).back_cull, 0);
 		if(cull>0.5) gl.enable(gl.CULL_FACE);
 		FaceUnity.RenderBlendshapeComponent_new(blendshape, this, shaderUse, shader, shaderParams, pass);
@@ -797,7 +836,7 @@
 	            mesh.updateEvent(params, now);
 	        });
 	        if (pass == 1) {
-	            FaceUnity.ComputeBlendshapeGeometry(this.blendshape, params);
+	            FaceUnity.ComputeBlendshapeGeometry(this.blendshape, params, 56);
 	            //for facehack
 	            gl.enable(gl.DEPTH_TEST);
 	            gl.depthFunc(gl.LEQUAL);
@@ -899,7 +938,11 @@
 	    }
 	}
 
-	var AnimMeshs = { "avatar": new AnimationMeshPair("avatar") };
+	var AnimMeshs = {};
+	var avatarJson = JSON.parse(FaceUnity.ReadFromCurrentItem("avatar.json")||"{}");
+	if(avatarJson["drawcalls"] && avatarJson["drawcalls"].length>0)
+		AnimMeshs["avatar"] = new AnimationMeshPair("avatar");
+
 	var fMeshs = fbxmeshs.meshes;
 	for (var i = 0; i < fMeshs.length; i++) {
 	    var meshName = fMeshs[i];
@@ -996,10 +1039,12 @@
 	        }
 	    }
 	}
-	AnimMeshs["avatar"].meshgroup.calTriggerNextNodesRef(undefined);
+	if(AnimMeshs["avatar"])
+		AnimMeshs["avatar"].meshgroup.calTriggerNextNodesRef(undefined);
+	
 	return {
-	    CalRef:AnimMeshs["avatar"].meshgroup.calTriggerNextNodesRef,
-	    meshlst: AnimMeshs["avatar"].meshgroup.meshlst,
+	    CalRef: AnimMeshs[0] ? AnimMeshs[0].meshgroup.calTriggerNextNodesRef:undefined,
+	    meshlst: AnimMeshs[0] ? AnimMeshs[0].meshgroup.meshlst:undefined,
 		animCounter: AnimCounter,
 		//接下来就是道具对象的内容了
 		/// \brief 处理编辑器发起的参数修改
@@ -1112,7 +1157,8 @@
 			}
 			if (!params.focal_length) params.focal_length = focal_length;
 			if(V(globals.expr_clamp,0)>0.5){
-				for(var i =0;i<46;i++){
+				for(var i =0;i<56;i++){
+					if(params.expression[i]==undefined) params.expression[i] = 0.0;
 					params.expression[i] = Math.max(Math.min(params.expression[i],1.0),0.0);
 				}
 			}

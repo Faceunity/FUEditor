@@ -1,4 +1,4 @@
-﻿(function(){
+﻿(function(){ 
 	/*
 	以下的注释用来给编辑器提供参数。格式为：
 		gparam或mparam 名字 控件信息
@@ -131,6 +131,9 @@
         rx *= rta; ry *= rta; rz *= rta;
         return [rx, ry, rz];
     }
+	
+	//ex 16,
+	var swaplst = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,  17,18,  20,22,  23,24,  25,26,  27,28,  29,30,  31,32,  44,45];
 
     // axis = 0 is x, axis = 1 is y, axis = 2 is z
     // opt = 0 means less, opt = 1 means greater
@@ -313,9 +316,9 @@
 	}
 	console.log("bigtexcnt",bigtexcnt);
 	var user_frame_id=0;
-	var filter_array = new Array();
+	//var filter_array = new Array();
 	var now = Date.now();
-	var expression=[]; for(var i=0; i<46; i++) expression.push(0);
+	var expression=[]; for(var i=0; i<56; i++) expression.push(0);
 	var focal_length = 303.64581298828125;
 	//背景动画
 	//var bg_board=JSON.parse(FaceUnity.ReadFromCurrentItem("desc.json"));
@@ -331,6 +334,7 @@
 		matp:[0.0,0.0,0.0,1.0],
 		rotation_mode: -1,
 		baked: 0,
+		isFlipExpr: 0.0
 	};
 	var faces = [];
 	var tex_map={};
@@ -421,35 +425,61 @@
 		return c;
 	}
 
+	var QueueArray = function(size) {
+		this.data = new Array(size);
+		this.first = 0;
+		this.last = size-1;
+		this.count = 0;
+		this.push = function(value) {
+			if(this.count<size) {
+				this.data[this.first+this.count] = value;
+				this.count++;
+			} else {
+				this.first = (this.first+1)%this.count;
+				this.last = (this.last+1)%this.count;
+				this.data[this.last] = value;
+			}
+		}
+		this.get = function(i) {
+			if(this.count<=size)
+				return this.data[i];
+			else {
+				var id = (this.first + i)%this.count;
+				return this.data[id];
+			}
+		}
+	}
+	
+	var filter_array = new QueueArray(10);
+
 	function filterAct(params) {
 	    //filter
 	    var filter_num = 10;
 	    var l0, l1, l2, l3;
-	    params.smooth_rotation = [0, 0, 0, 1];
 	    if (user_frame_id > filter_num) {
-	        filter_array.shift();
+	        //filter_array.shift();
 	        filter_array.push(params.rotation);
 	        //calculate
 	        l0 = l1 = l2 = l3 = 0.0;
 	        // var start_time =  (new Date()).getMilliseconds();
-	        for (var i = filter_array.length - 1; i >= 0; i--) {
-	            l0 += filter_array[i][0];
-	            l1 += filter_array[i][1];
-	            l2 += filter_array[i][2];
-	            l3 += filter_array[i][3];
+	        for (var i = filter_array.count - 1; i >= 0; i--) {
+	            l0 += filter_array.get(i)[0];
+	            l1 += filter_array.get(i)[1];
+	            l2 += filter_array.get(i)[2];
+	            l3 += filter_array.get(i)[3];
 	        }
 	        // var delta_time=(new Date()).getMilliseconds()-start_time;
 	        // console.log("delta_time",delta_time);
-	        l0 /= filter_array.length;
-	        l1 /= filter_array.length;
-	        l2 /= filter_array.length;
-	        l3 /= filter_array.length;
+	        l0 /= filter_array.count;
+	        l1 /= filter_array.count;
+	        l2 /= filter_array.count;
+	        l3 /= filter_array.count;
 
 	        params.smooth_rotation = [l0, l1, l2, l3];
 	    } else {
 	        filter_array.push(params.rotation);
 	    }
-	    //ease
+		//ease
 	    // var input_rot_weight = [0.5, 0.3, 0.1, 0.5];
 	    var input_rot_weight = [1.0, 1.0, 0.3, 1.0];
 
@@ -872,7 +902,7 @@
 	            mesh.updateEvent(params, now);
 	        });
 	        if (pass == 1) {
-	            FaceUnity.ComputeBlendshapeGeometry(this.blendshape, params);
+	            FaceUnity.ComputeBlendshapeGeometry(this.blendshape, params, 56);
 	            //for facehack
 	            gl.enable(gl.DEPTH_TEST);
 	            gl.depthFunc(gl.LEQUAL);
@@ -978,7 +1008,11 @@
 	}
 
 
-	var AnimMeshs = { "avatar": new AnimationMeshPair("avatar") };
+	var AnimMeshs = {};
+	var avatarJson = JSON.parse(FaceUnity.ReadFromCurrentItem("avatar.json")||"{}");
+	if(avatarJson["drawcalls"] && avatarJson["drawcalls"].length>0)
+		AnimMeshs["avatar"] = new AnimationMeshPair("avatar");
+	
 	var fMeshs = fbxmeshs.meshes;
 	for (var i = 0; i < fMeshs.length; i++) {
 	    var meshName = fMeshs[i];
@@ -1081,10 +1115,12 @@
 	        }
 	    }
 	}
-	AnimMeshs["avatar"].meshgroup.calTriggerNextNodesRef(undefined);
+	if(AnimMeshs["avatar"])
+		AnimMeshs["avatar"].meshgroup.calTriggerNextNodesRef(undefined);
+	
 	return {
-	    CalRef:AnimMeshs["avatar"].meshgroup.calTriggerNextNodesRef,
-	    meshlst: AnimMeshs["avatar"].meshgroup.meshlst,
+	    CalRef: AnimMeshs[0] ? AnimMeshs[0].meshgroup.calTriggerNextNodesRef:undefined,
+	    meshlst: AnimMeshs[0] ? AnimMeshs[0].meshgroup.meshlst:undefined,
 		animCounter: AnimCounter,
 		//接下来就是道具对象的内容了
 		/// \brief 处理编辑器发起的参数修改
@@ -1097,6 +1133,10 @@
 				return 1;
 			}
 			if(name=='is3DFlipH'){
+				g_params[name] = value;
+				return 1;
+			}
+			if(name=='isFlipExpr'){ 
 				g_params[name] = value;
 				return 1;
 			}
@@ -1221,6 +1261,25 @@
 			        g_is_physics_init =true;
 			    }
 			}
+			
+			if(g_params.isFlipExpr>0.5){
+				//filp rotation 
+				var rotation = params.rotation.slice();
+				//rotation[0] = -rotation[0];
+				rotation[1] = -rotation[1];
+				rotation[2] = -rotation[2];
+				params.rotation = rotation;
+				
+				//filp exp
+				for (var i = 0;i<swaplst.length;i+=2){
+					var tmp = params.expression[swaplst[i]];
+					params.expression[swaplst[i]] = params.expression[swaplst[i+1]];
+					params.expression[swaplst[i+1]] = tmp;
+				}
+				// fack eye rot
+				params.pupil_pos[0] = -params.pupil_pos[0];
+			}
+			
 			if(V(globals.is_fix_x,0)>0.5){
 				params.translation[0] = V(globals.fixed_x,0);
 			}
@@ -1232,10 +1291,12 @@
 			}
 			if (!params.focal_length) params.focal_length = focal_length;
 			if(V(globals.expr_clamp,0)>0.5){
-				for(var i =0;i<46;i++){
+				for(var i =0;i<56;i++){
+					if(params.expression[i]==undefined) params.expression[i] = 0.0;
 					params.expression[i] = Math.max(Math.min(params.expression[i],1.0),0.0);
 				}
 			}
+			
 			g_params["rotation_mode"] = params.rotation_mode;
 			g_params["bk_translation"] = params.translation;
 			g_params["bk_rotation"] = params.rotation;

@@ -875,7 +875,11 @@
 	    }
 	}
 
-	var AnimMeshs = { "avatar": new AnimationMeshPair("avatar") };
+	var AnimMeshs = {};
+	var avatarJson = JSON.parse(FaceUnity.ReadFromCurrentItem("avatar.json")||"{}");
+	if(avatarJson["drawcalls"] && avatarJson["drawcalls"].length>0)
+		AnimMeshs["avatar"] = new AnimationMeshPair("avatar");
+	
 	var fMeshs = fbxmeshs.meshes;
 	for (var i = 0; i < fMeshs.length; i++) {
 	    var meshName = fMeshs[i];
@@ -972,10 +976,12 @@
 	        }
 	    }
 	}
-	AnimMeshs["avatar"].meshgroup.calTriggerNextNodesRef(undefined);
+	if(AnimMeshs["avatar"])
+		AnimMeshs["avatar"].meshgroup.calTriggerNextNodesRef(undefined);
+	
 	return {
-	    CalRef:AnimMeshs["avatar"].meshgroup.calTriggerNextNodesRef,
-	    meshlst: AnimMeshs["avatar"].meshgroup.meshlst,
+	    CalRef: AnimMeshs[0] ? AnimMeshs[0].meshgroup.calTriggerNextNodesRef:undefined,
+	    meshlst: AnimMeshs[0] ? AnimMeshs[0].meshgroup.meshlst:undefined,
 		animCounter: AnimCounter,
 		//接下来就是道具对象的内容了
 		/// \brief 处理编辑器发起的参数修改
