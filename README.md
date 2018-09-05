@@ -1,10 +1,10 @@
 # **FUEditor**
 ### \***New Features:**
- - 新增shadow map阴影模板 
- - 支持debug道具检测 
- - 修复2D动画触发bug 
- - 支持物理效果的渲染 
- - 支持修改渲染分辨率 
+ - SDK库更新为v5.5.0 
+ - 支持阴影效果 
+ - 优化背景分割稳定性 
+ - 支持animoji打包是手动添加背景 
+ - 解决Animoji在editor与手机上过曝现象 
 
 ## 简介
 __FUEditor__ 是一款高效便捷的AR人脸道具编辑工具软件，为[Faceunity](http://www.faceunity.com/)公司的Nama SDK提供支持。
