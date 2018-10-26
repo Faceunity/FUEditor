@@ -21,6 +21,7 @@
         this.fid = 0;
         this.use_vtf = 1;
         this.support_vtf = -1;
+		this.isPause = false;
 
         var conf = JSON.parse(FaceUnity.ReadFromCurrentItem(filename + ".json") || "{}");
         loadConf(conf, this);
@@ -41,6 +42,8 @@
             }
         }
         this.frame_id_callback = function (target, frame_id) {
+			if(this.isPause) return 0;
+			
             var anim_state = target.anim_state;
             this.start(anim_state, frame_id);
             if (frame_id != anim_state.last_frame_id) {
@@ -59,6 +62,8 @@
             return 0;
         }
         this.update_callback = function (target, params) {
+			//if(this.isPause) return;
+			
             var anim_id = target.anim_state.animation_id;
             target.anim_head = this.animObj.anim_head;
 
@@ -81,6 +86,10 @@
         this.unbind = function (pair) {
             pair.animation = null;
         }
+		this.pause = function() {
+			this.isPause = true;
+			this.anim_state.last_anim_fid = this.animObj.frame_num - 1;
+		}
     }
 
     var anims = {};

@@ -90,7 +90,8 @@
 	    bgScaleH: 1,
 	    screenW: 0,
 	    screenH: 0,
-		resetFlag: 0
+		resetFlag: 0,
+		highNama: 1
 	};
 	/////////////////////////res
 	var boards = JSON.parse(FaceUnity.ReadFromCurrentItem("2d_desc.json"));
@@ -107,6 +108,11 @@
 	var cnn_prob = new Array();
 	var cnn_running_time_sum = 0.;
 	var cnn_running_time_count = 0;
+	var config = FaceUnity.NNLoadConfig("config.json");
+	var img_h = config["image_height"];
+    var img_w = config["image_width"];
+    var skip_frames = config["skip_frames"];
+	var model = FaceUnity.NNLoadBackgroundSegmenter(config);
 	//back#1ground_seg*/
 	
 	var jump = 0
@@ -181,6 +187,7 @@
 		this.pauseTime = 0;
 		this.pauseSum = 0;
 		this.focal_length = (this.focal_length==undefined || Math.abs(this.focal_length)<0.001)?742.0:this.focal_length;
+		g_params["highNama"] = this.highnama;
 	}
 	Mesh.prototype.reExtract=function (params){ 
 		try{
@@ -213,6 +220,7 @@
 			}
 			if(g_params.hasmatp)ar_mat = g_params.matp;
 			if(this.name.search("_fg")!=-1){//foreground item
+				this.focal_length = (params.focal_length==undefined || Math.abs(params.focal_length)<0.001)?742.0:params.focal_length;
 				for (var j=0;j<this.texture_frames_bk.length;j++){
 					var ww = this.texture_frames_bk[j].v[2];
 					var hh = this.texture_frames_bk[j].v[5];
@@ -227,10 +235,10 @@
 					var r = this.texture_frames_bk[j].v[3]* ratio;
 					var t = this.texture_frames_bk[j].v[1]* ratio;
 					var b = this.texture_frames_bk[j].v[10]* ratio;
-					this.texture_frames[j].v=[ bx + l, bh + t,params.focal_length,
-													bx + r, bh + t,params.focal_length,
-													bx + r, bh + b,params.focal_length,
-													bx + l, bh + b,params.focal_length];
+					this.texture_frames[j].v=[ bx + l, bh + t,this.focal_length,
+													bx + r, bh + t,this.focal_length,
+													bx + r, bh + b,this.focal_length,
+													bx + l, bh + b,this.focal_length];
 				}
 				this.matp = ar_mat;
 				this.isFullScreenObj = 1;
@@ -432,6 +440,7 @@
 	}
 	Mesh.prototype.renderEvent=function(params,now,mat_cam,isNoneFace){
 		if(!this.triggered || this.isActive != true)return;
+		if(this.triggerstart == "alwaysrender" && !isNoneFace)return; 
 		/*
 		if(!isNoneFace){
 			if(this.triggerstart=="alwaysrender"||this.name.search("_fg")!=-1)return;
@@ -443,7 +452,7 @@
 		}
 		*/
 		if(this.nodetype!=1 && this.name.search("_bgseg")==-1){//non group root node
-			this["focal_length"] = params.focal_length;
+			this["focal_length"] = (Math.abs(params.focal_length)<0.001)?this.focal_length:params.focal_length;
 			if(this.looptype=="infinite" || (this.frame_id < this.texture_frames.length * this.loopcnt)){
 				var idx  = (this.frame_id)%this.texture_frames.length;
 				FaceUnity.RenderBillboard(bigtex[this.texture_frames[idx].bigtexidx],this,this.texture_frames[idx],this.matp,this.rotationType?mat_cam:undefined,this.isFullScreenObj,params);
@@ -702,126 +711,181 @@
 		m_matrix:undefined,
 		enable_trackerless:1,
 		OnGeneralExtraDetector:function(){
-			jump = jump +1;
-			if (jump == 2)jump = 0;
-			if (jump != 0)return 0;
+			if(g_params.highNama) {
+				try{
+					jump = jump + 1;
+					if (jump == skip_frames + 1) jump = 0;
+					if (jump != 0) return 0;
+					reset_prob = 0;
+					//we first compute the rotation matrix
+					var matrix=new Float32Array(6);
+					var rotation_mode=FaceUnity.g_current_rmode;
+					if (cur_rotation_mode == -1 || cur_rotation_mode!=rotation_mode)
+					{
+						cur_rotation_mode = rotation_mode;
+						reset_prob = 1;
+					}
+					//console.log("rotation_mode: ",rotation_mode);
+					var w=FaceUnity.g_image_w;
+					var h=FaceUnity.g_image_h;
+					// console.log(">>>>>>g_image_hw", h, w);
+					switch(rotation_mode){
+						default:{console.log('invalid rotation mode',rotation_mode);}break;
+						case 0:{matrix[0]=w;matrix[1]=0;matrix[2]=0;matrix[3]=h;matrix[4]=0;matrix[5]=0;}break;
+						case 1:{matrix[0]=0;matrix[1]=h;matrix[2]=-w;matrix[3]=0;matrix[4]=w;matrix[5]=0;}break;
+						case 2:{matrix[0]=-w;matrix[1]=0;matrix[2]=0;matrix[3]=-h;matrix[4]=w;matrix[5]=h}break;
+						case 3:{matrix[0]=0;matrix[1]=-h;matrix[2]=w;matrix[3]=0;matrix[4]=0;matrix[5]=h;}
+					}
+					// var length = img_h * img_w * 3;
+					// var input = new Uint8Array(length);
+					// for (var i = 0; i < length; i++) input[i] = 1;
+					input = FaceUnity.NNExtractInput(img_h, img_w, config["image_channels"], matrix);
+					//console.log(">>>>>>Run model");
+					cnn_prob = FaceUnity.NNBackgroundSegmenterInference(model, input, reset_prob);
+					this.m_texid=FaceUnity.NNUploadBackgroundSegmenterResult(cnn_prob, img_h, img_w, reset_prob, config["use_thresholds"], config["upper_threshold"], config["lower_threshold"], config["remove_hole"], config["blur_kernel"], config["minfilter_kernel"]);
+					//console.log("finish upload")
 
-			try{
-				//we first compute the letterboxing / rotation matrix
-				var matrix=new Float32Array(6);
-				var rotation_mode=FaceUnity.g_current_rmode;
-				if (cur_rotation_mode == -1 || cur_rotation_mode!=rotation_mode)
-				{
-
-					cur_rotation_mode=rotation_mode;
-					cnn_prob.length=0;
+					this.m_matrix=matrix;
+				}catch(err){
+					console.log(err.stack);
 				}
-				//console.log("rotation_mode: ",rotation_mode);
-				var w=FaceUnity.g_image_w;
-				var h=FaceUnity.g_image_h;
-				var dw_letterbox,dh_letterbox;
-				if(!(rotation_mode&1)){
-					var conceptual_h_letterboxed=Math.max(w/0.5625,h);
-					var conceptual_w_letterboxed=conceptual_h_letterboxed*0.5625;
-					dw_letterbox=(conceptual_w_letterboxed-w);
-					dh_letterbox=(conceptual_h_letterboxed-h);
-				}else{
-					var conceptual_h_letterboxed=Math.max(h/0.5625,w);
-					var conceptual_w_letterboxed=conceptual_h_letterboxed*0.5625;
-					dw_letterbox=(conceptual_h_letterboxed-w);
-					dh_letterbox=(conceptual_w_letterboxed-h);
-				}
-				switch(rotation_mode){
-					default:{console.log('invalid rotation mode',rotation_mode);}break;
-					case 0:{matrix[0]=w;matrix[1]=0;matrix[2]=0;matrix[3]=h;matrix[4]=0;matrix[5]=0;}break;
-					case 1:{matrix[0]=0;matrix[1]=h;matrix[2]=-w;matrix[3]=0;matrix[4]=w;matrix[5]=0;}break;
-					case 2:{matrix[0]=-w;matrix[1]=0;matrix[2]=0;matrix[3]=-h;matrix[4]=w;matrix[5]=h}break;
-					case 3:{matrix[0]=0;matrix[1]=-h;matrix[2]=w;matrix[3]=0;matrix[4]=0;matrix[5]=h;}
-				}
-				//console.log("w/h"+1.*w/h);
-				//console.log("rotation mode: "+rotation_mode);
-				//console.log("w/h<1: "+w/h<1);
-				if ((rotation_mode&1)^(w/h<1))
-				{
-
-					var input_v=FaceUnity.ExtractNNModelInput(model_v.w,model_v.h,model_v.channels, matrix,base_color);
-					var output_v=FaceUnity.RunNNModelRaw(model_v,input_v);
-
-					//console.log("vertical");
-					cnn_running_time_sum+=output_v[output_v.length-1];
-					cnn_running_time_count++;
-					console.log("average running time:"+cnn_running_time_sum/cnn_running_time_count+"ms");
-					if (cnn_prob.length==0){
-
-						for(var i=0;i<output_v.length;i++){
-							cnn_prob[i] = output_v[i];
+			} else {
+				try{
+					//we first compute the letterboxing / rotation matrix
+					var matrix=new Float32Array(6);
+					var rotation_mode=FaceUnity.g_current_rmode;
+					if (cur_rotation_mode == -1 || cur_rotation_mode!=rotation_mode)
+					{
+						cur_rotation_mode=rotation_mode;
+						cnn_prob.length=0;
+					}
+					//console.log("rotation_mode: ",rotation_mode);
+					var w=FaceUnity.g_image_w;
+					var h=FaceUnity.g_image_h;
+					var dw_letterbox,dh_letterbox;
+					if(!(rotation_mode&1)){
+						var conceptual_h_letterboxed=Math.max(w/0.5625,h);
+						var conceptual_w_letterboxed=conceptual_h_letterboxed*0.5625;
+						dw_letterbox=(conceptual_w_letterboxed-w);
+						dh_letterbox=(conceptual_h_letterboxed-h);
+					}else{
+						var conceptual_h_letterboxed=Math.max(h/0.5625,w);
+						var conceptual_w_letterboxed=conceptual_h_letterboxed*0.5625;
+						dw_letterbox=(conceptual_h_letterboxed-w);
+						dh_letterbox=(conceptual_w_letterboxed-h);
+					}
+					switch(rotation_mode){
+						default:{console.log('invalid rotation mode',rotation_mode);}break;
+						case 0:{matrix[0]=w;matrix[1]=0;matrix[2]=0;matrix[3]=h;matrix[4]=0;matrix[5]=0;}break;
+						case 1:{matrix[0]=0;matrix[1]=h;matrix[2]=-w;matrix[3]=0;matrix[4]=w;matrix[5]=0;}break;
+						case 2:{matrix[0]=-w;matrix[1]=0;matrix[2]=0;matrix[3]=-h;matrix[4]=w;matrix[5]=h}break;
+						case 3:{matrix[0]=0;matrix[1]=-h;matrix[2]=w;matrix[3]=0;matrix[4]=0;matrix[5]=h;}
+					}
+					//console.log("w/h"+1.*w/h);
+					//console.log("rotation mode: "+rotation_mode);
+					//console.log("w/h<1: "+w/h<1);
+					if ((rotation_mode&1)^(w/h<1))
+					{
+						var input_v=FaceUnity.ExtractNNModelInput(model_v.w,model_v.h,model_v.channels, matrix,base_color);
+						var output_v=FaceUnity.RunNNModelRaw(model_v,input_v);
+						this.m_texid=FaceUnity.UploadBackgroundSegmentationResult(model_v,output_v);
+						//console.log("vertical");
+						cnn_running_time_sum+=output_v[output_v.length-1];
+						cnn_running_time_count++;
+						//console.log("average running time:"+cnn_running_time_sum/cnn_running_time_count+"ms");
+						if (cnn_prob.length==0){
+							for(var i=0;i<output_v.length;i++){cnn_prob[i] = output_v[i];}
+						}
+						else{
+							for(var i=0;i<output_v.length;i++){cnn_prob[i] = 0.5*output_v[i]+0.5*cnn_prob[i]; output_v[i]=cnn_prob[i];}
 						}
 					}
-					else{
-						for(var i=0;i<output_v.length;i++)
-						{
-							cnn_prob[i] = 0.7*output_v[i]+0.3*cnn_prob[i]; 
-							output_v[i]=cnn_prob[i];
+					else
+					{
+						var input_h=FaceUnity.ExtractNNModelInput(model_h.w,model_h.h,model_h.channels, matrix,base_color);
+						var output_h=FaceUnity.RunNNModelRaw(model_h,input_h);
+						this.m_texid=FaceUnity.UploadBackgroundSegmentationResult(model_h,output_h);
+						//console.log("horizontal");
+						cnn_running_time_sum+=output_h[output_h.length-1];
+						cnn_running_time_count++;
+						//console.log("average running time:"+cnn_running_time_sum/cnn_running_time_count+"ms");
+						if (cnn_prob.length==0){
+							for(var i=0;i<output_h.length;i++){cnn_prob[i] = output_h[i];}
+						}
+						else{
+							for(var i=0;i<output_h.length;i++){cnn_prob[i] = 0.5*output_h[i]+0.5*cnn_prob[i]; output_h[i]=cnn_prob[i];}
 						}
 					}
-					this.m_texid=FaceUnity.UploadBackgroundSegmentationResult(model_v,output_v);
-				}
-				else
-				{
-					var input_h=FaceUnity.ExtractNNModelInput(model_h.w,model_h.h,model_h.channels, matrix,base_color);
-					var output_h=FaceUnity.RunNNModelRaw(model_h,input_h);
 					
-					//console.log("horizontal");
-					cnn_running_time_sum+=output_h[output_h.length-1];
-					cnn_running_time_count++;
-					//console.log("average running time:"+cnn_running_time_sum/cnn_running_time_count+"ms");
-					if (cnn_prob.length==0){
-						for(var i=0;i<output_h.length;i++){cnn_prob[i] = output_h[i];}
-					}
-					else{
-						for(var i=0;i<output_h.length;i++){cnn_prob[i] = 0.7*output_v[i]+0.3*cnn_prob[i]; output_h[i]=cnn_prob[i];}
-					}
-					this.m_texid=FaceUnity.UploadBackgroundSegmentationResult(model_h,output_h);
+					this.m_matrix=matrix;
+				}catch(err){
+					console.log(err.stack);
 				}
-				
-				this.m_matrix=matrix;
+			}
+		},
+		FilterEntireImage:function(flip_x,flip_y){
+			try{
+				if(g_params.highNama) {
+					 if(!this.m_texid){return;}
+					var now = Date.now();
+					var rsq01=1.0/(this.m_matrix[0]*this.m_matrix[0]+this.m_matrix[1]*this.m_matrix[1]);
+					var rsq23=1.0/(this.m_matrix[2]*this.m_matrix[2]+this.m_matrix[3]*this.m_matrix[3]);
+					for(var i=0;i<bgseg_mesh_ref_lst.length;i++){
+						var curbg = bgseg_mesh_ref_lst[i];
+						if(curbg.triggered && curbg.isActive){
+							elapse = now - curbg.last;
+							curbg.frame_id = parseInt(elapse * curbg.fps / 1000);
+							if(curbg.force_frame_id!=undefined && curbg.force_frame_id>=0)curbg.frame_id = curbg.force_frame_id;
+							var idx  = (curbg.frame_id)%curbg.texture_frames.length;
+							var is_bgra = (FaceUnity.m_is_bgra==2 ||  FaceUnity.m_is_bgra==4)?1:0;
+							FaceUnity.InsertImageFilter("color",s_visualize_shader,{
+								inv_matrix0123:[this.m_matrix[0]*rsq01,this.m_matrix[1]*rsq01,this.m_matrix[2]*rsq23,this.m_matrix[3]*rsq23],
+								inv_matrix45_image_dim:[this.m_matrix[4],this.m_matrix[5],FaceUnity.g_image_w,FaceUnity.g_image_h],
+								tex_segmentation:this.m_texid,
+								tex_background:bigtex[curbg.texture_frames[idx].bigtexidx],
+								background_uv_lt:curbg.texture_frames[idx].vt.slice(0,4),
+								background_uv_rb:curbg.texture_frames[idx].vt.slice(4),
+								is_bgra:is_bgra,
+								flipx: (flip_x!=undefined)?flip_x:0.0,
+								flipy: (flip_y!=undefined)?flip_y:0.0,
+								mat_seg: curbg.mat_seg
+							});
+						}
+					}
+				} else {
+					//console.log('FilterEntireImage',this.m_texid)
+					if(!this.m_texid){return;}
+					var now = Date.now();
+					var rsq01=1.0/(this.m_matrix[0]*this.m_matrix[0]+this.m_matrix[1]*this.m_matrix[1]);
+					var rsq23=1.0/(this.m_matrix[2]*this.m_matrix[2]+this.m_matrix[3]*this.m_matrix[3]);
+					for(var i=0;i<bgseg_mesh_ref_lst.length;i++){
+						var curbg = bgseg_mesh_ref_lst[i];
+						if(curbg.triggerstart == "newface" && !faceCount) continue;
+						if(curbg.triggered && curbg.isActive){
+							elapse = now - curbg.last;
+							curbg.frame_id = parseInt(elapse * curbg.fps / 1000);
+							if(curbg.force_frame_id!=undefined && curbg.force_frame_id>=0)curbg.frame_id = curbg.force_frame_id;
+							var idx  = (curbg.frame_id)%curbg.texture_frames.length;
+							var is_bgra = (FaceUnity.m_is_bgra==2 ||  FaceUnity.m_is_bgra==4)?1:0;
+							FaceUnity.InsertImageFilter("color",s_visualize_shader,{
+								inv_matrix0123:[this.m_matrix[0]*rsq01,this.m_matrix[1]*rsq01,this.m_matrix[2]*rsq23,this.m_matrix[3]*rsq23],
+								inv_matrix45_image_dim:[this.m_matrix[4],this.m_matrix[5],FaceUnity.g_image_w,FaceUnity.g_image_h],
+								tex_segmentation:this.m_texid,
+								tex_background:bigtex[curbg.texture_frames[idx].bigtexidx],
+								background_uv_lt:curbg.texture_frames[idx].vt.slice(0,4),
+								background_uv_rb:curbg.texture_frames[idx].vt.slice(4),
+								is_bgra:is_bgra,
+								flipx: (flip_x!=undefined)?flip_x:0.0,
+								flipy: (flip_y!=undefined)?flip_y:0.0,
+								mat_seg: curbg.mat_seg
+							});	
+						}
+					}
+				}
 			}catch(err){
 				console.log(err.stack);
 			}
-
 		},
-		FilterEntireImage:function(flip_x,flip_y){try{
-			//console.log('FilterEntireImage',this.m_texid)
-			if(!this.m_texid){return;}
-			now = Date.now();
-			var rsq01=1.0/(this.m_matrix[0]*this.m_matrix[0]+this.m_matrix[1]*this.m_matrix[1]);
-			var rsq23=1.0/(this.m_matrix[2]*this.m_matrix[2]+this.m_matrix[3]*this.m_matrix[3]);
-			for(var i=0;i<bgseg_mesh_ref_lst.length;i++){
-				var curbg = bgseg_mesh_ref_lst[i];
-				if(curbg.triggerstart == "newface" && !faceCount) continue;
-				if(curbg.triggered && curbg.isActive){
-					elapse = now - curbg.last;
-					curbg.frame_id = parseInt(elapse * curbg.fps / 1000);
-					if(curbg.force_frame_id!=undefined && curbg.force_frame_id>=0)curbg.frame_id = curbg.force_frame_id;
-					var idx  = (curbg.frame_id)%curbg.texture_frames.length;
-					var is_bgra = (FaceUnity.m_is_bgra==2 ||  FaceUnity.m_is_bgra==4)?1:0;
-					FaceUnity.InsertImageFilter("color",s_visualize_shader,{
-						inv_matrix0123:[this.m_matrix[0]*rsq01,this.m_matrix[1]*rsq01,this.m_matrix[2]*rsq23,this.m_matrix[3]*rsq23],
-						inv_matrix45_image_dim:[this.m_matrix[4],this.m_matrix[5],FaceUnity.g_image_w,FaceUnity.g_image_h],
-						tex_segmentation:this.m_texid,
-						tex_background:bigtex[curbg.texture_frames[idx].bigtexidx],
-						background_uv_lt:curbg.texture_frames[idx].vt.slice(0,4),
-						background_uv_rb:curbg.texture_frames[idx].vt.slice(4),
-						is_bgra:is_bgra,
-						flipx: (flip_x!=undefined)?flip_x:0.0,
-						flipy: (flip_y!=undefined)?flip_y:0.0,
-						mat_seg: curbg.mat_seg
-					});	
-				}
-			}
-		}catch(err){
-			console.log(err.stack);
-		}},
 		//back#2ground_seg*/
 		////////////////////////////////
 		Render:function(params,pass){
@@ -849,8 +913,8 @@
 					for(var i = 0; i < meshlst.length; i++){
 						if(params.isPause) meshlst[i].pauseThis(now);
 						else meshlst[i].resumeThis(now);
-						meshlst[i].updateEvent(params,now);
 						meshlst[i].triggerStartEvent(params,now,false);
+						meshlst[i].updateEvent(params,now);
 					}
 					for(var i = 0; i < nonbgseg_bg_mesh_ref_lst.length; i++)nonbgseg_bg_mesh_ref_lst[i].renderEvent(params,now,mat_cam,false);
 					
@@ -917,12 +981,14 @@
 					for(var i = 0; i < meshlst.length; i++){
 						if(params.isPause) meshlst[i].pauseThis(now);
 						else meshlst[i].resumeThis(now);
-						meshlst[i].updateEvent(params,now);
 						meshlst[i].triggerStartEvent(params,now,true);
+						meshlst[i].updateEvent(params,now);
 					}
-					if(!params.face_count)for(var i = 0; i < alwaysrender_fcbg_mesh_ref_lst.length; i++)alwaysrender_fcbg_mesh_ref_lst[i].renderEvent(params,now,undefined,true);	
+					//if(!params.face_count)
+					for(var i = 0; i < alwaysrender_fcbg_mesh_ref_lst.length; i++)alwaysrender_fcbg_mesh_ref_lst[i].renderEvent(params,now,undefined,true);	
 				}else if(pass == 2){
-					if(!params.face_count)for(var i = 0; i < alwaysrender_nonfcbg_mesh_ref_lst.length; i++)alwaysrender_nonfcbg_mesh_ref_lst[i].renderEvent(params,now,undefined,true);
+					//if(!params.face_count)
+					for(var i = 0; i < alwaysrender_nonfcbg_mesh_ref_lst.length; i++)alwaysrender_nonfcbg_mesh_ref_lst[i].renderEvent(params,now,undefined,true);
 					
 					//TODO
 					

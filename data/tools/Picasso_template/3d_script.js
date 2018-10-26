@@ -688,8 +688,15 @@
 	            for (var i = 0; i < this.meshlst.length; i++) this.meshlst[i].switchState(this.last_state, 1);
 	            this.last_state = 1;
 	        }
-	        var alphaThreshold = parseFloat(V(globals.alphaThreshold, "1.0"));
-	        var shader = s_frag_shader + "vec4 shader_main_OIT(){vec4 c=shader_main();return vec4(c.rgb,1.0);}";
+			var alphaThreshold = parseFloat(V(globals.alphaThreshold, "1.0"));
+			var m_texid_raw_input_is_rgba = FaceUnity.m_texid_raw_input_is_rgba;
+			var shader;
+			if(m_texid_raw_input_is_rgba==0){
+				shader = s_frag_shader + "vec4 shader_main_OIT(){vec4 c=shader_main();return vec4(c.bgr,1.0);}";
+			}
+	        else{
+				shader = s_frag_shader + "vec4 shader_main_OIT(){vec4 c=shader_main();return vec4(c.rgb,1.0);}";
+			}
 	        var parent = this;
 	        //update for all mesh
 	        this.meshlst.forEach(function (mesh) {

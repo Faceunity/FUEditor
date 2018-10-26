@@ -26,11 +26,11 @@
 	//主光的俯仰角，也就是上下转的那个角
 	//@gparam L0_pitch {"type":"slider","min":-1,"max":1,"default_value":0}
 	//主光的颜色，三个通道
-	//@gparam L0_R {"type":"slider","min":0,"max":1,"default_value":1}
-	//@gparam L0_G {"type":"slider","min":0,"max":1,"default_value":1}
-	//@gparam L0_B {"type":"slider","min":0,"max":1,"default_value":1}
+	//@gparam L0 {"type": "color","default_r": 1,"default_g": 1,"default_b": 1}
 	//主光的强度，用对数调还是为了方便
 	//@gparam L0Intensity {"type":"slider","min":-4,"max":4,"default_value":0}
+	//@gparam hasShadow {"type":"slider","min":0,"max":1,"default_value":0.0}
+	//@gparam shadow_bias {"type":"slider","min":0,"max":1,"default_value":0.2}
 
 	//半透明算法阈值，设为1.0适合普通简单的半透明物体，设为0.5适合头发
 	//@gparam alphaThreshold {"type":"edit","default_value":"1.0"}
@@ -50,6 +50,8 @@
 	//控制旋转的幅度，rot_weight=1完全按照人头旋转，rot_weight=0不跟人头旋转
 	//@gparam rot_weight {"type":"slider","min":0,"max":1,"default_value":1}
 	//@gparam expr_clamp {"type":"slider","min":0,"max":1,"default_value":1}
+	//@gparam follow {"type":"slider","min":0,"max":1,"default_value":0}
+	//@gparam tongue {"type":"slider","min":0,"max":1,"default_value":0}
 	///////////////////////////
 	//以下是材质参数
 	/*物体的类型,一是镂空,[0,0.25]；
@@ -133,7 +135,8 @@
     }
 	
 	//ex 16,
-	var swaplst = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,  17,18,  20,22,  23,24,  25,26,  27,28,  29,30,  31,32,  44,45];
+	var swaplst = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,  17,18,  20,22,  23,24,  25,26,  27,28,  29,30,  31,32,  44,45,
+		47,49, 50,52, 53,55 ];
 
     // axis = 0 is x, axis = 1 is y, axis = 2 is z
     // opt = 0 means less, opt = 1 means greater
@@ -286,14 +289,59 @@
     //骨骼动画相关
 	var a_vert_shader = FaceUnity.ReadFromCurrentItem("anim_dq_vert.glsl");
 	var fbxmeshs = JSON.parse(FaceUnity.ReadFromCurrentItem("meshes.json"));
+	
+	//Shadow
+	var shadowMap_fs = FaceUnity.ReadFromCurrentItem("shadow_map_fs.glsl");
+	var screen_fs = FaceUnity.ReadFromCurrentItem("screen_fs.glsl");
+	var L0_view = null;
+	var L0_proj = null;
+	var L0_mvp = null;
+	var OrthoLH = function(left, right, bottom, top, zNear, zFar){
+		var mat = [
+			2.0 / (right - left), 0.0, 0.0, 0.0,
+			0.0, 2.0 / (top - bottom), 0.0, 0.0,
+			0.0, 0.0, 2.0 / (zFar - zNear), 0.0,
+			(left + right) / (left - right), (top + bottom) / (bottom - top), (zFar + zNear) / (zNear - zFar), 1.0
+		];
+		return mat;
+	}
+	var Vec3Add = function(x, y){
+		return [x[0] + y[0], x[1] + y[1], x[2] + y[2]];
+	};
+	var Vec3Sub = function(x, y){
+		return [x[0] - y[0], x[1] - y[1], x[2] - y[2]];
+	};
+	var Vec3Normalize = function(x){
+		var s = 1.0 / Math.sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]);
+		return [x[0] * s, x[1] * s, x[2] * s];
+	}
+	var Vec3Dot = function(x, y){
+		return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
+	}
+	var Vec3Cross = function(x, y){
+		var z = [];
+		z[0] = x[1] * y[2] - x[2] * y[1];
+		z[1] = x[2] * y[0] - x[0] * y[2];
+		z[2] = x[0] * y[1] - x[1] * y[0];
+		return z;
+	}
+	var LookAtLH = function(eye, at, up)
+	{
+		var zaxis = [], xaxis = [], yaxis = [];
+		var mat = [];
+		zaxis = Vec3Normalize(Vec3Sub(at, eye));
+		xaxis = Vec3Normalize(Vec3Cross(up, zaxis));
+		yaxis = Vec3Normalize(Vec3Cross(zaxis, xaxis));
 
-    //物理效果相关
-	var rigidBody_json_string = FaceUnity.ReadFromCurrentItem("bodies.json") || "{}";
-	var joint_json_string = FaceUnity.ReadFromCurrentItem("joints.json") || "{}";
-	var bones_json_string = FaceUnity.ReadFromCurrentItem("bones.json") || "{}";
-	var canUsePhysical = rigidBody_json_string != "{}" && joint_json_string != "{}" && bones_json_string != "{}";
-    var g_main_bone = -1;
-	var g_is_physics_init = false;
+		mat[0] = xaxis[0]; mat[1] = yaxis[0]; mat[2] = zaxis[0]; mat[3] = 0.0;
+		mat[4] = xaxis[1]; mat[5] = yaxis[1]; mat[6] = zaxis[1]; mat[7] = 0.0;
+		mat[8] = xaxis[2]; mat[9] = yaxis[2]; mat[10] = zaxis[2]; mat[11] = 0.0;
+		mat[12] = -Vec3Dot(xaxis, eye);
+		mat[13] = -Vec3Dot(yaxis, eye);
+		mat[14] = -Vec3Dot(zaxis, eye);
+		mat[15] = 1.0;
+		return mat;
+	};
 
     //全局旋转和缩放
 	var rot_delta = 0.0;
@@ -304,7 +352,15 @@
                   0, 0, 1, 0,
                   0, 0, 0, 1];
 	var scale_ex = 1.0;
-
+	
+	var isFollow = globals.follow;
+	var nf_fixed_x = globals.is_fix_x;
+	var nf_fixed_y = globals.is_fix_y;
+	var nf_fixed_z = globals.is_fix_z;
+	var nf_nface = globals.isnofacerender;
+	var nf_usefov = globals.use_fov;
+	var nf_cfov = globals.camera_fov;
+	
 	var bigtexjson = JSON.parse(FaceUnity.ReadFromCurrentItem("3d_bigtex_desc.json")||"{}");
 	var bigtexcnt = 0;
 	var bigtex = new Array();
@@ -316,7 +372,6 @@
 	}
 	console.log("bigtexcnt",bigtexcnt);
 	var user_frame_id=0;
-	//var filter_array = new Array();
 	var now = Date.now();
 	var expression=[]; for(var i=0; i<56; i++) expression.push(0);
 	var focal_length = 303.64581298828125;
@@ -334,7 +389,9 @@
 		matp:[0.0,0.0,0.0,1.0],
 		rotation_mode: -1,
 		baked: 0,
-		isFlipExpr: 0.0
+		isFlipExpr: 0.0,
+		fix_rotation: 0,
+		use_vtf: 1
 	};
 	var faces = [];
 	var tex_map={};
@@ -378,7 +435,7 @@
 		SCALE=Math.exp(V(globals.log_scale,0));
 		L0_dir=CreateDirection(V(globals.L0_yaw,0),V(globals.L0_pitch,0));
 		L1_dir=CreateDirection(V(globals.L1_yaw,0),V(globals.L1_pitch,0));
-		L0_color=CreateColor(V(globals.L0_R,1),V(globals.L0_G,1),V(globals.L0_B,1), V(globals.L0Intensity,0));
+		L0_color=CreateColor(V(globals.L0[0],1),V(globals.L0[1],1),V(globals.L0[2],1), V(globals.L0Intensity,0));
 		L1_color=CreateColor(V(globals.L1_R,1),V(globals.L1_G,1),V(globals.L1_B,1), V(globals.L1Intensity,-2));
 		//编辑器在改了贴图之后会自动把文件转换成webp拷贝到工作区里，但是并不会帮着调LoadTexture，所以这里要调一下
 		tex_light_probe=FaceUnity.LoadTexture(V(globals.tex_light_probe,"beach_1_4.jpg"),0,gl.CLAMP_TO_EDGE);
@@ -423,79 +480,6 @@
 			}
 		}
 		return c;
-	}
-
-	var QueueArray = function(size) {
-		this.data = new Array(size);
-		this.first = 0;
-		this.last = size-1;
-		this.count = 0;
-		this.push = function(value) {
-			if(this.count<size) {
-				this.data[this.first+this.count] = value;
-				this.count++;
-			} else {
-				this.first = (this.first+1)%this.count;
-				this.last = (this.last+1)%this.count;
-				this.data[this.last] = value;
-			}
-		}
-		this.get = function(i) {
-			if(this.count<=size)
-				return this.data[i];
-			else {
-				var id = (this.first + i)%this.count;
-				return this.data[id];
-			}
-		}
-	}
-	
-	var filter_array = new QueueArray(10);
-
-	function filterAct(params) {
-	    //filter
-	    var filter_num = 10;
-	    var l0, l1, l2, l3;
-	    if (user_frame_id > filter_num) {
-	        //filter_array.shift();
-	        filter_array.push(params.rotation);
-	        //calculate
-	        l0 = l1 = l2 = l3 = 0.0;
-	        // var start_time =  (new Date()).getMilliseconds();
-	        for (var i = filter_array.count - 1; i >= 0; i--) {
-	            l0 += filter_array.get(i)[0];
-	            l1 += filter_array.get(i)[1];
-	            l2 += filter_array.get(i)[2];
-	            l3 += filter_array.get(i)[3];
-	        }
-	        // var delta_time=(new Date()).getMilliseconds()-start_time;
-	        // console.log("delta_time",delta_time);
-	        l0 /= filter_array.count;
-	        l1 /= filter_array.count;
-	        l2 /= filter_array.count;
-	        l3 /= filter_array.count;
-
-	        params.smooth_rotation = [l0, l1, l2, l3];
-	    } else {
-	        filter_array.push(params.rotation);
-	    }
-		//ease
-	    // var input_rot_weight = [0.5, 0.3, 0.1, 0.5];
-	    var input_rot_weight = [1.0, 1.0, 0.3, 1.0];
-
-
-	    if (FaceUnity.m_n_valid_faces == 1) {
-	    	 g_dde_rot=params.smooth_rotation;
-	    }
-	    else
-	    {
-	    	params.smooth_rotation=g_dde_rot;
-	    }
-	    var w = input_rot_weight;
-	    params.smooth_rotation = [w[0] * params.rotation[0], w[1] * params.rotation[1], w[2] * params.rotation[2], w[3] * params.rotation[3]];
-	    //ease end
-	    user_frame_id++;
-	    //hack end
 	}
 
 	var Mesh = function(dc,anim){
@@ -566,13 +550,13 @@
 
 		var rotation = params.rotation.slice();
 
-		if(V(globals.rot_weight,1.0) < 0.05){
+		/*if(V(globals.rot_weight,1.0) < 0.05){
 			rotation = [0,0,0,1];
 		}else if(V(globals.rot_weight,1.0) < 0.95){
 			var delta = [-rotation[0],-rotation[1],-rotation[2],1.0-rotation[3]];
 			var w=1.0 - globals.rot_weight;
 			rotation=[w*delta[0]+rotation[0],w*delta[1]+rotation[1],w*delta[2]+rotation[2],w*delta[3]+rotation[3]];
-		}
+		}*/
 		/*
 		if(V(globals.rot_weight,1.0) < 0.01){
 			rotation = [0,0,0,1];
@@ -584,6 +568,11 @@
 			}
 		}
 		*/
+		var L0_scale = -300.0;
+		L0_view = LookAtLH([L0_scale * L0_dir[0], L0_scale * L0_dir[1], L0_scale * L0_dir[2]], L0_dir, [0.0, 1.0, 0.0]);
+		var len = 210.0;
+		L0_proj = OrthoLH(-len, len, -len, len, -100.0, 600);
+		L0_mvp = FaceUnity.MatrixMul(L0_view, L0_proj);
 
 		var trans = [0, 0, 0];
 		trans[0] = this.translate[0];
@@ -598,15 +587,17 @@
 		mat_cam = FaceUnity.MatrixMul(rot_ex, mat_cam);
 		mat_cam = FaceUnity.MatrixMul(FaceUnity.MatrixTranslate(InvVec3(trans)), mat_cam);
 
-		var mat_t = FaceUnity.CreateViewMatrix(
-			[-rotation[0], -rotation[1], -rotation[2], rotation[3]],
-			[0, 0, 0]);
-		var mat_cam_t = FaceUnity.CreateViewMatrix(
-			[0, 0, 0, 1],
-			[0, 0, 0]);
-
-		mat = FaceUnity.MatrixMul(mat_t, mat);
-		mat_cam = FaceUnity.MatrixMul(mat_cam_t, mat_cam);
+		/*if(!params.animation){
+			var mat_t = FaceUnity.CreateViewMatrix(
+				[-rotation[0], -rotation[1], -rotation[2], rotation[3]],
+				[0, 0, 0]);
+			var mat_cam_t = FaceUnity.CreateViewMatrix(
+				[0, 0, 0, 1],
+				[0, 0, 0]);
+	
+			mat = FaceUnity.MatrixMul(mat_t, mat);
+			mat_cam = FaceUnity.MatrixMul(mat_cam_t, mat_cam);
+		}*/
 
 
 		if(V(matex.is_eye,this.is_eye)){
@@ -676,24 +667,30 @@
 			var lbrt = [0.0,0.0,1.0,1.0];
 		}
 		var shaderUse = s_vert_shader;
+		var mat_proj;
 		if(V(globals.use_fov,0)>0.5){
-			var mat_proj = FaceUnity.CreateProjectionMatrix_FOV(V(globals.camera_fov,20));
+			mat_proj = FaceUnity.CreateProjectionMatrix_FOV(V(globals.camera_fov,20));
 		}else{
-			var mat_proj = FaceUnity.CreateProjectionMatrix_FOV();
-		if(tracked<0.5){
-			//console.log("js: use rmode ", g_params["rotation_mode"]);
-			var rmode = g_params["rotation_mode"];
-			if (rmode == -1)
-				rmode = 0;
-			mat_proj = FaceUnity.CreateProjectionMatrix_FOV(20,10,30000,rmode);
+			if(globals.follow)
+				mat_proj = FaceUnity.CreateProjectionMatrix();
+			else {
+				mat_proj = FaceUnity.CreateProjectionMatrix_FOV(20,10,30000);
+				if(tracked<0.5){
+					//console.log("js: use rmode ", g_params["rotation_mode"]);
+					var rmode = g_params["rotation_mode"];
+					if (rmode == -1)
+						rmode = 0;
+					mat_proj = FaceUnity.CreateProjectionMatrix_FOV(20,10,30000,rmode);
+				}
+			}
 		}
-		}
+
 		var shaderParams = {
 		    scales: [this.scales[0] * SCALE, this.scales[1] * SCALE, this.scales[2] * SCALE],
 		    scale_e: scale_ex,
 		    mat_view: this.mat,
 		    mat_cam: this.mat_cam,
-		    quatR1:[this.rotation[0],this.rotation[1],this.rotation[2],this.rotation[3]],
+		    quatR1:[-this.rotation[0],-this.rotation[1],this.rotation[2],this.rotation[3]],
 		    quatT1: [0, 0, 0],//[params.translation[0],params.translation[1],params.translation[2],1],
 		    quatR2: [0, 0, 0, 1],
 		    quatT2: [0, 0, 0],//[mat2[12]-center[0],mat2[13]-center[1],mat2[14]-center[2]],
@@ -755,6 +752,11 @@
 		    isFlipH: g_params['is3DFlipH'],
 		    weightOffset: g_params['weightOffset'],
 		    //L2_dir:[0.25,0,-1],L2_color:[2.0,2.0,2.0],
+		    HasShadow: globals.hasShadow > 0.5 ? 1.0 : 0.0,
+		    L0_MVP: L0_mvp,
+		    tex_shadowMap0: globals.hasShadow > 0.5 ? FaceUnity.GetShadowMap() : 0,
+			SHADOWMAP_SIZE:FaceUnity.GetShadowMapSize(),
+			bias:globals.shadow_bias * 0.1,
 		};
 		
 		shader = AttachTexture(matex,tex_map,"tex_mask",shaderParams,"TX_MASK","grey.png") + shader;
@@ -777,6 +779,8 @@
 		    shaderParams.deform_width = animation.tex_deform_width;
 		    shaderParams.anim_head = animation.anim_head;
 		    shaderParams.rootBone = animation.root / animation.cluster_num;
+		    shaderParams.headTransMat=animation.headTransMat;
+		    shaderParams.invHeadTransMat=animation.invHeadTransMat;
 		} else {
 		    shaderUse = s_vert_shader;
 		}
@@ -784,14 +788,10 @@
             this.rotate != null && this.rotate != undefined &&
             this.transform != null && this.transform != undefined) {
 		    shaderParams.trans_pos = this.translate;
-		    shaderParams.rot_mat1 = [this.rotate[0], this.rotate[1], this.rotate[2]];
-		    shaderParams.rot_mat2 = [this.rotate[3], this.rotate[4], this.rotate[5]];
-		    shaderParams.rot_mat3 = [this.rotate[6], this.rotate[7], this.rotate[8]];
+		    shaderParams.head_rotation_quat = [-params.rotation[0], -params.rotation[1], -params.rotation[2],params.rotation[3]];
 		    shaderParams.model_mat = this.transform;
 		} else {
-		    shaderParams.rot_mat1 = [1, 0, 0];
-		    shaderParams.rot_mat2 = [0, 1, 0];
-		    shaderParams.rot_mat3 = [0, 0, 1];
+		    shaderParams.head_rotation_quat = [0, 0, 0, 1];
 		    shaderParams.trans_pos = [0, 0, 0];
 		    shaderParams.model_mat = [1, 0, 0, 0,
                                       0, 1, 0, 0,
@@ -801,8 +801,100 @@
 		if (animation != null) {
 		    if (animation.use_vtf == 1)
 		        shaderUse = "#define USE_VTF\n" + shaderUse;
+		    if (animation.is_physics_init == true)
+				shaderUse = "#define USE_SKELETON\n" + shaderUse;
 		}
-		FaceUnity.RenderBlendshapeComponent_new(blendshape, this, shaderUse, shader, shaderParams, pass);
+		if(animation != null){
+			FaceUnity.RenderBlendshapeComponent_new(blendshape, this, shaderUse, shader, shaderParams, "animation_"+pass);
+		}else{
+			FaceUnity.RenderBlendshapeComponent_new(blendshape, this, shaderUse, shader, shaderParams, pass);			
+		}
+	}
+
+	Mesh.prototype.renderShadowMap = function (blendshape, params, pass, shader, animation, fid) {
+	    if (!this.triggered || !this.isActive) return;
+		var matex=(materials_json[this.name]||{});
+		if(this.has_tex_albedo_frames==true){
+			var albedo = bigtex[this.tex_albedo_frames[this.frame_id % this.tex_albedo_frames.length].bigtexidx];
+			var lbrt = this.tex_albedo_frames[this.frame_id % this.tex_albedo_frames.length].lbrt;
+		}else{
+			var albedo = tex_map[V(matex.tex_albedo,this.mat.tex)];
+			var lbrt = [0.0,0.0,1.0,1.0];
+		}
+		var shaderUse = s_vert_shader;
+		if(V(globals.use_fov,0)>0.5){
+			var mat_proj = FaceUnity.CreateProjectionMatrix_FOV(V(globals.camera_fov,20));
+		}else{
+			var mat_proj = FaceUnity.CreateProjectionMatrix_FOV();
+			if(tracked<0.5){
+				//console.log("js: use rmode ", g_params["rotation_mode"]);
+				var rmode = g_params["rotation_mode"];
+				if (rmode == -1)
+					rmode = 0;
+				mat_proj = FaceUnity.CreateProjectionMatrix_FOV(20,10,30000,rmode);
+			}
+		}
+		var shaderParams = {
+		    scales: [this.scales[0] * SCALE, this.scales[1] * SCALE, this.scales[2] * SCALE],
+		    scale_e: scale_ex,
+		    mat_view: L0_view,
+		    quatR1:[-this.rotation[0],-this.rotation[1],this.rotation[2],this.rotation[3]],
+		    mat_proj: L0_proj,
+		    isFlipH: g_params['is3DFlipH'],
+		};
+		
+		shader = AttachTexture(matex,tex_map,"tex_mask",shaderParams,"TX_MASK","grey.png") + shader;
+		shader = AttachTexture(matex,tex_map,"tex_normal",shaderParams,"TX_NORMAL","grey.png") + shader;
+		shader = AttachTexture(matex,tex_map,"tex_smoothness",shaderParams,"TX_SMOOTH","grey.png") + shader;
+		shader = AttachTexture(matex,tex_map,"tex_ao",shaderParams,"TX_AO","white.png") + shader;
+		shader = AttachTexture(matex,tex_map,"tex_specular",shaderParams,"TX_SPEC","black.png") + shader;
+		shader = AttachTexture(matex,tex_map,"tex_emission",shaderParams,"TX_EMIT","black.png") + shader;
+
+		if (animation != null) {
+		    shaderUse = a_vert_shader;
+		    shaderParams.fid = fid;
+		    shaderParams.animating = animation.animating;
+		    if (animation.use_vtf == 1)
+		        shaderParams.tex_deform = animation.tex_deform;
+		    else {
+		        shaderParams.arrvec4_deform = animation.arrvec4_deform;
+		        shaderParams.cluster_num = animation.cluster_num;
+		    }
+		    shaderParams.deform_width = animation.tex_deform_width;
+		    shaderParams.anim_head = animation.anim_head;
+		    shaderParams.rootBone = animation.root / animation.cluster_num;
+		    shaderParams.headTransMat=animation.headTransMat;
+		    shaderParams.invHeadTransMat=animation.invHeadTransMat;
+		} else {
+		    shaderUse = s_vert_shader;
+		}
+		if (this.translate != null && this.translate != undefined &&
+            this.rotate != null && this.rotate != undefined &&
+            this.transform != null && this.transform != undefined) {
+		    shaderParams.trans_pos = this.translate;
+		    shaderParams.head_rotation_quat = [-params.rotation[0], -params.rotation[1], -params.rotation[2],params.rotation[3]];
+		    shaderParams.model_mat = this.transform;
+		} else {
+		    shaderParams.head_rotation_quat = [0, 0, 0, 1];
+		    shaderParams.trans_pos = [0, 0, 0];
+		    shaderParams.model_mat = [1, 0, 0, 0,
+                                      0, 1, 0, 0,
+                                      0, 0, 1, 0,
+                                      0, 0, 0, 1];
+		}
+		if (animation != null) {
+		    if (animation.use_vtf == 1)
+		        shaderUse = "#define USE_VTF\n" + shaderUse;
+		    if (animation.is_physics_init == true)
+				shaderUse = "#define USE_SKELETON\n" + shaderUse;
+		}
+		//FaceUnity.RenderBlendshapeComponent_new(blendshape, this, shaderUse, shader, shaderParams, pass);
+		FaceUnity.SetShadowMapSize(1024);
+		if(animation != null){
+			FaceUnity.RenderShadowMap(blendshape, this, shaderUse, shader, shaderParams, 1);
+		}else{
+			FaceUnity.RenderShadowMap(blendshape, this, shaderUse, shader, shaderParams, 0);			
+		}
 	}
 
 	//meshgroup
@@ -896,13 +988,21 @@
 	        var alphaThreshold = parseFloat(V(globals.alphaThreshold, "1.0"));
 	        var shader = s_frag_shader + "vec4 shader_main_OIT(){vec4 c=shader_main();return vec4(c.rgb,1.0);}";
 	        var parent = this;
+	        params.animation=animation;
 	        //update for all mesh
 	        this.meshlst.forEach(function (mesh) {
 	            mesh.triggerStartEvent(params, now, false);
 	            mesh.updateEvent(params, now);
 	        });
-	        if (pass == 1) {
-	            FaceUnity.ComputeBlendshapeGeometry(this.blendshape, params, 56);
+	        if (pass == 0) {
+   				FaceUnity.ComputeBlendshapeGeometry(this.blendshape, params, 56);
+	        	var shadowMap_shader = shadowMap_fs + "vec4 shader_main_OIT(){vec4 c=shader_main();return vec4(c.rgba);}";
+	        	this.facehack_mesh_ref_lst.forEach(function (mesh) { mesh.renderShadowMap(parent.blendshape, params, -1, shadowMap_shader, animation, fid); });
+	        	this.opaque_mesh_ref_lst.forEach(function (mesh) { mesh.renderShadowMap(parent.blendshape, params, 0, shadowMap_shader, animation, fid); });
+	        	this.transparent_mesh_ref_lst.forEach(function (mesh) { mesh.renderShadowMap(parent.blendshape, params, 1, shadowMap_shader, animation, fid); });
+	        } else if (pass == 1) {
+	            if(globals.hasShadow <= 0.5)
+	            	FaceUnity.ComputeBlendshapeGeometry(this.blendshape, params, 56);
 	            //for facehack
 	            gl.enable(gl.DEPTH_TEST);
 	            gl.depthFunc(gl.LEQUAL);
@@ -935,6 +1035,14 @@
 
 	            gl.depthMask(true);
 	            gl.disable(gl.DEPTH_TEST);
+
+				 /*gl.disable(gl.BLEND);
+				 FaceUnity.RenderScreenQuad(screen_fs, {
+				 	NEARPLANE: 10,
+				 	FARPLANE: 30000,
+				 	tex_color: FaceUnity.GetShadowMap(),
+				 });
+	    			gl.enable(gl.BLEND);*/
 
 	            this.meshlst.forEach(function (mesh) { mesh.triggerEndEvent(params, now, false, parent.AnimCounter); });
 	        }
@@ -971,6 +1079,8 @@
 	                    ret = FaceUnity.TestVTF();
 					//if(gl.getParameter(gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS)<=8)
 					//	ret = 0; //check image slot
+					if(!g_params["use_vtf"])
+						ret = 0;
 	                this.animation.support_vtf = ret;
 	                this.animation.use_vtf = ret;
 	            }
@@ -980,27 +1090,10 @@
 	            frame_id = params.frame_id;
 	            var fid = 0;
 	            params.physical = this.animation.physical;
-	            if (canUsePhysical && this.animation.physical == 1 ) {
-                    if (g_main_bone === -1)
-                    {
-                        var json = JSON.parse(bones_json_string);
-                        var count = json.bonesnum.sum;
-                        for (var i = count - 1; i >= 0; i--) {
-                            var name = json["bone" + i]["name"];
-                            if (name === "main1") {
-                                params.main_bone = i;
-                                g_main_bone = i;
-                            }
-                        }
-                    }else
-                    {
-                        params.main_bone  = g_main_bone;
-                    }
 
-	                filterAct(params);
+	            if (pass == 0 ||(pass == 1&&globals.hasShadow <= 0.5)) {
+	            	this.update_animation(params);
 	            }
-
-	            this.update_animation(params);
 	            this.meshgroup.renderMesh(params, pass, this.animation, fid);
 	        } else
 	            this.meshgroup.renderMesh(params, pass, null, 0);
@@ -1124,6 +1217,15 @@
 		animCounter: AnimCounter,
 		//接下来就是道具对象的内容了
 		/// \brief 处理编辑器发起的参数修改
+		GetHasShadow:function(){
+			return globals.hasShadow > 0.5 ? 1 : 0;
+		},
+		FollowState:function() {
+			return isFollow;
+		},
+		TongueState:function() {
+			return globals.tongue;
+		},
 		SetParam:function(name,value){
 			//特殊参数名'@refresh'表示“刷新一下”
 			if(name=='@refresh'){
@@ -1161,8 +1263,24 @@
 				console.log("")
 				return 1;
 			}
+			if (name=="fixed_x") {
+				globals.fixed_x = value;
+				return 1;
+			}
+			if (name=="fixed_y") {
+				globals.fixed_y = value;
+				return 1;
+			}
+			if (name=="fixed_z") {
+				globals.fixed_z = value;
+				return 1;
+			}
+			if (name=="fix_rotation") {
+				g_params["fix_rotation"] = value;
+				return 1;
+			}
 			if (name=="rotation_mode"){
-				if (g_params["rotation_mode"]==-1){
+				if (g_params["rotation_mode"]==-1 || g_params["fix_rotation"]){
 					g_params["rotation_mode"] = value;
 					//console.log("js: setparam set rmode to ", value);
 				}
@@ -1191,6 +1309,11 @@
 			if(name=="reset"){
 				tracked = 0;
 			}
+			if(name=="use_vtf"){
+				g_params["use_vtf"] = value;
+				return 1;
+			}
+			
 			/*
 			否则的话，name里面就是一个JSON对象：{"name":"材质名或<global>"，"param":"参数名"}
 			接着就是根据不同情况找到参数的位置设上值。考虑到每个部分都可能写错，处理一下异常会安全一些。
@@ -1206,6 +1329,36 @@
 					if (desc.param == "alphaThreshold") {
 					    for (var prop in AnimMeshs)
 					        AnimMeshs[prop].meshgroup.setDCHash();
+					}
+					if (desc.param == "is_fix_x") {
+						nf_fixed_x = value;
+					}
+					if (desc.param == "is_fix_y") {
+						nf_fixed_y = value;
+					}
+					if (desc.param == "is_fix_z") {
+						nf_fixed_z = value;
+					}
+					if (desc.param == "isnofacerender") {
+						nf_nface = value;
+					}
+					if (desc.param == "use_fov") {
+						nf_usefov = value;
+					}
+					if (desc.param == "camera_fov") {
+						nf_cfov = value;
+					}
+					if (desc.param == "follow") {
+						if(value<0.5) {
+							globals["is_fix_x"] = nf_fixed_x;
+							globals["is_fix_y"] = nf_fixed_y;
+							globals["is_fix_z"] = nf_fixed_z;
+							globals["isnofacerender"] = nf_nface;
+						} else {
+							//globals["use_fov"] = nf_usefov;
+							//globals["camera_fov"] = nf_cfov;
+						}
+						isFollow = value;
 					}
 					return 1;
 				}else{
@@ -1254,22 +1407,25 @@
 		},
 		/// \brief 主要的绘制逻辑
 		Render: function (params, pass) {
-			tracked = 1;
-			if (FaceUnity.InitPhysics != undefined && g_is_physics_init === false && hasPhysicsAnimation) {
-			    if (canUsePhysical) {
-			        FaceUnity.InitPhysics(rigidBody_json_string, joint_json_string, bones_json_string);
-			        g_is_physics_init =true;
-			    }
+			if(!g_params["fix_rotation"])
+				tracked = 1;
+			else
+				tracked = 0;
+
+			var rotation = params.rotation.slice();
+			var L0_dir_src=L0_dir[0];
+			//g_params.isFlipExpr=1;
+			//g_params.is3DFlipH=1;
+			if(g_params.is3DFlipH>0.5){
+				L0_dir[0]=-L0_dir_src;
+				//filp rotation
+				//console.log("before rotation hack:",rotation);
+				//params.rotation[0] = rotation[0];
+				params.rotation[1] = -rotation[1];
+				params.rotation[2] = -rotation[2];
+				//params.rotation[3] = rotation[3];
 			}
-			
 			if(g_params.isFlipExpr>0.5){
-				//filp rotation 
-				var rotation = params.rotation.slice();
-				//rotation[0] = -rotation[0];
-				rotation[1] = -rotation[1];
-				rotation[2] = -rotation[2];
-				params.rotation = rotation;
-				
 				//filp exp
 				for (var i = 0;i<swaplst.length;i+=2){
 					var tmp = params.expression[swaplst[i]];
@@ -1297,23 +1453,37 @@
 				}
 			}
 			
-			g_params["rotation_mode"] = params.rotation_mode;
+			if(!g_params["fix_rotation"])
+				g_params["rotation_mode"] = params.rotation_mode;
 			g_params["bk_translation"] = params.translation;
 			g_params["bk_rotation"] = params.rotation;
 			g_params["bk_pupil_pos"] = params.pupil_pos;
 			g_params["bk_expression"] = params.expression;
-			g_params["baked"]
- = 1;
+			g_params["baked"] = 1;
 			//animation trigger
 			for (var prop in animlist) {
 			    UpdateAnimation(animlist[prop], params, false);
 			}
 			//3d item trigger & DoRender
 			for (var prop in AnimMeshs) {
-			    AnimMeshs[prop].DoRender(params, pass);
+			    AnimMeshs[prop].DoRender(params, pass);	//TODO：同一帧跑太多次物理模拟，会出现异常，最好把这个放进单独的一个循环里
 			}
+
+			if(g_params.is3DFlipH>0.5){
+				L0_dir[0]=L0_dir_src;
+			}
+			params.rotation = rotation;
 		},
 		RenderNonFace: function (params, pass) {
+			var L0_dir_src=L0_dir[0];
+
+			if(globals.follow) {
+				globals["is_fix_x"] = 0;
+				globals["is_fix_y"] = 0;
+				globals["is_fix_z"] = 0;
+				globals["isnofacerender"] = 0;
+			} 
+			
 		    ////fixed section
 		    if (params.face_count > 0) return;
 			tracked = 0;
@@ -1321,6 +1491,10 @@
 		    if (isNoFace) {
 		        for (var ap in animlist)
 		            UpdateAnimation(animlist[ap], params, true);
+		        
+				if(g_params.is3DFlipH>0.5){	//is3DFlipH的时候光照也需要镜像
+					L0_dir[0]=-L0_dir_src;
+				}
 		    }
 		    for (var prop in AnimMeshs) {
 		        var meshgrp = AnimMeshs[prop].meshgroup;
@@ -1335,6 +1509,8 @@
 							params.rotation = g_params["bk_rotation"];
 							params.pupil_pos = g_params["bk_pupil_pos"];
 			                params.expression = g_params["bk_expression"];
+							
+							params.translation = [V(globals.fixed_x, 0), V(globals.fixed_y, 0), V(globals.fixed_z, 350), 1];
 		                }else{
 		                	params.translation = [V(globals.fixed_x, 0), V(globals.fixed_y, 0), V(globals.fixed_z, 350), 1];
 							params.rotation = [0,0,0,1];
@@ -1348,6 +1524,10 @@
 		            console.log(err.stack);
 		        }
 		    }
+
+		    if(g_params.is3DFlipH>0.5&&isNoFace){
+				L0_dir[0]=L0_dir_src;
+			}
 		},
 		name:V(globals.name,"unnamed"),
 	};

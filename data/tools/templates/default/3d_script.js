@@ -158,6 +158,9 @@
         rx *= rta; ry *= rta; rz *= rta;
         return [rx, ry, rz];
     }
+	
+	//ex 16,
+	var swaplst = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,  17,18,  20,22,  23,24,  25,26,  27,28,  29,30,  31,32,  44,45];
 
     // axis = 0 is x, axis = 1 is y, axis = 2 is z
     // opt = 0 means less, opt = 1 means greater
@@ -272,7 +275,11 @@
 	*/
 	var g_params={
 		is3DFlipH: 0.0,
+		isFlipExpr: 0.0,
 		weightOffset:[0.0,0.0,0.0],
+		fix_rotation_mode: 0,
+		fix_rotation: 0,
+		flip_wh: 0.0
 	};
 	var faces = [];
 	var tex_map={};
@@ -514,6 +521,7 @@
 			var w=1.0 - globals.rot_weight;
 			rotation=[w*delta[0]+rotation[0],w*delta[1]+rotation[1],w*delta[2]+rotation[2],w*delta[3]+rotation[3]];
 		}
+		
 		/*
 		if(V(globals.rot_weight,1.0) < 0.01){
 			rotation = [0,0,0,1];
@@ -641,10 +649,23 @@
 			var lbrt = [0.0,0.0,1.0,1.0];
 		}
 		var shaderUse = s_vert_shader;
+		var mat_proj;
+		
+		if(g_params["fix_rotation"]>0.5) {
+			if(g_params["flip_wh"]<0.5 && params.w > params.h) {
+				var rmode = g_params["fix_rotation_mode"];
+				FaceUnity.SetRotationMode(rmode);
+			}
+			if(g_params["flip_wh"]>0.5 && params.w < params.h) {
+				var rmode = g_params["fix_rotation_mode"];
+				FaceUnity.SetRotationMode(rmode);
+			}
+		}
+		
 		if(V(globals.use_fov,0)>0.5){
-			var mat_proj = FaceUnity.CreateProjectionMatrix_FOV(V(globals.camera_fov,20));
+			mat_proj = FaceUnity.CreateProjectionMatrix_FOV(V(globals.camera_fov,20));
 		}else{
-			var mat_proj = FaceUnity.CreateProjectionMatrix();
+			mat_proj = FaceUnity.CreateProjectionMatrix();
 		}
 		var shaderParams = {
 		    scales: [this.scales[0] * SCALE, this.scales[1] * SCALE, this.scales[2] * SCALE],
@@ -719,16 +740,30 @@
 		    if (animation.use_vtf == 1) 
 		        shaderUse = "#define USE_VTF\n" + shaderUse;
 		}
-		
-		if(g_params['is3DFlipH']<0.5)
-			gl.cullFace(gl.BACK); 
-		else
-			gl.cullFace(gl.FRONT);
-		
 		var cull = V((materials_json[this.name] || {}).back_cull, 0);
-		if(cull>0.5) gl.enable(gl.CULL_FACE);
+		var glcullface=gl.getParameter(gl.CULL_FACE);
+		var glfrontface=gl.getParameter(gl.FRONT_FACE);
+		var glcullfacemode=gl.getParameter(gl.CULL_FACE_MODE);
+		if(cull>0.5){
+			gl.enable(gl.CULL_FACE);
+			gl.frontFace(gl.CCW);
+			if(g_params['is3DFlipH']<0.5)
+				gl.cullFace(gl.BACK); 
+			else
+				gl.cullFace(gl.FRONT);
+		}
+		else
+			gl.disable(gl.CULL_FACE);
+		
 		FaceUnity.RenderBlendshapeComponent_new(blendshape, this, shaderUse, shader, shaderParams, pass);
-		if(cull>0.5) gl.disable(gl.CULL_FACE);
+
+		if(glcullface)
+			gl.enable(gl.CULL_FACE);
+		else
+			gl.disable(gl.CULL_FACE);
+		gl.frontFace(glfrontface);
+		gl.cullFace(glcullfacemode);
+
 	}
 
 	//meshgroup
@@ -956,15 +991,21 @@
 	var UpdateAnimation = function (anim, params, noface) {
 	    if (anim != undefined && anim != null && "meshName" in anim) {
 	        var istriggerd = false;
-	        if (anim.triggerstart == "alwaysrender" && !anim.betriggered) {
-	            var pair = AnimMeshs[anim.meshName];
-	            if (pair.animation != anim) {
-	                istriggerd = true;
-	                anim.bind(pair);
-	            }
-	        } else if (((anim.triggerstart == "faceaction" && isActionTriggered(anim.startaction, params)) ||
+	        if (anim.triggerstart == "alwaysrender" && !anim.betriggered &&
+				!(anim.looptype == "loopcnt" && anim.play_count >= anim.loopcnt) &&
+				!(anim.isactiveonce == 1 && anim.play_count >= 1) &&
+				!(anim.triggerend == "faceaction" && isActionTriggered(anim.endaction, params))) {
+					var pair = AnimMeshs[anim.meshName];
+					if (pair.animation != anim) {
+						istriggerd = true;
+						anim.bind(pair);
+					}
+	        } else if ((((anim.triggerstart == "faceaction" && isActionTriggered(anim.startaction, params)) ||
                     (anim.triggerstart == "newface")) && !noface &&
-                    (!anim.betriggered || anim.startaction == "null")) {
+                    (!anim.betriggered || anim.startaction == "null")) &&
+					!(anim.looptype == "loopcnt" && anim.play_count >= anim.loopcnt) &&
+					!(anim.isactiveonce == 1 && anim.play_count >= 1) &&
+					!(anim.triggerend == "faceaction" && isActionTriggered(anim.endaction, params))) {
 	            var pair = AnimMeshs[anim.meshName];
 	            if (pair.animation != anim) {
 	                istriggerd = true;
@@ -997,8 +1038,7 @@
 	            var pair = AnimMeshs[anim.meshName];
 	            if (pair.animation == anim) {
 	                istriggerd = true;
-	                anim.unbind(pair);
-	                TriggerNext(anim);
+	                anim.pause();
 	            }
 	        }
 	        if (anim.isactiveonce == 1 && anim.play_count >= 1) {
@@ -1042,6 +1082,11 @@
 	if(AnimMeshs["avatar"])
 		AnimMeshs["avatar"].meshgroup.calTriggerNextNodesRef(undefined);
 	
+	try {
+		if(FaceUnity.DisableTongueCoefs)
+			FaceUnity.DisableTongueCoefs();
+	} catch(err){console.log(err.stack);}
+	
 	return {
 	    CalRef: AnimMeshs[0] ? AnimMeshs[0].meshgroup.calTriggerNextNodesRef:undefined,
 	    meshlst: AnimMeshs[0] ? AnimMeshs[0].meshgroup.meshlst:undefined,
@@ -1057,6 +1102,10 @@
 				return 1;
 			}
 			if(name=='is3DFlipH'){
+				g_params[name] = value;
+				return 1;
+			}
+			if(name=='isFlipExpr'){ 
 				g_params[name] = value;
 				return 1;
 			}
@@ -1082,6 +1131,30 @@
 					for (var prop in AnimMeshs)
 						AnimMeshs[prop].meshgroup.resetMesh();
 				}
+			}
+			if (name=="fixed_x") {
+				globals.fixed_x = value;
+				return 1;
+			}
+			if (name=="fixed_y") {
+				globals.fixed_y = value;
+				return 1;
+			}
+			if (name=="fixed_z") {
+				globals.fixed_z = value;
+				return 1;
+			}
+			if (name=="fix_rotation_mode"){
+				g_params["fix_rotation_mode"] = value;
+				return 1;
+			}
+			if (name=="fix_rotation"){
+				g_params["fix_rotation"] = value;
+				return 1;
+			}
+			if (name=="flip_wh") {
+				g_params["flip_wh"] = value;
+				return 1;
 			}
 			/*
 			否则的话，name里面就是一个JSON对象：{"name":"材质名或<global>"，"param":"参数名"}
@@ -1146,6 +1219,24 @@
 		},
 		/// \brief 主要的绘制逻辑
 		Render: function (params, pass) {
+			if(g_params.isFlipExpr>0.5){
+				//filp rotation 
+				var rotation = params.rotation.slice();
+				//rotation[0] = -rotation[0];
+				rotation[1] = -rotation[1];
+				rotation[2] = -rotation[2];
+				params.rotation = rotation;
+				
+				//filp exp
+				for (var i = 0;i<swaplst.length;i+=2){
+					var tmp = params.expression[swaplst[i]];
+					params.expression[swaplst[i]] = params.expression[swaplst[i+1]];
+					params.expression[swaplst[i+1]] = tmp;
+				}
+				// fack eye rot
+				params.pupil_pos[0] = -params.pupil_pos[0];
+			}
+			
 			if(V(globals.is_fix_x,0)>0.5){
 				params.translation[0] = V(globals.fixed_x,0);
 			}

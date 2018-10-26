@@ -3,7 +3,7 @@ varying vec3 dPds_frag;
 varying vec3 dPdt_frag;
 varying vec2 st_frag;
 varying vec3 V_frag;
-
+varying vec3 P_world_frag;
 // tex_albedo
 // tex_normal
 // tex_specular
@@ -176,6 +176,44 @@ vec3 rotate(vec3 v, float a)
 // 	p += dot(p.xy, p.yx+19.19f);
 // 	return fract(p.x * p.y);
 // }
+
+
+float unpack(vec4 color)
+{
+    const vec4 bitShifts = 255.0 / 256.0 * vec4(1.0 / (256.0 * 256.0 * 256.0),
+                                                1.0 / (256.0 * 256.0),
+                                                1.0 / 256.0,
+                                                1);
+    return dot(color, bitShifts);
+}
+
+float ShadowPCF(vec3 worldPosition, mat4 L_MVP, sampler2D shadowMap, float shadowMap_size, float samples, float step, float NdotL) 
+{
+    //vec4 projPosition = L_MVP * vec4(worldPosition - normalize(N_world_frag) * bias, 1.0);
+    vec4 projPosition = L_MVP * vec4(worldPosition, 1.0);
+    vec3 shadowPosition = projPosition.xyz / projPosition.w;
+    shadowPosition = shadowPosition * 0.5 + 0.5;
+    vec2 uv = shadowPosition.xy;
+    
+    float bias_ = max(bias * (1.0 - NdotL), 0.005);
+    float depth = shadowPosition.z - bias_;
+
+    float shadow = 0.0;
+    float offset = (samples - 1.0) / 2.0;
+    for (float x = -offset; x <= offset; x += 1.0) {
+        for (float y = -offset; y <= offset; y += 1.0) {
+            vec2 uv_ = uv + vec2(x, y) / shadowMap_size * step;
+            vec4 packedDepth = texture2D(shadowMap, uv_);
+            float depth_closest = unpack(packedDepth);
+            //depth_closest = texture2D(shadowMap, uv_).r;
+            shadow += (depth > depth_closest) ? 1.0 : 0.0;
+        }
+    }
+
+    shadow /= samples * samples;
+    return shadow;
+}
+
 vec3 IOSShading(vec3 N, vec3 V)
 {
 	// param from material
@@ -278,9 +316,15 @@ vec3 IOSShading(vec3 N, vec3 V)
     specular_coeff *= specular.r;
     //specular_coeff = max(specular_coeff, 0.0);
 
-    light_contribut_diffuse  = light_color * diffuse_coeff * (1.0 + diffuse_light_add);
+    float shadow = 0.0;
+    if(HasShadow > 0.5)
+        shadow = ShadowPCF(P_world_frag, L0_MVP, tex_shadowMap0, SHADOWMAP_SIZE, 3.0, 1.0, Saturate(dot(N, light_dir)));
+    else
+        shadow = 0.0;
+
+    light_contribut_diffuse  = light_color * diffuse_coeff * (1.0 + diffuse_light_add) * (1.0 - shadow);
     //light_contribut_diffuse  = light_color * diffuse_coeff;
-    light_contribut_specular = specular_coeff * light_color;
+    light_contribut_specular = specular_coeff * light_color * (1.0 - shadow);
 
 
     vec3 color = vec3(0.0,0.0,0.0);

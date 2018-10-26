@@ -22,7 +22,7 @@ void ComputeTransformLinear(out vec3 R048,out vec3 R372,out vec3 R156,out vec3 T
 	Q_hack=vec4(0.0);
 	for (int i = 0; i < 4; i++) {
 		#ifdef USE_VTF
-		vec4 Q = texture2D(tex_deform, vec2((2.0 * fid + 0.5) / deform_width, skel_id[i]));
+		vec4 Q = texture2DLod(tex_deform, vec2((2.0 * fid + 0.5) / deform_width, skel_id[i]), 0.0);
 		#else
 		vec4 Q = arrvec4_deform[int(skel_id[i] * cluster_num - 0.0) * 2 + 0];
 		#endif
@@ -31,7 +31,7 @@ void ComputeTransformLinear(out vec3 R048,out vec3 R372,out vec3 R156,out vec3 T
 		R372_plus_156+=weighted_Q.xyz*Q.yzx;
 		R372_minus_156+=Q.w*weighted_Q.zxy;
 		#ifdef USE_VTF
-		T+=skel_weight[i]*texture2D(tex_deform, vec2((2.0 * fid + 1.5) / deform_width, skel_id[i])).xyz;
+		T+=skel_weight[i]*texture2DLod(tex_deform, vec2((2.0 * fid + 1.5) / deform_width, skel_id[i]), 0.0).xyz;
 		#else
 		T+=skel_weight[i]*arrvec4_deform[int(skel_id[i] * cluster_num - 0.0) * 2 + 1].xyz;
 		#endif
@@ -41,7 +41,7 @@ void ComputeTransformLinear(out vec3 R048,out vec3 R372,out vec3 R156,out vec3 T
 	skel_weight = WEIGHT1;
 	for (int i = 0; i < 4; i++) {
 		#ifdef USE_VTF
-		vec4 Q = texture2D(tex_deform, vec2((2.0 * fid + 0.5) / deform_width, skel_id[i]));
+		vec4 Q = texture2DLod(tex_deform, vec2((2.0 * fid + 0.5) / deform_width, skel_id[i]), 0.0);
 		#else
 		vec4 Q = arrvec4_deform[int(skel_id[i] * cluster_num - 0.0) * 2 + 0];
 		#endif
@@ -50,7 +50,7 @@ void ComputeTransformLinear(out vec3 R048,out vec3 R372,out vec3 R156,out vec3 T
 		R372_plus_156+=weighted_Q.xyz*Q.yzx;
 		R372_minus_156+=Q.w*weighted_Q.zxy;
 		#ifdef USE_VTF
-		T+=skel_weight[i]*texture2D(tex_deform, vec2((2.0 * fid + 1.5) / deform_width, skel_id[i])).xyz;
+		T+=skel_weight[i]*texture2DLod(tex_deform, vec2((2.0 * fid + 1.5) / deform_width, skel_id[i]), 0.0).xyz;
 		#else
 		T+=skel_weight[i]*arrvec4_deform[int(skel_id[i] * cluster_num - 0.0) * 2 + 1].xyz;
 		#endif
@@ -63,7 +63,7 @@ void ComputeTransformLinear(out vec3 R048,out vec3 R372,out vec3 R156,out vec3 T
 
 vec3 ComputeBoneTranslate(float bone) {
 	#ifdef USE_VTF
-	vec3 T = texture2D(tex_deform, vec2((2.0 * fid + 1.5) / deform_width, bone)).xyz;
+	vec3 T = texture2DLod(tex_deform, vec2((2.0 * fid + 1.5) / deform_width, bone), 0.0).xyz;
 	#else
 	vec3 T = arrvec4_deform[int(bone * cluster_num - 0.0) * 2 + 1].xyz;
 	#endif

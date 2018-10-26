@@ -1,0 +1,18 @@
+{
+    "model_name": "model_w2301_200000.fumodel",
+    "image_height": 96,
+    "image_width": 96,
+    "image_channels": 3,
+    "is_quant": false,
+    "quant_center": 128,
+    "quant_scale": 0.133535,
+    "use_thresholds": true,
+    "upper_threshold": 0.6,
+    "lower_threshold": 0.4,
+    "model_threads": 1,
+    "remove_hole": true,
+    "minfilter_kernel": 0,
+    "blur_kernel": 3,
+    "skip_frames": 1,
+    "debug_level": 0
+}

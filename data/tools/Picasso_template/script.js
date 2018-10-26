@@ -1,21 +1,24 @@
-//1515408617401
+//1536041232968
 (function () {
 	var g_items = [];
-	
-	/////////////////////////////
-	var g_shader = FaceUnity.ReadFromCurrentItem("bg.glsl");
-	var g_tex = FaceUnity.LoadTexture("3.png",0,1);
-	var mode = 0;
-	var img_w = 0, img_h = 0;
-	var screen_w = 0, screen_h = 0;
-	var w_min = -1, w_max = -1;
-	var h_min = -1, h_max = -1;
-	var img_scale = -1;
-	var globals = {};
-	/////////////////////////////
-	
 	var item2ds;
 	var item3ds;
+	var handTrigger;
+	
+	var deepCopy =function(p, c){
+		var c = c || {};
+		for (var i in p) {
+			if (typeof p[i] === 'object') {
+				c[i] = (p[i].constructor === Array) ? [] : {};
+				deepCopy(p[i], c[i]);
+			} else {
+				c[i] = p[i];
+			}
+		}
+		return c;
+	}
+	var current_frame = 0;
+	
 	var require=function(fn){
 		var jsstr = FaceUnity.ReadFromCurrentItem(fn);
 		if(jsstr == undefined){
@@ -29,6 +32,7 @@
 	try{
 	    item2ds = require("2d_script.js");
 		item3ds = require("3d_script.js");
+		handTrigger = require("hands_script.js");
 		
 		if(item3ds!=undefined){
 			g_items.push(item3ds);
@@ -38,14 +42,18 @@
 			g_items.push(item2ds);
 			itemname = item2ds.name;
 		}
-		//if(item2ds && item2ds.CalRef && item3ds && item3ds.meshlst)item2ds.CalRef(item3ds.meshlst);
-		//if (item3ds && item3ds.CalRef && item2ds && item2ds.meshlst) item3ds.CalRef(item2ds.meshlst);
+		if(item2ds && item2ds.CalRef && item3ds && item3ds.meshlst)item2ds.CalRef(item3ds.meshlst);
+		if (item3ds && item3ds.CalRef && item2ds && item2ds.meshlst) item3ds.CalRef(item2ds.meshlst);
 	}catch(err){
 		console.log(err.stack);
 	}
 	console.log("itemname",itemname);
 	var faces=[];
-	
+	var g_params={
+		isMultiMask: 0,
+		isPause: 0
+	};
+
 	///////face
 	var jsonbuffer;
 	
@@ -85,64 +93,23 @@
 	return {
 		SetParam:function(name,value){
 		    try {
-				if(name == 'bg') {
-					tex_id = value[0];
-					mode = value[1];
-					screen_w = value[2];
-					screen_h = value[3];
-					img_w = value[4];
-					img_h = value[5];
-					w_min = w_max = h_min = h_max = -1;
-					img_scale = -1;
-					if(mode == 2) {
-						w_min = value[6];
-						w_max = value[7];
-						h_min = value[8];
-						h_max = value[9];
-					}
-					if(mode == 3) {
-						img_scale = value[6];
-					}
+				if(name=="isMultiMask"){
+					g_params[name] = value;
+					return 1;
 				}
+				if(name=="isPause") {
+					g_params[name] = value;
+					return 1;
+ 				}
 				var respone = false;
 				for(var i in g_items){
 					var ret = g_items[i].SetParam(name,value);
 					if(ret!=undefined)respone=true;
 				}
 				
-				if(name=="picasso_json3"){
-					jsonbuffer = new Buffer(value);
-					//json_obj = JSON.parse(jsonbuffer);
-					//jsonbuffer = value;
-				}
-				
-				if(name=="picasso_image3"){
-					var buffer = new ArrayBuffer(value.length);
-					var u8view = new Uint8Array(buffer);
-					for(var i = 0;i<value.length;i++){
-						u8view[i] = value[i];
-					}
-					var i32view = new Int32Array(buffer);
-					g_picasso_width = i32view[0];
-					g_picasso_height = i32view[1];
-					var totlength = g_picasso_width*g_picasso_height;
-					console.log("width:", g_picasso_width," height:",g_picasso_height," total byte:",u8view.length,"total int:",i32view.length);
-					if(!totlength){
-						console.log("length error!");
-						return 0;
-					}
-					imageary = [];
-					for(var i = 0;i<g_picasso_width*g_picasso_height;i++){
-						imageary[i] = i32view[2+i];
-					}
-					console.log("imageary length:",imageary.length);
-					tex_image = FaceUnity.LoadTextureRT(imageary,g_picasso_width,g_picasso_height);
-				}
-				
-				if(name=="picasso_avatar3"){
-					avatarbuffer = new Buffer(value);
-					blendshape = FaceUnity.LoadBlendshapeRT(jsonbuffer,avatarbuffer);
-					console.log("blenshape:",blendshape.ofs_ebo);
+				if(handTrigger!=undefined && handTrigger) {
+					var ret = handTrigger.SetParam(name,value); //set hand trigger params
+					if(ret!=undefined)respone=true;
 				}
 				
 				if(respone)return 1;
@@ -168,24 +135,29 @@
 				var ret = g_items[i].GetParam(name);
 				if(ret!=undefined)return ret;
 			}
+			
+			var ret = handTrigger.GetParam(name); //get hand trigger params
+			if(ret!=undefined)return ret;
+			
 			return undefined;
 		},
 		OnGeneralExtraDetector:function(){
 			if(item2ds.OnGeneralExtraDetector)item2ds.OnGeneralExtraDetector();
 		},
-		FilterEntireImage:function(){
-			if(item2ds.FilterEntireImage)item2ds.FilterEntireImage();
+		FilterEntireImage:function(w,h,e,flip_x,flip_y){
+			if(item2ds.FilterEntireImage)item2ds.FilterEntireImage(flip_x,flip_y);
 		},
 		Render:function(params){
 			try{
 				DoRender();
-				FaceUnity.m_is_bgra = 0;
-				if(tex_image!=undefined){
-				//	FaceUnity.RenderScreenQuad(g_shader, { mode:mode, img_w:img_w, img_h:img_h, screen_w:screen_w, screen_h:screen_h,
-				//	w_min:w_min, w_max:w_max, h_min:h_min, h_max:h_max, img_scale:img_scale,
-				//	tex_bg:tex_image, mat_scene:FaceUnity.m_tfm_bg }, globals);
-				}
-				if((FaceUnity.renderbillboardv||0)>3.0){
+				if(g_params.isPause == 0)
+					current_frame++;
+				params.frame_id = current_frame;
+				params.isPause = g_params.isPause;
+				
+				if(handTrigger && item2ds) handTrigger.TriggerHand(item2ds, params);//trigger hand
+				
+				if((FaceUnity.renderbillboardv||0)>3.0 && g_params.isMultiMask < 0.5){
 					//this path when multi-people, 2d/ar ok ,3d ok
 					if((params.face_ord < FaceUnity.m_n_valid_faces-1)){
 						faces.push(params);
@@ -210,19 +182,32 @@
 					if(item3ds)item3ds.Render(params,2);//3d item
 					if(item2ds)item2ds.Render(params,2);//non bg item
 				}
+				
+				if(handTrigger && item2ds) handTrigger.CheckHand(item2ds, params);//trigger hand end
 			}
 			catch(err){
 				console.log(err.stack);
 			}
 		},
+		OnGeneralSSDDetector: function() {
+			if(handTrigger) handTrigger.OnGeneralSSDDetector();
+		},
+		OnDetect:function(boxes) {
+			if(handTrigger) handTrigger.OnDetect(boxes);
+		},
 		RenderNonFace:function(params){
 			if(params.face_count<=0)DoRender();
 			//for(var i in g_items)g_items[i].RenderNonFace(params);
 			try{
+				params.frame_id = current_frame;
+				params.isPause = g_params.isPause; 
+				
 				if(item3ds)item3ds.RenderNonFace(params,1);//face hack
 				if(item2ds)item2ds.RenderNonFace(params,1);//bg item
 				if(item3ds)item3ds.RenderNonFace(params,2);//3d item
 				if(item2ds)item2ds.RenderNonFace(params,2);//non bg item
+				
+				if(handTrigger) handTrigger.FlushHands();
 			}catch(err){
 				console.log(err.stack);
 			}
