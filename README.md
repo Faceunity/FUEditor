@@ -1,12 +1,8 @@
 # **FUEditor**
 ### \***New Features:**
- - SDK库更新为v5.6.0 
- - 优化背景分割  
- - animoji舌头功能  
- - animoji物理动效优化模型  
- - 降低cpu占用率 
- - 与神经网络相关的功能增加对SDK版本是否大于5.6的判断 
- - 修复滤镜功能内添加循环操作两种抖音特效会失效并报错的bug 
+ - SDK库更新为v5.8.0 
+ - 支持ETC2压缩纹理，减少内存占用，提高绘制性能
+- 新增支持多人物理动效
 
 ## 简介
 __FUEditor__ 是一款高效便捷的AR人脸道具编辑工具软件，为[Faceunity](http://www.faceunity.com/)公司的Nama SDK提供支持。
