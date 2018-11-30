@@ -3,6 +3,7 @@
  - SDK库更新为v5.8.0 
  - 支持ETC2压缩纹理，减少内存占用，提高绘制性能
 - 新增支持多人物理动效
+- 手势识别增加到10种
 
 ## 简介
 __FUEditor__ 是一款高效便捷的AR人脸道具编辑工具软件，为[Faceunity](http://www.faceunity.com/)公司的Nama SDK提供支持。
