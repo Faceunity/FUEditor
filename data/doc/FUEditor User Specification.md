@@ -80,7 +80,7 @@ _FUEditor/Projects_ 目录下由程序创建的目录不要随意动。
   - __元素类型__:  
     - 跟随人脸元素: 跟随人脸的元素，将跟踪人脸移动或旋转。
     - 屏幕元素：屏幕元素，不会跟人脸动，不拉伸，直接绘制在屏幕。不同屏幕分辨率按照(rx,ry)在屏幕上绘制元素，(rx,ry)表示元素中心在屏幕上的比例，左上角为(0,0),右下角为(1,1)。  
-    - 背景分割元素：背景分割元素，选择该模式的元素可以在相机画面中自动分割出人像，并替换背景为该元素内容。  
+    - 背景分割元素：背景分割元素，选择该模式的元素可以在相机画面中自动分割出人像，并替换背景为该元素内容。2D元素打开 **Nama 5.6** 选项可以使用新版的背景分割道具。  
       __注意__：2D道具的group不能作为背景分割元素，只能用单个道具做背景分割。  
     - 全屏前景元素：全屏前景元素，不会跟人脸动，高宽拉伸绘制在全屏幕。  
     - 全屏背景元素：全屏背景元素，不会跟人脸动，高宽拉伸绘制在全屏幕。
@@ -237,13 +237,18 @@ fuItemSetParamd(item_id, "rotationTexAngle",-90);     //顺时针旋转90度
 
 ![test](./img/hand.png)  
 
-内置5种手势：  
+内置10种手势：  
 
 - thumb是翘起大拇指  
 - six是6的手势  
 - cute是用手靠近脸侧横向握拳  
 - push是手掌往外推  
 - hold是手掌往上  
+- korheart是食指和大拇指交叉  
+- photo是拍照动作，即双手做出方框动作  
+- greet是双手抱拳  
+- rock是摇滚动作，即单手呈飞机状食指向上  
+- cross是双手交叉   
 
 手势跟随：  
 
@@ -435,10 +440,18 @@ FUEditor 3D道具支持循环贴图动画，类似于2D贴纸动画，可以创�
 #### 4.4 3D道具水平翻转  
 当需要对3D道具进行水平翻转时，需要在客户端调用如下代码：  
 ```C  
-fuItemSetParamd(2,'is3DFlipH',1);
+fuItemSetParamd(1,'is3DFlipH',1);	//翻转模型顶点
+fuItemSetParamd(1,'isFlipExpr',1);	//翻转表情系数
+fuItemSetParamd(1,'isFlipTrack',1);	//翻转跟踪位移旋转
+fuItemSetParamd(1,'isFlipLight',1);	//翻转灯光
 ```
 
+#### 4.5 舌头  
+
+在animoji模板下可以使用舌头跟踪功能。找到Global Params下的tongue选项，将其设置为1即可开启舌头跟踪。舌头需要制作56个blendshape，即后10个为对应表情的舌头动作。  
+
 ## 5. 动画制作  
+
  FUEditor支持FBX格式骨骼动画，基本流程：首先添加‘3D’网格模型，网格模型载入支持.obj .fbx格式，再添加FBX骨骼动画并绑定到对应的‘3D’网格模型上，设置好骨骼动画元素的触发动画逻辑即可。
 - 添加FBX动画  
   在项目元素列表中点击"__Anim__"下的"__+__"添加一个骨骼动画元素，在右侧"__属性列表__"中，骨骼项中点击右边按钮，在弹出对话框中选择需要加载的fbx文件加载fbx动画。  
@@ -596,6 +609,24 @@ Emission_intensity:自发光强度
 
 斗牛犬的耳朵可以随着摇头而自由摆动。物理动效的制作详细查看FUEditor/data/doc/FUEditor Physics User Specification.html
 
+打bundle前在GlobalParams里调整enable_physic至1.0，同时在fcoby文件夹里放入物理资源文件（bodies.json和joints.json）和骨骼数据（Anim里添加骨骼文件），即可开启物理效果。
+
+**animoji+舌头**
+
+导入带有舌头的模型，在GlobalParams里调整tongue至1.0，即可开启舌头跟踪。
+
+**animoji+AR模式+多人脸**
+
+animoji已支持多人脸，仅建议在AR模式下运行，打包制作流程和bundle调用和以前一样。
+
+进入AR模式的参数为（请注意双引号）：
+
+{"thing":"<global>","param":"follow"}  
+
+注意：follow模式会关闭背景  
+
+
+
 ## 13. 实时预览  
  - 打开摄像头，点击 ![test](./img/qt/play.png)按钮。
  - 暂停播放，点击 ![test](./img/qt/pause.png)按钮。
@@ -664,25 +695,25 @@ fuItemSetParamd(1,'translation_y',-0.5);
 
 注意：头发需要绑定动画，否则无法显示效果  
 
-![头发制作示例](.\img\p2a\头发制作示例.gif)
+![头发制作示例](.\img\p2a\hair.gif)
 
 ##### 2.衣服制作示例  
 
-![衣服制作示例](.\img\p2a\衣服制作示例.gif)
+![衣服制作示例](.\img\p2a\cloth.gif)
 
 ##### 3.配饰制作示例  
 
 配置制作同衣服的方法一样  
 
-![配饰制作示例](.\img\p2a\配饰制作示例.gif)
+![配饰制作示例](.\img\p2a\fit.gif)
 
 ##### 4.动画制作示例  
 
-![动画制作示例](.\img\p2a\动画制作示例.gif)
+![动画制作示例](.\img\p2a\anim.gif)
 
 ##### 5.制作鞋子示例  
 
-![鞋子制作示例](.\img\p2a\鞋子制作示例.gif)
+![鞋子制作示例](.\img\p2a\foot.gif)
 
 
 
@@ -705,9 +736,12 @@ fuItemSetParamd(1,'translation_y',-0.5);
 
 ![p2aoperate](./img/p2aoperate.png)  
 
+## 16. ETC压缩纹理支持
 
+FUEditor默认贴图打包格式为webp。如需使用ETC压缩格式，在菜单栏选择设置->纹理压缩格式->etc/etc(高质量)。
+建议使用etc而非etc(高质量)，使用后者会使压缩时间变得非常久。注意：高级换脸功能不会使用ETC格式。
 
-## 16. 常用术语解释
+## 17. 常用术语解释
 
 - __道具项目__：表示用户创建的每一个道具工程，项目存放在 _FUEditor/Projects/项目名/_ 目录下。
 - __元素__：元素表示由用户创建的每一个道具部件，如2D项目的一个矩形片，一张AR Mesh，一个3D部件。

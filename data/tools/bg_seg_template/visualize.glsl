@@ -4,7 +4,11 @@ vec4 shader_main(vec2 st_src,vec4 C){
 	vec4 mul=delta.xyxy*inv_matrix0123;
 	vec2 uv = mul.xz+mul.yw;
 	
-	float alpha=texture2D(tex_segmentation,uv).w;
+	float alpha;
+	if(no_person<0.5)
+		alpha = texture2D(tex_segmentation,uv).w;
+	else
+		alpha = 0.0;
 	
 	//inverse
 	if(flipx != 0.0) uv.x = 1.0 - uv.x;

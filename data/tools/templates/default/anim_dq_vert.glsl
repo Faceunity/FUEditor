@@ -10,13 +10,14 @@ vec4 QuatMul(vec4 a,vec4 b){
 	return vec4(a.w*b.xyz+b.w*a.xyz-cross(a.xyz,b.xyz),a.w*b.w-dot(a.xyz,b.xyz));
 }
 
-void ComputeTransformLinear(out vec3 R048,out vec3 R372,out vec3 R156,out vec3 T, out vec4 Q_hack){
+void ComputeTransformLinear(out vec3 R048,out vec3 R372,out vec3 R156,out vec3 T,out float S, out vec4 Q_hack){
 	// Q_hack is in fact not consistent with the position transformation, but it should work for our purpose
 	// Do not Use SKEL0[i] directly in texture2D. Because it triggers an error on Meizu MX5.
 	vec3 x2y2z2=vec3(0.0);
 	vec3 R372_plus_156=vec3(0.0);
 	vec3 R372_minus_156=vec3(0.0);
 	T=vec3(0.0);
+	S=0.0;
 	vec4 skel_id = SKEL0;
 	vec4 skel_weight = WEIGHT0;
 	Q_hack=vec4(0.0);
@@ -31,31 +32,16 @@ void ComputeTransformLinear(out vec3 R048,out vec3 R372,out vec3 R156,out vec3 T
 		R372_plus_156+=weighted_Q.xyz*Q.yzx;
 		R372_minus_156+=Q.w*weighted_Q.zxy;
 		#ifdef USE_VTF
-		T+=skel_weight[i]*texture2DLod(tex_deform, vec2((2.0 * fid + 1.5) / deform_width, skel_id[i]), 0.0).xyz;
+		vec4 dq2 = texture2DLod(tex_deform, vec2((2.0 * fid + 1.5) / deform_width, skel_id[i]), 0.0);
 		#else
-		T+=skel_weight[i]*arrvec4_deform[int(skel_id[i] * cluster_num - 0.0) * 2 + 1].xyz;
+		vec4 dq2 = arrvec4_deform[int(skel_id[i] * cluster_num - 0.0) * 2 + 1];
 		#endif
+		T+=skel_weight[i]*dq2.xyz;
+		if(dq2.w<0.1) dq2.w=1.0;
+		S+=skel_weight[i]*dq2.w;
 		Q_hack+=weighted_Q;
 	}
-	skel_id = SKEL1;
-	skel_weight = WEIGHT1;
-	for (int i = 0; i < 4; i++) {
-		#ifdef USE_VTF
-		vec4 Q = texture2DLod(tex_deform, vec2((2.0 * fid + 0.5) / deform_width, skel_id[i]), 0.0);
-		#else
-		vec4 Q = arrvec4_deform[int(skel_id[i] * cluster_num - 0.0) * 2 + 0];
-		#endif
-		vec4 weighted_Q=skel_weight[i]*Q;
-		x2y2z2+=weighted_Q.xyz*Q.xyz;
-		R372_plus_156+=weighted_Q.xyz*Q.yzx;
-		R372_minus_156+=Q.w*weighted_Q.zxy;
-		#ifdef USE_VTF
-		T+=skel_weight[i]*texture2DLod(tex_deform, vec2((2.0 * fid + 1.5) / deform_width, skel_id[i]), 0.0).xyz;
-		#else
-		T+=skel_weight[i]*arrvec4_deform[int(skel_id[i] * cluster_num - 0.0) * 2 + 1].xyz;
-		#endif
-		Q_hack+=weighted_Q;
-	}
+	
 	R048=1.0+(-2.0)*(x2y2z2.yxx+x2y2z2.zzy);
 	R372=2.0*(R372_plus_156+R372_minus_156);
 	R156=2.0*(R372_plus_156-R372_minus_156);
@@ -107,10 +93,13 @@ void main(){
 	vec3 drt = vec3(0.0);
 	if (animating == 1.0) {
 		vec3 R048,R372,R156,T;
+		float S;
 		vec4 Q_hack;
 		vec3 Pv3 = P1; vec3 Nv3 = N;
 		vec3 dPdsv3 = dPds; vec3 dPdtv3 = dPdt;
-		ComputeTransformLinear(R048,R372,R156,T,Q_hack);
+		ComputeTransformLinear(R048,R372,R156,T,S,Q_hack);
+		
+		Pv3 *= vec3(S);
 		P2 = T+LinearTransformVector(R048,R372,R156,Pv3);
 		N2 = LinearTransformVector(R048,R372,R156,Nv3);
 		dPs2 = LinearTransformVector(R048,R372,R156,dPdsv3);

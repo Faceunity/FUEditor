@@ -120,6 +120,43 @@ vec3 F_Schlick(vec3 SpecularColor, float VoH )
 	return Saturate( 50.0 * SpecularColor.g ) * Fc + (1.0 - Fc) * SpecularColor;
 }
 
+float selfDot(vec3 v){
+	return v.x * v.x + v.y * v.y + v.z * v.z;
+}
+
+float sqr(float a){return a*a;}
+vec3 sqr(vec3 a){return a*a;}
+vec4 sqr(vec4 a){return vec4(sqr(a.rgb), a.a);}
+
+vec3 sampleEnv(vec3 R0){
+	vec3 R=normalize(R0);
+	float phi;
+	if(abs(R.x)<abs(R.z)){
+		phi=(3.1415926*0.5-atan(abs(R.x/R.z)));
+	}else{
+		phi=atan(abs(R.z/R.x));
+	}
+	if(R.x<0.0){
+		if(R.z<0.0){
+			phi=-(3.1415926-phi);
+		}else{
+			phi=3.1415926-phi;
+		}
+	}else{
+		if(R.z<0.0){
+			phi=-phi;
+		}else{
+			phi=phi;
+		}
+	}
+	phi=phi*(0.5/3.1415926);
+	float theta=asin(clamp(R.y,-0.99,0.99))*(1.0/3.1415926)+0.5;
+	phi=phi*envmap_fov+envmap_shift;
+	theta=theta*envmap_fov;
+	phi-=floor(phi);theta-=floor(theta);
+	return sqr(texture2D(tex_light_probe,vec2(phi,theta)).xyz)*4.0;
+}
+
 
 vec3 StandardShading(vec3 diffuse_color,
 					 vec3 specular_color,
@@ -429,6 +466,19 @@ vec4 shader_main(){
 
 	vec4 base_color = texture2D(tex_albedo,st_frag);
 	
+	//caculate normal map
+	if (selfDot(dPds_frag) > 0.0 && selfDot(dPdt_frag) > 0.0 && normal_strength > 0.0){
+		#ifdef TX_NORMAL
+		vec3 normal_map_value = tx_normal.rgb;
+		#else
+		vec3 normal_map_value = texture2D(tex_normal,st_frag).rgb;
+		#endif
+	
+		vec3 nmmp=normalize(normal_map_value-vec3(0.5));
+		N+=(normalize(-nmmp.x*normalize(dPds_frag)-nmmp.y*normalize(dPdt_frag)+nmmp.z*N)-N)*normal_strength;
+		N=normalize(N);	
+	}
+	
 	#ifdef TX_AO
 	float ao_map_value = tx_ao.r;
 	#else
@@ -447,6 +497,9 @@ vec4 shader_main(){
 	float linear_smoothness = srgb_tolinear_fast(smoothness);
 	float linear_roughness = 1.0 - linear_smoothness;
 	linear_roughness = mix(roughness, linear_roughness, has_tex_smoothness);
+	
+	float dotNV=dot(N,V);
+	vec3 R=V-2.0*dotNV*N;
 
 	vec3 diffuse_color  = srgb_tolinear_fast(base_color.rgb);
 	//diffuse_color = vec3(1,1,1);
@@ -463,14 +516,15 @@ vec4 shader_main(){
 	// NoL = Saturate(dot(N, L));
 	// final += StandardShading(diffuse_color, specular_color, linear_roughness, N, V, L) * L1_color * PI;
 
-	//vec3 C_refl=sampleEnv(R);
+	vec3 C_refl=sampleEnv(R);
 	//return vec4(sqrt(C_brdf+(C_refl-C_brdf)*(fresnel(dotNV)*Kr*smoothness)),C_tex.w);
 
 	//final += SHLighting(rotate(N, light_probe_rotate)) * light_probe_intensity * ao * diffuse_color;
 	//final += light_probe_intensity * ao * diffuse_color;
-
+	
 	final = IOSShading(N, V);
-
+	final += C_refl * light_probe_intensity * ao;
+	
 	final = LinearToSrgb(final);
 	return vec4(final,base_color.w);
 }

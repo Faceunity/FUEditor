@@ -91,7 +91,9 @@
 	    screenW: 0,
 	    screenH: 0,
 		resetFlag: 0,
-		highNama: 1
+		highNama: 1,
+		frameLast: 300,
+		frameLastCount: 0
 	};
 	/////////////////////////res
 	var boards = JSON.parse(FaceUnity.ReadFromCurrentItem("2d_desc.json"));
@@ -99,20 +101,40 @@
 	var s_eyes_shader=FaceUnity.ReadFromCurrentItem("2d_eyes.glsl");
 	
 	/*back#1ground_seg
-	if(!FaceUnity.LoadNNModel)console.log("!!!this faceunity nama sdk is lite version, not support NN");
-	var model_v=FaceUnity.LoadNNModel("nn_v.json");
-	var model_h=FaceUnity.LoadNNModel("nn_h.json");
+	var model_v = undefined, model_h = undefined;
 	var base_color=new Float32Array([-122.675/255,-116.669/255,-104.008/255]);
-	var s_visualize_shader=FaceUnity.ReadFromCurrentItem("visualize.glsl");
+	var s_visualize_shader = FaceUnity.ReadFromCurrentItem("visualize.glsl");
 	var cur_rotation_mode=-1;
 	var cnn_prob = new Array();
-	var cnn_running_time_sum = 0.;
+	var cnn_running_time_sum = 0.0;
 	var cnn_running_time_count = 0;
-	var config = FaceUnity.NNLoadConfig("config.json");
-	var img_h = config["image_height"];
-    var img_w = config["image_width"];
-    var skip_frames = config["skip_frames"];
-	var model = FaceUnity.NNLoadBackgroundSegmenter(config);
+	
+	var config = undefined;
+	var img_h = 0, img_w = 0;
+	var skip_frames = 0;
+	var model = undefined;
+	
+	var bgSegInited = false;
+	var loadBgSegSuccess = false;
+	
+	var initBgSeg = function() {
+		if(g_params.highNama) { 
+			config = FaceUnity.NNLoadConfig("config.json");
+			img_h = config["image_height"];
+			img_w = config["image_width"];
+			skip_frames = config["skip_frames"];
+			model = FaceUnity.NNLoadBackgroundSegmenter(config);
+		} else {
+			if(!FaceUnity.LoadNNModel) {
+				console.log("!!!this faceunity nama sdk is lite version, not support NN");
+				return;
+			}
+			model_v=FaceUnity.LoadNNModel("nn_v.json");
+			model_h=FaceUnity.LoadNNModel("nn_h.json");
+		}
+		bgSegInited = true;
+		loadBgSegSuccess = true;
+	}
 	//back#1ground_seg*/
 	
 	var jump = 0
@@ -681,6 +703,9 @@
 						meshlst.forEach(function(mesh){mesh.resetThis(Date.now());});
 					}
 				}
+				if (name=="frameLast") {
+					g_params.frameLast = value;
+				}
 				return 1;
 			}else{
 				try{
@@ -711,6 +736,8 @@
 		m_matrix:undefined,
 		enable_trackerless:1,
 		OnGeneralExtraDetector:function(){
+			if(!bgSegInited) initBgSeg();
+			if(!loadBgSegSuccess) return;
 			if(g_params.highNama) {
 				try{
 					jump = jump + 1;
@@ -825,6 +852,9 @@
 		},
 		FilterEntireImage:function(flip_x,flip_y){
 			try{
+				var noPerson = g_params.frameLastCount > g_params.frameLast;
+				if(!bgSegInited) initBgSeg();
+				if(!loadBgSegSuccess) return;
 				if(g_params.highNama) {
 					 if(!this.m_texid){return;}
 					var now = Date.now();
@@ -848,7 +878,8 @@
 								is_bgra:is_bgra,
 								flipx: (flip_x!=undefined)?flip_x:0.0,
 								flipy: (flip_y!=undefined)?flip_y:0.0,
-								mat_seg: curbg.mat_seg
+								mat_seg: curbg.mat_seg,
+								no_person: noPerson
 							});
 						}
 					}
@@ -877,7 +908,8 @@
 								is_bgra:is_bgra,
 								flipx: (flip_x!=undefined)?flip_x:0.0,
 								flipy: (flip_y!=undefined)?flip_y:0.0,
-								mat_seg: curbg.mat_seg
+								mat_seg: curbg.mat_seg,
+								no_person: noPerson
 							});	
 						}
 					}
@@ -901,6 +933,7 @@
 					vtfChecked = true;
 				}
 				
+				g_params.frameLastCount = 0;
 				g_params.isTracked = 1;
 				now = Date.now();
 				if(pass==1){
@@ -916,7 +949,8 @@
 						meshlst[i].triggerStartEvent(params,now,false);
 						meshlst[i].updateEvent(params,now);
 					}
-					for(var i = 0; i < nonbgseg_bg_mesh_ref_lst.length; i++)nonbgseg_bg_mesh_ref_lst[i].renderEvent(params,now,mat_cam,false);
+					if(params.isFollow==undefined||!params.isFollow)
+						for(var i = 0; i < nonbgseg_bg_mesh_ref_lst.length; i++)nonbgseg_bg_mesh_ref_lst[i].renderEvent(params,now,mat_cam,false);
 					
 				}else if(pass==2){
 				    //render armesh
@@ -969,6 +1003,8 @@
 		RenderNonFace:function(params,pass){
 			try{
 				faceCount = params.face_count;
+				if(faceCount == 0)
+					g_params.frameLastCount++;
 				now = Date.now();
 				if(pass==1){
 					for(var i = 0; i < reextract_mesh_ref_lst.length; i++)reextract_mesh_ref_lst[i].reExtract(params);
@@ -985,7 +1021,8 @@
 						meshlst[i].updateEvent(params,now);
 					}
 					//if(!params.face_count)
-					for(var i = 0; i < alwaysrender_fcbg_mesh_ref_lst.length; i++)alwaysrender_fcbg_mesh_ref_lst[i].renderEvent(params,now,undefined,true);	
+					if(params.isFollow==undefined||!params.isFollow)
+						for(var i = 0; i < alwaysrender_fcbg_mesh_ref_lst.length; i++)alwaysrender_fcbg_mesh_ref_lst[i].renderEvent(params,now,undefined,true);	
 				}else if(pass == 2){
 					//if(!params.face_count)
 					for(var i = 0; i < alwaysrender_nonfcbg_mesh_ref_lst.length; i++)alwaysrender_nonfcbg_mesh_ref_lst[i].renderEvent(params,now,undefined,true);

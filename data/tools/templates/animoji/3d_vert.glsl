@@ -11,16 +11,20 @@ vec3 QuatTransformVector(vec4 Q,vec3 v){
 void main(){
 	vec3 P1=P*scales;
 
-
 	P1 = (model_mat*vec4(P1,1.0)).xyz;
-	P1 = QuatTransformVector(quatR1,P1);
-	
+
 	P1.z=-P1.z;
+
+	if(is_eye>0.5)
+	{
+		P1 = (mat_eye*vec4(P1,1.0)).xyz;
+	}
+	
+	P1 = QuatTransformVector(quatR1,P1);
 
 	if(isFlipH>0.5){
 		P1.x = -P1.x;
 	}
-
 	
 	P_world_frag = P1;
 	vec4 modelPosition = (mat_view*vec4(P1,1.0));
@@ -29,9 +33,14 @@ void main(){
 	V_frag=normalize(modelPosition.xyz);
 
 	vec3 N2 = QuatTransformVector(quatR1, N);
-	if(isFlipH>0.5)
+	if(isFlipH>0.5) {
 		N_frag=normalize((mat_view*vec4(-N2.x,N2.y,-N2.z,0.0)).xyz);
-	else
+		dPds_frag=normalize((mat_view*vec4(-dPds.x,dPds.y,-dPds.z,0.0)).xyz);
+		dPdt_frag=normalize((mat_view*vec4(-dPdt.x,dPdt.y,-dPdt.z,0.0)).xyz);
+	} else {
 		N_frag=normalize((mat_view*vec4(N2.x,N2.y,-N2.z,0.0)).xyz);
+		dPds_frag=normalize((mat_view*vec4(dPds.x,dPds.y,-dPds.z,0.0)).xyz);
+		dPdt_frag=normalize((mat_view*vec4(dPdt.x,dPdt.y,-dPdt.z,0.0)).xyz);
+	}
 	st_frag=st;
 }

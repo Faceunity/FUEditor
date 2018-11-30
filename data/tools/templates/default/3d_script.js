@@ -263,7 +263,8 @@
 	var user_frame_id=0;
 	//var filter_array = new Array();
 	var now = Date.now();
-	var expression=[]; for(var i=0; i<56; i++) expression.push(0);
+	var bsCount = 46;
+	var expression=[]; for(var i=0; i<bsCount; i++) expression.push(0);
 	var focal_length = 303.64581298828125;
 	//背景动画
 	//var bg_board=JSON.parse(FaceUnity.ReadFromCurrentItem("desc.json"));
@@ -871,7 +872,7 @@
 	            mesh.updateEvent(params, now);
 	        });
 	        if (pass == 1) {
-	            FaceUnity.ComputeBlendshapeGeometry(this.blendshape, params, 56);
+	            FaceUnity.ComputeBlendshapeGeometry(this.blendshape, params, bsCount);
 	            //for facehack
 	            gl.enable(gl.DEPTH_TEST);
 	            gl.depthFunc(gl.LEQUAL);
@@ -1248,7 +1249,9 @@
 			}
 			if (!params.focal_length) params.focal_length = focal_length;
 			if(V(globals.expr_clamp,0)>0.5){
-				for(var i =0;i<56;i++){
+				while(params.expression.length<bsCount)
+					params.expression.push(0.0);
+				for(var i =0;i<bsCount;i++){
 					if(params.expression[i]==undefined) params.expression[i] = 0.0;
 					params.expression[i] = Math.max(Math.min(params.expression[i],1.0),0.0);
 				}

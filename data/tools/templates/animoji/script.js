@@ -9,6 +9,8 @@
 	
 	var particle;
 	var renderParticle = 1;
+
+	var InstanceIDs=[];
 	
 	var deepCopy =function(p, c){
 		var c = c || {};
@@ -128,16 +130,32 @@
 		},
 		Render:function(params){
 			try{
+				if(FaceUnity.GetFaceIdentifier==undefined)
+				{
+					console.log("can not find FaceUnity.GetFaceIdentifier! use nama with FaceUnity.GetFaceIdentifier");
+					return;
+				}
+
 				params.isFollow = isFollow;
 				
 				if(g_params.isPause == 0)
 					current_frame++;
 				params.frame_id = current_frame;
 				params.isPause = g_params.isPause;
+
+				InstanceIDs=[];
+                for(var faceIndex = 0; faceIndex < FaceUnity.m_n_valid_faces; faceIndex++){
+                	InstanceIDs[faceIndex]=FaceUnity.GetFaceIdentifier(faceIndex);
+                }
+                params.InstanceIDs=InstanceIDs;
+                //console.log("face_ord=",params.face_ord,"trueid=",FaceUnity.GetFaceIdentifier(params.face_ord),",InstanceIDs=",InstanceIDs);
 				
 				if(params.ShadowPass){
                     if(item3ds.GetHasShadow()){
+                    	params.NeedUpdateBoneMap=true;
+                    	params.current_faceid=FaceUnity.GetFaceIdentifier(params.face_ord);
                         if(item3ds)item3ds.Render(params,0);//shadow map
+                        params.NeedUpdateBoneMap=false;
                     }
 				}else{
 					if(handTrigger && item2ds) handTrigger.TriggerHand(item2ds, params);//trigger hand
@@ -150,25 +168,34 @@
 						faces.push(params);
 						for(var faceIndex = 0; faceIndex < faces.length;faceIndex++){
 							params = faces[faceIndex];
+							params.current_faceid=FaceUnity.GetFaceIdentifier(faceIndex);
+							if(!item3ds.GetHasShadow())params.NeedUpdateBoneMap=true;
 							if(item3ds)item3ds.Render(params,1);//face hack
+							params.NeedUpdateBoneMap=false;
+							
+							if(particle && renderParticle) particle.Render(params);
 						}
-						if(item2ds && !isFollow)item2ds.Render(params,1);//bg item
+						if(item2ds)item2ds.Render(params,1);//bg item
 						for(var faceIndex = 0; faceIndex < faces.length;faceIndex++){
 							params = faces[faceIndex];
+							params.current_faceid=FaceUnity.GetFaceIdentifier(faceIndex);
 							if(item3ds)item3ds.Render(params,2);
-							if(item2ds && !isFollow)item2ds.Render(params,2);//non bg item
+							if(item2ds)item2ds.Render(params,2);//non bg item
 						}
 						faces.splice(0,faces.length);
 					}else{
 						//this path when multi-people, 2d/ar ok ,3d fail
-						if(item3ds)item3ds.Render(params,1);//face hack
-						if(item2ds && !isFollow)item2ds.Render(params,1);//bg item
+						params.current_faceid=FaceUnity.GetFaceIdentifier(0);
+						if(item3ds){
+							if(!item3ds.GetHasShadow())params.NeedUpdateBoneMap=true;
+							item3ds.Render(params,1);//face hack
+							params.NeedUpdateBoneMap=false;
+						}
+						if(item2ds)item2ds.Render(params,1);//bg item
 						if(item3ds)item3ds.Render(params,2);//3d item
-						if(item2ds && !isFollow)item2ds.Render(params,2);//non bg item
+						if(item2ds)item2ds.Render(params,2);//non bg item
 					}
 					if(handTrigger && item2ds) handTrigger.CheckHand(item2ds, params);//trigger hand end
-					
-					if(particle && renderParticle) particle.Render(params);
 				}
 			}
 			catch(err){
@@ -184,19 +211,35 @@
 		RenderNonFace:function(params){
 			//for(var i in g_items)g_items[i].RenderNonFace(params);
 			try{
+				if(FaceUnity.GetFaceIdentifier==undefined)
+				{
+					console.log("can not find FaceUnity.GetFaceIdentifier! use nama with FaceUnity.GetFaceIdentifier");
+					return;
+				}
+
+				params.InstanceIDs=[];
+				params.current_faceid=0;
+
 				params.frame_id = current_frame;
 				params.isPause = g_params.isPause; 
 
 				if(item3ds && item3ds.FollowState) isFollow = item3ds.FollowState();
+				params.isFollow = isFollow;
 				if(params.ShadowPass){
                     if(item3ds.GetHasShadow()){
+                    	params.NeedUpdateBoneMap=true;
                         if(item3ds)item3ds.RenderNonFace(params,0);//shadow map
+                        params.NeedUpdateBoneMap=false;
                     }
 				}else{
-					if(item3ds)item3ds.RenderNonFace(params,1);//face hack
-					if(item2ds && !isFollow)item2ds.RenderNonFace(params,1);//bg item
+					if(item3ds){
+						if(!item3ds.GetHasShadow())params.NeedUpdateBoneMap=true;
+						item3ds.RenderNonFace(params,1);//face hack
+						params.NeedUpdateBoneMap=false;
+					}
+					if(item2ds)item2ds.RenderNonFace(params,1);//bg item
 					if(item3ds)item3ds.RenderNonFace(params,2);//3d item
-					if(item2ds && !isFollow)item2ds.RenderNonFace(params,2);//non bg item
+					if(item2ds)item2ds.RenderNonFace(params,2);//non bg item
 					
 					if(handTrigger) handTrigger.FlushHands();
 				}

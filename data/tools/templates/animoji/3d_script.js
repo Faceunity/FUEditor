@@ -20,6 +20,10 @@
 	*/
 	//高光颜色r
 	//@gparam ambient_light_intensity {"type":"slider","min":0,"max":1,"default_value":0}
+	//@gparam tex_light_probe {"type":"texture","default_value":"beach_1_4.jpg"}
+	//@gparam light_probe_intensity {"type":"slider","min":0,"max":1,"default_value":0.1}
+	//@gparam envmap_shift {"type":"slider","min":0,"max":1,"default_value":0.75}
+	//@gparam envmap_fov {"type":"slider","min":0.5,"max":5,"default_value":1.0}
 
 	//主光的航向角，也就是左右转的那个角
 	//@gparam L0_yaw {"type":"slider","min":0,"max":1,"default_value":0}
@@ -52,6 +56,7 @@
 	//@gparam expr_clamp {"type":"slider","min":0,"max":1,"default_value":1}
 	//@gparam follow {"type":"slider","min":0,"max":1,"default_value":0}
 	//@gparam tongue {"type":"slider","min":0,"max":1,"default_value":0}
+	//@gparam enable_physics {"type":"slider","min":0,"max":1,"default_value":1}
 	///////////////////////////
 	//以下是材质参数
 	/*物体的类型,一是镂空,[0,0.25]；
@@ -62,11 +67,13 @@
 	//@mparam obj_type {"type":"slider","min":0,"max":1,"default_value":0.3}
 
 	//@mparam tex_albedo {"type":"texture","default_value":"white.png","isTex":1}
+	//@mparam tex_normal {"type":"texture","default_value":"grey.png"}
 	//@mparam tex_ao {"type":"texture","default_value":"white.png"}
 	//@mparam tex_specular {"type":"texture","default_value":"black.png"}
 	//@mparam tex_emission {"type":"texture","default_value":"black.png"}
 
 	// param
+	//@mparam normal_strength {"type":"slider","min":0,"max":1,"default_value":0}
 	//@mparam ao_intensity  {"type":"slider","min":0,"max":1,"default_value":1.0}
 	//@mparam diffuse_intensity  {"type":"slider","min":0,"max":2,"default_value":1.0}
 	//@mparam diffuse_wrap       {"type":"slider","min":0,"max":1,"default_value":0.0}
@@ -79,6 +86,8 @@
 	//@mparam is_eye {"type":"slider","min":0,"max":1,"default_value":0}
 	//这个材质是不是头发的标记
 	//@mparam is_hair {"type":"slider","min":0,"max":1,"default_value":0}
+	
+	//@mparam multi_skel {"type":"slider","min":0,"max":1,"default_value":1}
 
 
 	/*
@@ -373,7 +382,8 @@
 	console.log("bigtexcnt",bigtexcnt);
 	var user_frame_id=0;
 	var now = Date.now();
-	var expression=[]; for(var i=0; i<56; i++) expression.push(0);
+	var bsCount = 56;
+	var expression=[]; for(var i=0; i<bsCount; i++) expression.push(0);
 	var focal_length = 303.64581298828125;
 	//背景动画
 	//var bg_board=JSON.parse(FaceUnity.ReadFromCurrentItem("desc.json"));
@@ -391,7 +401,10 @@
 		baked: 0,
 		isFlipExpr: 0.0,
 		fix_rotation: 0,
-		use_vtf: 1
+		use_vtf: 1,
+		support_vtf:-1,
+		isFlipTrack: 0.0,
+		isFlipLight: 0.0
 	};
 	var faces = [];
 	var tex_map={};
@@ -600,12 +613,14 @@
 		}*/
 
 
+		this.mat_eye = [1,0,0,0,
+						0,1,0,0,
+						0,0,1,0,
+						0,0,0,1];
 		if(V(matex.is_eye,this.is_eye)){
-			mat=FaceUnity.MatrixMul(
-				FaceUnity.CreateEyeMatrix(
+			this.mat_eye = FaceUnity.CreateEyeMatrix(
 					[this.P_center[0]*SCALE,this.P_center[1]*SCALE,-this.P_center[2]*SCALE],
-					[params.pupil_pos[0]*V(globals.eyeRscale,1.5),params.pupil_pos[1]]),
-				mat);
+					[params.pupil_pos[0]*V(globals.eyeRscale,1.5),params.pupil_pos[1]]);
 		}
 		this.use_custom_gl_states=1;
 		this.use_OIT_shader=1;
@@ -617,8 +632,8 @@
 					1,0,0,0,
 					0,1,0,0,
 					0,0,1,0,
-					center[0],center[1],center[2],1],
-				mat
+					center[0],center[1],center[2],1
+				],mat
 			);
 			mat=FaceUnity.CreateViewMatrix(
 				[0,0,0,1],
@@ -690,7 +705,9 @@
 		    scale_e: scale_ex,
 		    mat_view: this.mat,
 		    mat_cam: this.mat_cam,
-		    quatR1:[-this.rotation[0],-this.rotation[1],this.rotation[2],this.rotation[3]],
+		    is_eye: V(matex.is_eye,this.is_eye),
+		    mat_eye: this.mat_eye,
+		    quatR1:[this.rotation[0],this.rotation[1],this.rotation[2],this.rotation[3]],
 		    quatT1: [0, 0, 0],//[params.translation[0],params.translation[1],params.translation[2],1],
 		    quatR2: [0, 0, 0, 1],
 		    quatT2: [0, 0, 0],//[mat2[12]-center[0],mat2[13]-center[1],mat2[14]-center[2]],
@@ -705,7 +722,7 @@
 		    tex_ao: tex_map[V(matex.tex_ao, "grey.png")],
 		    tex_specular: tex_map[V(matex.tex_specular, "black.png")],
 		    tex_emission: tex_map[V(matex.tex_emission, "black.png")],
-			//*/
+			*/
 		    normal_strength: V(matex.normal_strength, 0.0),
 
 		    ambient_intensity: V(matex.ambient_intensity, 0.0),
@@ -759,6 +776,7 @@
 			bias:globals.shadow_bias * 0.1,
 		};
 		
+		
 		shader = AttachTexture(matex,tex_map,"tex_mask",shaderParams,"TX_MASK","grey.png") + shader;
 		shader = AttachTexture(matex,tex_map,"tex_normal",shaderParams,"TX_NORMAL","grey.png") + shader;
 		shader = AttachTexture(matex,tex_map,"tex_smoothness",shaderParams,"TX_SMOOTH","grey.png") + shader;
@@ -779,8 +797,9 @@
 		    shaderParams.deform_width = animation.tex_deform_width;
 		    shaderParams.anim_head = animation.anim_head;
 		    shaderParams.rootBone = animation.root / animation.cluster_num;
-		    shaderParams.headTransMat=animation.headTransMat;
-		    shaderParams.invHeadTransMat=animation.invHeadTransMat;
+		    shaderParams.headTransMat=animation.HeadTransMat();
+		    shaderParams.invHeadTransMat=animation.invHeadTransMat();
+			shaderParams.multiSkel = V(matex.multi_skel,0.0);
 		} else {
 		    shaderUse = s_vert_shader;
 		}
@@ -801,7 +820,7 @@
 		if (animation != null) {
 		    if (animation.use_vtf == 1)
 		        shaderUse = "#define USE_VTF\n" + shaderUse;
-		    if (animation.is_physics_init == true)
+		    if (animation.is_physics_init() == true)
 				shaderUse = "#define USE_SKELETON\n" + shaderUse;
 		}
 		if(animation != null){
@@ -838,7 +857,9 @@
 		    scales: [this.scales[0] * SCALE, this.scales[1] * SCALE, this.scales[2] * SCALE],
 		    scale_e: scale_ex,
 		    mat_view: L0_view,
-		    quatR1:[-this.rotation[0],-this.rotation[1],this.rotation[2],this.rotation[3]],
+		    is_eye: V(matex.is_eye,this.is_eye),
+		    mat_eye: this.mat_eye,
+		    quatR1:[this.rotation[0],this.rotation[1],this.rotation[2],this.rotation[3]],
 		    mat_proj: L0_proj,
 		    isFlipH: g_params['is3DFlipH'],
 		};
@@ -863,8 +884,9 @@
 		    shaderParams.deform_width = animation.tex_deform_width;
 		    shaderParams.anim_head = animation.anim_head;
 		    shaderParams.rootBone = animation.root / animation.cluster_num;
-		    shaderParams.headTransMat=animation.headTransMat;
-		    shaderParams.invHeadTransMat=animation.invHeadTransMat;
+		    shaderParams.headTransMat=animation.HeadTransMat();
+		    shaderParams.invHeadTransMat=animation.invHeadTransMat();
+		    shaderParams.multiSkel = V(matex.multi_skel,0.0);
 		} else {
 		    shaderUse = s_vert_shader;
 		}
@@ -885,7 +907,7 @@
 		if (animation != null) {
 		    if (animation.use_vtf == 1)
 		        shaderUse = "#define USE_VTF\n" + shaderUse;
-		    if (animation.is_physics_init == true)
+		    if (animation.is_physics_init() == true)
 				shaderUse = "#define USE_SKELETON\n" + shaderUse;
 		}
 		//FaceUnity.RenderBlendshapeComponent_new(blendshape, this, shaderUse, shader, shaderParams, pass);
@@ -895,12 +917,13 @@
 		}else{
 			FaceUnity.RenderShadowMap(blendshape, this, shaderUse, shader, shaderParams, 0);			
 		}
-	}
+	} 
 
 	//meshgroup
 	var MeshGroup = function (filename) {
 	    this.meshName = filename;
-	    this.blendshape = FaceUnity.LoadBlendshape(filename + ".json", filename + ".bin");
+	    //this.blendshape = FaceUnity.LoadBlendshape(filename + ".json", filename + ".bin");
+	    this.BlendShapes = {};
 	    this.meshlst = new Array();
 	    this.last_state = 0;
 	    this.facehack_mesh_ref_lst = null;
@@ -912,20 +935,66 @@
 	    this.pushBlendshape2Meshlst();
 	    this.reExtractSubLst();
 	}
+	MeshGroup.prototype.Getblendshape = function (id) {
+        if(typeof this.BlendShapes[id] != 'object')
+        {
+        	//console.log("Getblendshape:",this.meshName,"id=",id);
+            this.BlendShapes[id]=FaceUnity.LoadBlendshape(this.meshName + ".json", this.meshName + ".bin");
+        }
+        return this.BlendShapes[id];
+	}
+	MeshGroup.prototype.Clearblendshape = function (params) {
+		var holdfirstbs=false;
+		if(params.InstanceIDs.length==0)
+			holdfirstbs=true;
+		//var testdelete=false;
+		for(var id in this.BlendShapes){
+			if(holdfirstbs&&id==1)
+			{
+				continue;
+			}
+			var exist=false;
+			for(var j=0;j<params.InstanceIDs.length;j++){
+				if(params.InstanceIDs[j]==id)
+				{
+                    exist=true;
+                    break;
+                }
+			}
+			if(exist==false){	//至少保留1个
+				delete this.BlendShapes[id];
+				//testdelete=true;
+				//console.log("*** delete BlendShapes id",id);
+			}
+		}
+		/*if(testdelete){
+			var l=0;
+			for(var id in this.BlendShapes){
+				l++;
+			}
+			console.log("InstanceIDs.length=",params.InstanceIDs.length,"BlendShapes.length=",l);
+		}*/
+	}
 	MeshGroup.prototype.setDCHash = function () {
-	    this.blendshape.drawcalls.forEach(function (dc) {
-	        dc.shader_hash_0 = undefined;
-	        dc.shader_hash_1 = undefined;
-	        dc.shader_hash_2 = undefined;
-	    });
+		for(var id in this.BlendShapes)
+		{
+		    this.BlendShapes[id].drawcalls.forEach(function (dc) {
+		        dc.shader_hash_0 = undefined;
+		        dc.shader_hash_1 = undefined;
+		        dc.shader_hash_2 = undefined;
+		    });
+		}
 	}
 	MeshGroup.prototype.ReloadThingsForEditor = function () {
 	    //因为用户可能什么参数都没设……obj导出的贴图也还是load一下吧
-	    this.blendshape.drawcalls.forEach(function (dc) {
-	        if (dc.mat.tex && !tex_map[dc.mat.tex]) {
-	            tex_map[dc.mat.tex] = FaceUnity.LoadTexture(dc.mat.tex);
-	        }
-	    });
+	    for(var id in this.BlendShapes)
+		{
+		    this.BlendShapes[id].drawcalls.forEach(function (dc) {
+		        if (dc.mat.tex && !tex_map[dc.mat.tex]) {
+		            tex_map[dc.mat.tex] = FaceUnity.LoadTexture(dc.mat.tex);
+		        }
+		    });
+		}
 	    //对每个物体
 	    for (var sname in materials_json) {
 	        //看一下是不是改过材质
@@ -967,11 +1036,12 @@
 	    }
 	}
 	MeshGroup.prototype.pushBlendshape2Meshlst = function () {
-	    for (var i = 0; i < this.blendshape.drawcalls.length; i++) {
-	        var nmesh = new Mesh(this.blendshape.drawcalls[i], null);
-	        if (materials_json[this.blendshape.drawcalls[i].name] != null &&
-                materials_json[this.blendshape.drawcalls[i].name] != undefined)
-	            nmesh = new Mesh(this.blendshape.drawcalls[i], materials_json[this.blendshape.drawcalls[i].name].anim);
+		var bs=this.Getblendshape(1);	//取第一个
+	    for (var i = 0; i < bs.drawcalls.length; i++) {
+	        var nmesh = new Mesh(bs.drawcalls[i], null);
+	        if (materials_json[bs.drawcalls[i].name] != null &&
+                materials_json[bs.drawcalls[i].name] != undefined)
+	            nmesh = new Mesh(bs.drawcalls[i], materials_json[bs.drawcalls[i].name].anim);
 	        this.meshlst.push(nmesh);
 	        this.meshlst[nmesh.name] = nmesh;
 	        if (nmesh.isactiveonce) this.AnimCounter.total++;
@@ -988,27 +1058,30 @@
 	        var alphaThreshold = parseFloat(V(globals.alphaThreshold, "1.0"));
 	        var shader = s_frag_shader + "vec4 shader_main_OIT(){vec4 c=shader_main();return vec4(c.rgb,1.0);}";
 	        var parent = this;
+	        var bs=this.Getblendshape(params.current_faceid==0?1:params.current_faceid);
+	        this.Clearblendshape(params);
 	        params.animation=animation;
 	        //update for all mesh
 	        this.meshlst.forEach(function (mesh) {
 	            mesh.triggerStartEvent(params, now, false);
 	            mesh.updateEvent(params, now);
 	        });
+
 	        if (pass == 0) {
-   				FaceUnity.ComputeBlendshapeGeometry(this.blendshape, params, 56);
+   				FaceUnity.ComputeBlendshapeGeometry(bs, params, bsCount);
 	        	var shadowMap_shader = shadowMap_fs + "vec4 shader_main_OIT(){vec4 c=shader_main();return vec4(c.rgba);}";
-	        	this.facehack_mesh_ref_lst.forEach(function (mesh) { mesh.renderShadowMap(parent.blendshape, params, -1, shadowMap_shader, animation, fid); });
-	        	this.opaque_mesh_ref_lst.forEach(function (mesh) { mesh.renderShadowMap(parent.blendshape, params, 0, shadowMap_shader, animation, fid); });
-	        	this.transparent_mesh_ref_lst.forEach(function (mesh) { mesh.renderShadowMap(parent.blendshape, params, 1, shadowMap_shader, animation, fid); });
+	        	this.facehack_mesh_ref_lst.forEach(function (mesh) { mesh.renderShadowMap(bs, params, -1, shadowMap_shader, animation, fid); });
+	        	this.opaque_mesh_ref_lst.forEach(function (mesh) { mesh.renderShadowMap(bs, params, 0, shadowMap_shader, animation, fid); });
+	        	this.transparent_mesh_ref_lst.forEach(function (mesh) { mesh.renderShadowMap(bs, params, 1, shadowMap_shader, animation, fid); });
 	        } else if (pass == 1) {
 	            if(globals.hasShadow <= 0.5)
-	            	FaceUnity.ComputeBlendshapeGeometry(this.blendshape, params, 56);
+	            	FaceUnity.ComputeBlendshapeGeometry(bs, params, bsCount);
 	            //for facehack
 	            gl.enable(gl.DEPTH_TEST);
 	            gl.depthFunc(gl.LEQUAL);
 	            gl.enable(gl.BLEND);
 	            gl.blendFunc(gl.ZERO, gl.ONE);
-	            this.facehack_mesh_ref_lst.forEach(function (mesh) { mesh.renderEvent(parent.blendshape, params, -1, shader, animation, fid); });
+	            this.facehack_mesh_ref_lst.forEach(function (mesh) { mesh.renderEvent(bs, params, -1, shader, animation, fid); });
 	            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
 	        } else if (pass == 2) {
@@ -1017,13 +1090,13 @@
 	            gl.depthFunc(gl.LEQUAL);
 	            gl.depthMask(true);
 	            gl.disable(gl.BLEND);
-	            this.opaque_mesh_ref_lst.forEach(function (mesh) { mesh.renderEvent(parent.blendshape, params, 0, shader, animation, fid); });
+	            this.opaque_mesh_ref_lst.forEach(function (mesh) { mesh.renderEvent(bs, params, 0, shader, animation, fid); });
 
 	            //for transport object, alpha cut pass one
 	            gl.enable(gl.DEPTH_TEST);
 	            gl.depthMask(true);
 	            shader = s_frag_shader + "vec4 shader_main_OIT(){vec4 c=shader_main();if (c.a>=" + alphaThreshold.toFixed(3) + ") return vec4(c.rgb,1.0);else discard;}";
-	            this.transparent_mesh_ref_lst.forEach(function (mesh) { mesh.renderEvent(parent.blendshape, params, 1, shader, animation, fid); });
+	            this.transparent_mesh_ref_lst.forEach(function (mesh) { mesh.renderEvent(bs, params, 1, shader, animation, fid); });
 
 	            //for transport object, alpha cut pass two
 	            gl.enable(gl.DEPTH_TEST);
@@ -1031,7 +1104,7 @@
 	            gl.enable(gl.BLEND);
 	            gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ZERO);
 	            shader = s_frag_shader + "vec4 shader_main_OIT(){vec4 c=shader_main();if (c.a<=" + alphaThreshold.toFixed(3) + ") return vec4(c.rgb,c.a*" + (1.0 / alphaThreshold).toFixed(3) + ");else return vec4(c.rgb,0.0);}";
-	            this.transparent_mesh_ref_lst.forEach(function (mesh) { mesh.renderEvent(parent.blendshape, params, 2, shader, animation, fid); });
+	            this.transparent_mesh_ref_lst.forEach(function (mesh) { mesh.renderEvent(bs, params, 2, shader, animation, fid); });
 
 	            gl.depthMask(true);
 	            gl.disable(gl.DEPTH_TEST);
@@ -1046,6 +1119,7 @@
 
 	            this.meshlst.forEach(function (mesh) { mesh.triggerEndEvent(params, now, false, parent.AnimCounter); });
 	        }
+	        //console.log("current_faceid=",params.current_faceid,"pass=",pass,"expression=",params.expression,"\n");
 	        FaceUnity.SimpleOITEnd();
 	    } catch (err) {
 	        console.log(err.stack)
@@ -1068,33 +1142,23 @@
 	    this.calculate_anim_fid = function (frame_id) {
 	        return this.animation.animating ? this.animation.frame_id_callback(this.animation, frame_id) : 0;
 	    }
-	    this.update_animation = function(params) {
-	        if (this.animation.animating) this.animation.update_callback(this.animation, params);
+	    this.AnalysisInstanceID = function(params) {
+	    	if (this.animation != null)
+	        	this.animation.AnalysisInstanceID(params);
+	    }
+	    this.updateAnim = function(params) {
+	    	if (this.animation != null)
+	        	this.animation.updateAnim(this.animation, params);
+	    }
+	    this.updatePhysics = function(params) {
+	    	if (this.animation != null)
+	        	this.animation.updatePhysics(this.animation, params);
 	    }
 	    this.DoRender = function (params, pass) {
 	        if (this.animation != null) {
-	            if (this.animation.support_vtf == -1) { //check vtf
-	                var ret = 1;
-	                if (FaceUnity.TestVTF != undefined)
-	                    ret = FaceUnity.TestVTF();
-					//if(gl.getParameter(gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS)<=8)
-					//	ret = 0; //check image slot
-					if(!g_params["use_vtf"])
-						ret = 0;
-	                this.animation.support_vtf = ret;
-	                this.animation.use_vtf = ret;
-	            }
-
-	            var frame_id = 0;
-	            if (frame_id == params.frame_id) return;
-	            frame_id = params.frame_id;
-	            var fid = 0;
-	            params.physical = this.animation.physical;
-
-	            if (pass == 0 ||(pass == 1&&globals.hasShadow <= 0.5)) {
-	            	this.update_animation(params);
-	            }
-	            this.meshgroup.renderMesh(params, pass, this.animation, fid);
+	            if (params.frame_id==0) return;
+	            this.animation.upload(this.animation, params);
+	            this.meshgroup.renderMesh(params, pass, this.animation, 0);
 	        } else
 	            this.meshgroup.renderMesh(params, pass, null, 0);
 	    }
@@ -1114,12 +1178,6 @@
 
 	var animations = require("anim_dq_script.js");
 	var animlist = animations.Anims;
-
-	var hasPhysicsAnimation =false;
-    for (var prop in animlist) {
-        hasPhysicsAnimation |= animlist[prop].animObj.physical;
-        if (hasPhysicsAnimation) break;
-    }
 
     //animations trigger
 	var UpdateAnimation = function (anim, params, noface) {
@@ -1239,6 +1297,14 @@
 				return 1;
 			}
 			if(name=='isFlipExpr'){ 
+				g_params[name] = value;
+				return 1;
+			}
+			if(name=='isFlipTrack'){ 
+				g_params[name] = value;
+				return 1;
+			}
+			if(name=='isFlipLight'){ 
 				g_params[name] = value;
 				return 1;
 			}
@@ -1412,12 +1478,28 @@
 			else
 				tracked = 0;
 
+			if (g_params.support_vtf == -1) { //check vtf
+	            var ret = 1;
+	            if (FaceUnity.TestVTF != undefined)
+	                ret = FaceUnity.TestVTF();
+				//if(gl.getParameter(gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS)<=8)
+				//	ret = 0; //check image slot
+				if(!g_params["use_vtf"])
+					ret = 0;
+	            g_params.support_vtf = ret;
+	        }
+
 			var rotation = params.rotation.slice();
 			var L0_dir_src=L0_dir[0];
 			//g_params.isFlipExpr=1;
 			//g_params.is3DFlipH=1;
-			if(g_params.is3DFlipH>0.5){
+			//g_params.isFlipTrack=1;
+			//g_params.isFlipLight=1;
+			if(g_params.isFlipLight>0.5){
 				L0_dir[0]=-L0_dir_src;
+			}
+			params.isFlipTrack=g_params.isFlipTrack;
+			if(g_params.isFlipTrack>0.5){
 				//filp rotation
 				//console.log("before rotation hack:",rotation);
 				//params.rotation[0] = rotation[0];
@@ -1436,6 +1518,13 @@
 				params.pupil_pos[0] = -params.pupil_pos[0];
 			}
 			
+			if(globals.follow) {
+				globals["is_fix_x"] = 0;
+				globals["is_fix_y"] = 0;
+				globals["is_fix_z"] = 0;
+				globals["isnofacerender"] = 0;
+			} 
+			
 			if(V(globals.is_fix_x,0)>0.5){
 				params.translation[0] = V(globals.fixed_x,0);
 			}
@@ -1447,12 +1536,12 @@
 			}
 			if (!params.focal_length) params.focal_length = focal_length;
 			if(V(globals.expr_clamp,0)>0.5){
-				for(var i =0;i<56;i++){
+				for(var i =0;i<bsCount;i++){
 					if(params.expression[i]==undefined) params.expression[i] = 0.0;
 					params.expression[i] = Math.max(Math.min(params.expression[i],1.0),0.0);
 				}
 			}
-			
+
 			if(!g_params["fix_rotation"])
 				g_params["rotation_mode"] = params.rotation_mode;
 			g_params["bk_translation"] = params.translation;
@@ -1460,23 +1549,43 @@
 			g_params["bk_pupil_pos"] = params.pupil_pos;
 			g_params["bk_expression"] = params.expression;
 			g_params["baked"] = 1;
+
 			//animation trigger
 			for (var prop in animlist) {
 			    UpdateAnimation(animlist[prop], params, false);
 			}
-			//3d item trigger & DoRender
+
+			//update animation
+			var animesh=undefined;
 			for (var prop in AnimMeshs) {
-			    AnimMeshs[prop].DoRender(params, pass);	//TODO：同一帧跑太多次物理模拟，会出现异常，最好把这个放进单独的一个循环里
+				animesh=AnimMeshs[prop];
+				if (animesh.animation != null && params.frame_id!=0) {
+		            if (animesh.animation.support_vtf == -1) {
+		                animesh.animation.support_vtf = g_params.support_vtf;
+		                animesh.animation.use_vtf = g_params.support_vtf;
+		            }
+		            animesh.AnalysisInstanceID(params);
+		            if (params.NeedUpdateBoneMap) {
+		            	animesh.updateAnim(params);
+		            }
+	        	}
 			}
 
-			if(g_params.is3DFlipH>0.5){
-				L0_dir[0]=L0_dir_src;
+			//update physics
+			if (params.NeedUpdateBoneMap&&animesh!=undefined) {
+		        animesh.updatePhysics(params);
+		    }
+
+			//upload bonemap & DoRender
+			for (var prop in AnimMeshs) {
+			    AnimMeshs[prop].DoRender(params, pass);
 			}
+
+			L0_dir[0]=L0_dir_src;
 			params.rotation = rotation;
+			
 		},
 		RenderNonFace: function (params, pass) {
-			var L0_dir_src=L0_dir[0];
-
 			if(globals.follow) {
 				globals["is_fix_x"] = 0;
 				globals["is_fix_y"] = 0;
@@ -1492,42 +1601,61 @@
 		        for (var ap in animlist)
 		            UpdateAnimation(animlist[ap], params, true);
 		        
-				if(g_params.is3DFlipH>0.5){	//is3DFlipH的时候光照也需要镜像
+		        var L0_dir_src=L0_dir[0];
+				if(g_params.isFlipLight>0.5){	//is3DFlipH的时候光照也需要镜像
 					L0_dir[0]=-L0_dir_src;
 				}
-		    }
-		    for (var prop in AnimMeshs) {
-		        var meshgrp = AnimMeshs[prop].meshgroup;
-		        if (meshgrp.last_state == 1 && !params.face_count) {
-		            for (var i = 0; i < meshgrp.meshlst.length; i++) meshgrp.meshlst[i].switchState(meshgrp.last_state, 0);
-		            meshgrp.last_state = 0;
+				if (g_params["baked"]>0){
+		        	params.translation = g_params["bk_translation"];
+					params.rotation = g_params["bk_rotation"];
+					params.pupil_pos = g_params["bk_pupil_pos"];
+			        params.expression = g_params["bk_expression"];
+					
+					params.translation = [V(globals.fixed_x, 0), V(globals.fixed_y, 0), V(globals.fixed_z, 350), 1];
+		        }else{
+		        	params.translation = [V(globals.fixed_x, 0), V(globals.fixed_y, 0), V(globals.fixed_z, 350), 1];
+					params.rotation = [0,0,0,1];
+					params.pupil_pos = [0, 0];
+			    	params.expression = expression;
 		        }
-		        try {
-		            if (isNoFace) {
-		                if (g_params["baked"]>0){
-		                	params.translation = g_params["bk_translation"];
-							params.rotation = g_params["bk_rotation"];
-							params.pupil_pos = g_params["bk_pupil_pos"];
-			                params.expression = g_params["bk_expression"];
-							
-							params.translation = [V(globals.fixed_x, 0), V(globals.fixed_y, 0), V(globals.fixed_z, 350), 1];
-		                }else{
-		                	params.translation = [V(globals.fixed_x, 0), V(globals.fixed_y, 0), V(globals.fixed_z, 350), 1];
-							params.rotation = [0,0,0,1];
-							params.pupil_pos = [0, 0];
-			            	params.expression = expression;
-		                }
-		                if (!params.focal_length) params.focal_length = focal_length;
-		                AnimMeshs[prop].DoRender(params, pass);
-		            }
-		        } catch (err) {
-		            console.log(err.stack);
-		        }
+		        if (!params.focal_length) params.focal_length = focal_length;
+
+		        //update animation
+				var animesh=undefined;
+				for (var prop in AnimMeshs) {
+					animesh=AnimMeshs[prop];
+					var meshgrp = animesh.meshgroup;
+			        if (meshgrp.last_state == 1 && !params.face_count) {
+			            for (var i = 0; i < meshgrp.meshlst.length; i++) meshgrp.meshlst[i].switchState(meshgrp.last_state, 0);
+			            meshgrp.last_state = 0;
+			        }
+					if (animesh.animation != null && params.frame_id!=0) {
+			            if (animesh.animation.support_vtf == -1) {
+			                animesh.animation.support_vtf = g_params.support_vtf;
+			                animesh.animation.use_vtf = g_params.support_vtf;
+			            }
+			            animesh.AnalysisInstanceID(params);
+			            if (params.NeedUpdateBoneMap) {
+			            	animesh.updateAnim(params);
+			            }
+		        	}
+				}
+
+				//update physics
+				if (animesh!=undefined&&params.NeedUpdateBoneMap&&animesh.animation!=null&&params.frame_id!=0) {
+			        animesh.updatePhysics(params);
+			    }
+
+				//upload bonemap & DoRender
+			    for (var prop in AnimMeshs) {
+			        AnimMeshs[prop].DoRender(params, pass);
+			    }
+
+			    if(g_params.isFlipLight>0.5){
+					L0_dir[0]=L0_dir_src;
+				}
 		    }
 
-		    if(g_params.is3DFlipH>0.5&&isNoFace){
-				L0_dir[0]=L0_dir_src;
-			}
 		},
 		name:V(globals.name,"unnamed"),
 	};

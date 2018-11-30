@@ -1,0 +1,12 @@
+{
+	"model_name": "hand.fumodel",
+    "model_threads": 1,
+	"image_width": 300,
+	"image_height": 300,
+	"image_channels": 3,
+    "prob_threshold": 0.72,
+    "num_classes": 2,
+    "keep_k": 10,
+    "async_dectect": 1,
+    "debug_level": 2
+}
