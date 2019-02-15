@@ -98,7 +98,78 @@ app.get('/curitem', function(request, response){
     }
 
 });
+//http://127.0.0.1:13157/p2a?t=6&appid=fusync
+app.get('/p2a', function(request, response){
+    var filePath_data = fs.readFileSync('./data/log/cur_project_path.txt');
+    var filePath = filePath_data.toString();
+    console.log(filePath);
+    console.log(request.query.t);
+    if(request.query.t == 6)
+        filePath=filePath.substr(0,filePath.lastIndexOf('/Projects')+1)+"A2P/controller.bundle";   
+    else if(request.query.t == 8)
+        filePath=filePath.substr(0,filePath.lastIndexOf('/Projects')+1)+"A2P/male_body.bundle";       
+    else if(request.query.t == 9)
+        filePath=filePath.substr(0,filePath.lastIndexOf('/Projects')+1)+"A2P/female_body.bundle";  
+    else if(request.query.t == 10)
+        filePath=filePath.substr(0,filePath.lastIndexOf('/Projects')+1)+"A2P/male_head.bundle"; 
+    else if(request.query.t == 11)
+        filePath=filePath.substr(0,filePath.lastIndexOf('/Projects')+1)+"A2P/female_head.bundle"; 
+    else{
+        var json = JSON.stringify({
+            msg: 'No bundle found.',
+            code: '300',
+        });
+        response.writeHead(300, {'Content-Type': 'application/json'});
+        response.end(json);
+        return;
+    }
 
+    console.log("A2Pfilename",filePath);
+    if (request.query.appid === undefined) {
+        response.redirect('http://www.faceunity.com/FUSync-guide.html');
+    }
+    else if(request.query.appid === 'fusync')
+    {
+        if(!fs.existsSync(filePath)) {
+            var json = JSON.stringify({
+                msg: 'No body bundle found.',
+                code: '300',
+            });
+            response.writeHead(300, {'Content-Type': 'application/json'});
+            response.end(json);
+            return;
+        }
+        var stat = fs.statSync(filePath);
+        console.log("stat.mtime",stat.mtime);
+
+        fs.readFile(filePath, function(error, content){
+            if (error){
+                var json = JSON.stringify({
+                    msg: error.messgae,
+                    code: '300',
+                });
+                response.writeHead(300, {'Content-Type': 'application/json'});
+                response.end(json);
+            }
+            else{
+              var type_json = JSON.stringify({
+                      t: parseInt(8),
+                      time: stat.mtime.Format("yyyyMMdd-hh:mm:ss"),
+                      name: "p2a"
+                });
+                var zip = new node_zip();
+                zip.file("info.json", type_json);
+                zip.file("curitem.bundle", content);
+                var data = zip.generate({base64:false,compression:'DEFLATE'});
+                response.writeHead(200, {'Content-Type': 'application/octet-stream'});
+                response.end(new Buffer(data, 'binary'));
+
+            }
+        });
+
+    }
+
+});
 var server = http.createServer(app);
 
 server.listen(parseInt(port));

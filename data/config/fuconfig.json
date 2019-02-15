@@ -1,5 +1,1 @@
-{
-    "g_formalSignUrl":"https://in-house.faceunity.com:8334/file-upload",
-    "g_p2aCreatorUrl":"http://116.62.247.68:20181",
-    "g_picassoSignUrl":"https://api-test.faceunity.com:20182/picasso"
-}
+{"g_formalSignUrl":"https://in-house.faceunity.com:8334/file-upload","g_p2aCreatorUrl":"http://116.62.247.68:20181","g_picassoSignUrl":"https://api-test.faceunity.com:20182/picasso","ProjectConfig":{"ProjectType":3,"BodyType":4,"BundleType":999,"TemplateName":"advance"},"fastSign":0}

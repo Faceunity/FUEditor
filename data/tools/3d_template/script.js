@@ -53,7 +53,7 @@
 		isMultiMask: 0,
 		isPause: 0
 	};
-	return {
+	var retobj = {
 		SetParam:function(name,value){
 		    try {
 				if(name=="isMultiMask"){
@@ -151,12 +151,7 @@
 				console.log(err.stack);
 			}
 		},
-		OnGeneralSSDDetector: function() {
-			if(handTrigger) handTrigger.OnGeneralSSDDetector();
-		},
-		OnDetect:function(boxes) {
-			if(handTrigger) handTrigger.OnDetect(boxes);
-		},
+		
 		RenderNonFace:function(params){
 			//for(var i in g_items)g_items[i].RenderNonFace(params);
 			try{
@@ -174,5 +169,23 @@
 			}
 		},
 		name:itemname,
+		
+		OnBind:function(item) {
+			if(item3ds && item3ds.OnBind) item3ds.OnBind(item);
+		},
+		OnUnbind:function(item) {
+			if(item3ds && item3ds.OnUnbind) item3ds.OnUnbind(item);
+		}
 	};
+	
+	if(handTrigger) {
+		retobj.OnGeneralSSDDetector = function() {
+			if(handTrigger) handTrigger.OnGeneralSSDDetector();
+		}
+		retobj.OnDetect = function(boxes) {
+			if(handTrigger) handTrigger.OnDetect(boxes);
+		}
+	}
+		
+	return retobj; 
 })()

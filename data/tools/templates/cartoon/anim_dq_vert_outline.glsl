@@ -107,6 +107,10 @@ void main(){
 		dPs2 = dPs1.xyz;
 		dPt2 = dPt1.xyz;
 	}
+	
+	if(isFlipH>0.5){
+		P2.x = -P2.x;
+	}
 
 	P2 = scale_e * P2;
 

@@ -19,7 +19,7 @@
 	//环境图的视角
 	//@gparam envmap_fov {"type":"slider","min":0.5,"max":5,"default_value":1.0}
 	//道具整体缩放的比例，用对数调节是为了方便
-	//@gparam log_scale {"type":"slider","min":-5,"max":5,"default_value":0}
+	//@gparam log_scale {"type":"slider","min":-5,"max":5,"default_value":0.0}
 	//眼球左右旋转的倍率
 	//@gparam eyeRscale {"type":"slider","min":0.0,"max":3.0,"default_value":1.5}
 	///////////////////////////
@@ -29,43 +29,43 @@
 	现在的光源都没有产生阴影。有需求请联系我们，在系统里加一下。
 	*/
 	//主光的航向角，也就是左右转的那个角
-	//@gparam L0_yaw {"type":"slider","min":0,"max":1,"default_value":0}
+	//@gparam L0_yaw {"type":"slider","min":0,"max":1,"default_value":0.0}
 	//主光的俯仰角，也就是上下转的那个角
-	//@gparam L0_pitch {"type":"slider","min":-1,"max":1,"default_value":0}
+	//@gparam L0_pitch {"type":"slider","min":-1,"max":1,"default_value":0.0}
 	//主光的颜色，三个通道
-	//@gparam L0_R {"type":"slider","min":0,"max":1,"default_value":1}
-	//@gparam L0_G {"type":"slider","min":0,"max":1,"default_value":1}
-	//@gparam L0_B {"type":"slider","min":0,"max":1,"default_value":1}
+	//@gparam L0_R {"type":"slider","min":0,"max":1,"default_value":1.0}
+	//@gparam L0_G {"type":"slider","min":0,"max":1,"default_value":1.0}
+	//@gparam L0_B {"type":"slider","min":0,"max":1,"default_value":1.0}
 	//主光的强度，用对数调还是为了方便
-	//@gparam L0Intensity {"type":"slider","min":-4,"max":4,"default_value":0}
+	//@gparam L0Intensity {"type":"slider","min":-4,"max":4,"default_value":0.0}
 	//补光的参数，和主光一样的。再次重申，补光不产生高光。
-	//@gparam L1_yaw {"type":"slider","min":-0.5,"max":0.5,"default_value":0}
-	//@gparam L1_pitch {"type":"slider","min":-1,"max":1,"default_value":0}
-	//@gparam L1_R {"type":"slider","min":0,"max":1,"default_value":1}
-	//@gparam L1_G {"type":"slider","min":0,"max":1,"default_value":1}
-	//@gparam L1_B {"type":"slider","min":0,"max":1,"default_value":1}
-	//@gparam L1Intensity {"type":"slider","min":-4,"max":4,"default_value":-2}
+	//@gparam L1_yaw {"type":"slider","min":-0.5,"max":0.5,"default_value":0.0}
+	//@gparam L1_pitch {"type":"slider","min":-1,"max":1,"default_value":0.0}
+	//@gparam L1_R {"type":"slider","min":0,"max":1,"default_value":1.0}
+	//@gparam L1_G {"type":"slider","min":0,"max":1,"default_value":1.0}
+	//@gparam L1_B {"type":"slider","min":0,"max":1,"default_value":1.0}
+	//@gparam L1Intensity {"type":"slider","min":-4,"max":4,"default_value":-2.0}
 	//半透明算法阈值，设为1.0适合普通简单的半透明物体，设为0.5适合头发
 	//@gparam alphaThreshold {"type":"edit","default_value":"1.0"}
 	//是否固定位置,不跟随人脸运动，固定位置如下fixed_x/y/z
 	//在没有人脸的时候的固定位置
-	//@gparam is_fix_x {"type":"slider","min":0,"max":1,"default_value":0}
-	//@gparam is_fix_y {"type":"slider","min":0,"max":1,"default_value":0}
-	//@gparam is_fix_z {"type":"slider","min":0,"max":1,"default_value":0}
-	//@gparam fixed_x {"type":"slider","min":-600,"max":600,"default_value":0}
-	//@gparam fixed_y {"type":"slider","min":-600,"max":600,"default_value":0}
-	//@gparam fixed_z {"type":"slider","min":0,"max":2000,"default_value":350}
+	//@gparam is_fix_x {"type":"slider","min":0,"max":1,"default_value":0.0}
+	//@gparam is_fix_y {"type":"slider","min":0,"max":1,"default_value":0.0}
+	//@gparam is_fix_z {"type":"slider","min":0,"max":1,"default_value":0.0}
+	//@gparam fixed_x {"type":"slider","min":-600,"max":600,"default_value":0.0}
+	//@gparam fixed_y {"type":"slider","min":-600,"max":600,"default_value":0.0}
+	//@gparam fixed_z {"type":"slider","min":0,"max":2000,"default_value":350.0}
 	//在没有人脸的时候是否绘制
-	//@gparam isnofacerender {"type":"slider","min":0,"max":1,"default_value":0}
-	//@gparam fixed_nx {"type":"slider","min":-600,"max":600,"default_value":0}
-	//@gparam fixed_ny {"type":"slider","min":-600,"max":600,"default_value":0}
-	//@gparam fixed_nz {"type":"slider","min":0,"max":2000,"default_value":350}
+	//@gparam isnofacerender {"type":"slider","min":0,"max":1,"default_value":0.0}
+	//@gparam fixed_nx {"type":"slider","min":-600,"max":600,"default_value":0.0}
+	//@gparam fixed_ny {"type":"slider","min":-600,"max":600,"default_value":0.0}
+	//@gparam fixed_nz {"type":"slider","min":0,"max":2000,"default_value":350.0}
 	
-	//@gparam use_fov {"type":"slider","min":0,"max":1,"default_value":0}
-	//@gparam camera_fov {"type":"slider","min":5,"max":90,"default_value":20}
+	//@gparam use_fov {"type":"slider","min":0,"max":1,"default_value":0.0}
+	//@gparam camera_fov {"type":"slider","min":5,"max":90,"default_value":20.0}
 	//控制旋转的幅度，rot_weight=1完全按照人头旋转，rot_weight=0不跟人头旋转
-	//@gparam rot_weight {"type":"slider","min":0,"max":1,"default_value":1}	
-	//@gparam expr_clamp {"type":"slider","min":0,"max":1,"default_value":0}	
+	//@gparam rot_weight {"type":"slider","min":0,"max":1,"default_value":1.0}
+	//@gparam expr_clamp {"type":"slider","min":0,"max":1,"default_value":0.0}
 	///////////////////////////
 	//以下是材质参数
 	/*物体的类型,一是镂空,[0,0.25]；
@@ -73,20 +73,20 @@
 				三是权重控制旋转的幅度（前提是有对应主obj的weight.png,例如aa.obj对应的权重贴图是aa_weight.png）,(0.5,0.75]；
 				四是只会跟着脑袋位移变化和大小的缩放，例如身体(0.75,1]。
 	*/
-	//@mparam obj_type {"type":"slider","min":0,"max":1,"default_value":0.3}
+	//@mparam obj_type {"type":"slider","min":0,"max":1,"default_value":0.30000001192092898}
 	
 	//法向贴图，就是蓝了吧唧的那种，不是bump map哦～bump map要先转一下哦～～ 默认的grey.png等于没有贴图
 	//@mparam tex_normal {"type":"texture","default_value":"grey.png"}
 	//法向贴图的强度，为了照顾没有法向贴图的模型，强度默认是0，所以设了法向贴图之后要把强度拽高点才能看到效果
-	//@mparam normal_strength {"type":"slider","min":0,"max":1,"default_value":0}
+	//@mparam normal_strength {"type":"slider","min":0,"max":1,"default_value":0.0}
 	//颜色贴图，默认的white.png是白的。建议先弄好贴图再去调光哦。
 	//@mparam tex_albedo {"type":"texture","default_value":"white.png","isTex":1}
 	//自发光强度
-	//@mparam Ka {"type":"slider","min":0,"max":1,"default_value":0}
+	//@mparam Ka {"type":"slider","min":0,"max":1,"default_value":0.5588240027427673}
 	//漫反射强度
-	//@mparam Kd {"type":"slider","min":0,"max":1,"default_value":0.3}
+	//@mparam Kd {"type":"slider","min":0,"max":1,"default_value":0.6764709949493408}
 	//高光强度，注意高光不受颜色贴图影响
-	//@mparam Ks {"type":"slider","min":0,"max":1,"default_value":0.2}
+	//@mparam Ks {"type":"slider","min":0,"max":1,"default_value":0.0}
 	//环境图反射强度
 	//@mparam Kr {"type":"slider","min":0,"max":1,"default_value":0.0}
 	//表面粗糙度。越大高光越分散，越小高光越集中
@@ -94,17 +94,17 @@
 	//高光强度贴图，应为灰度图，越大表示越亮。
 	//@mparam tex_smoothness {"type":"texture","default_value":"grey.png"}
 	//高光强度贴图的整体强度（有些拗口……），为了照顾到大多数没有高光强度贴图的模型，默认是0。设了贴图之后要把强度拽高哦～
-	//@mparam has_tex_smoothness {"type":"slider","min":0,"max":1,"default_value":0}
+	//@mparam has_tex_smoothness {"type":"slider","min":0,"max":1,"default_value":0.0}
 	//环境图反射的折射率。折射率越小，反射从正面到边光的亮度变化越明显，整体强度越小。
-	//@mparam ior {"type":"slider","min":1.01,"max":2.00,"default_value":1.33}
+	//@mparam ior {"type":"slider","min":1.01,"max":2.0,"default_value":1.3300000429153443}
 	//高光的金属度。越高越接近金属，越低越接近塑料。
 	//@mparam F0 {"type":"slider","min":0,"max":1,"default_value":1.0}
 	//这个材质是不是眼睛的标记
-	//@mparam is_eye {"type":"slider","min":0,"max":1,"default_value":0}
+	//@mparam is_eye {"type":"slider","min":0,"max":1,"default_value":0.0}
 	//这个材质是不是头发的标记
-	//@mparam is_hair {"type":"slider","min":0,"max":1,"default_value":0}
+	//@mparam is_hair {"type":"slider","min":0,"max":1,"default_value":0.0}
 	//这个是需不需要背面剔除的标记
-	//@mparam back_cull {"type":"slider","min":0,"max":1,"default_value":1}
+	//@mparam back_cull {"type":"slider","min":0,"max":1,"default_value":1.0}
 	
 	/*
 	编辑器保存的结果会存放在"globals.json"和"materials.json"两个文件中。
@@ -551,6 +551,11 @@
 		var mat_t = FaceUnity.CreateViewMatrix(
 			[-rotation[0], -rotation[1], -rotation[2], rotation[3]],
 			[0, 0, 0]);
+		if(V(matex.obj_type,0.3) < 0.25 && g_params.isFlipExpr>0.5)
+			mat_t = FaceUnity.CreateViewMatrix(
+			[-rotation[0], rotation[1], rotation[2], rotation[3]],
+			[0, 0, 0]);
+			
 		var mat_cam_t = FaceUnity.CreateViewMatrix(
 			[0, 0, 0, 1],
 			[0, 0, 0]);
@@ -919,6 +924,7 @@
 	    this.meshName = meshFilename;
 	    this.meshgroup = new MeshGroup(meshFilename);
 	    this.animation = null;
+		this.nofaceFrame = 0;
 
 	    this.initMeshAnimation = function () {
 	        if (this.animation != null) {
@@ -933,7 +939,7 @@
 	    this.update_animation = function(params) {
 	        if (this.animation.animating) this.animation.update_callback(this.animation, params);
 	    }
-	    this.DoRender = function (params, pass) {
+	    this.DoRender = function (params, pass, noface) {
 	        if (this.animation != null) {
 	            if (this.animation.support_vtf == -1) { //check vtf
 	                var ret = 1;
@@ -944,8 +950,15 @@
 	            }
 
 	            var frame_id = 0;
-	            if (frame_id == params.frame_id) return;
+	            if (frame_id == params.frame_id && !noface) return;
 	            frame_id = params.frame_id;
+				
+				if(noface) {
+					frame_id = this.nofaceFrame;
+					params.frame_id = this.nofaceFrame;
+					this.nofaceFrame++;
+				}
+				
 	            var fid = 0;
 	            params.physical = this.animation.physical;
 	            if (canUsePhysical && this.animation.physical == 1 && params.main_bone === undefined) {
@@ -1157,6 +1170,10 @@
 				g_params["flip_wh"] = value;
 				return 1;
 			}
+			if (name=="setAnimFrame") {
+				animations.SetFrame(value);
+				return 1;
+			}
 			/*
 			否则的话，name里面就是一个JSON对象：{"name":"材质名或<global>"，"param":"参数名"}
 			接着就是根据不同情况找到参数的位置设上值。考虑到每个部分都可能写错，处理一下异常会安全一些。
@@ -1195,6 +1212,7 @@
 			//前面两个是保存用的
 		    if (name == "hasFinish") return AnimCounter.hasFinish();
 		    if (name == "allFinish") return AnimCounter.allFinish();
+			if(name == "animFrameCount") return animations.GetAnimFrameCount();
 			if(name=='@global_json'){
 				return JSON.stringify(globals,null,2);
 			}
@@ -1263,7 +1281,7 @@
 			}
 			//3d item trigger & DoRender
 			for (var prop in AnimMeshs) {
-			    AnimMeshs[prop].DoRender(params, pass);
+			    AnimMeshs[prop].DoRender(params, pass, false);
 			}
 		},
 		RenderNonFace: function (params, pass) {  
@@ -1287,7 +1305,7 @@
 		                params.pupil_pos = [0, 0];
 		                params.expression = expression;
 		                if (!params.focal_length) params.focal_length = focal_length;
-		                AnimMeshs[prop].DoRender(params, pass);
+		                AnimMeshs[prop].DoRender(params, pass, true);
 		            }
 		        } catch (err) {
 		            console.log(err.stack);
@@ -1295,5 +1313,30 @@
 		    }
 		},
 		name:V(globals.name,"unnamed"),
+		
+		OnBind:function(item) {
+			if(AnimMeshs) {
+				var pair = undefined;
+				for (var prop in AnimMeshs) {
+					pair = AnimMeshs[prop];
+					break;
+				}
+				if(pair) item.OnBind(pair);
+				animlist = item.Anims;
+			}
+		},
+		OnUnbind:function(item) {
+			if(AnimMeshs) {
+				var pair = undefined;
+				for (var prop in AnimMeshs) {
+					pair = AnimMeshs[prop];
+					break;
+				}
+				if(pair) {
+					item.OnUnbind(pair);
+					animlist = {};
+				}
+			}
+		}
 	};
 })()

@@ -45,7 +45,7 @@
 	//@gparam is_fix_z {"type":"slider","min":0,"max":1,"default_value":1}
 	//@gparam fixed_x {"type":"slider","min":-600,"max":600,"default_value":0}
 	//@gparam fixed_y {"type":"slider","min":-600,"max":600,"default_value":0}
-	//@gparam fixed_z {"type":"slider","min":0,"max":2000,"default_value":1036}
+	//@gparam fixed_z {"type":"slider","min":0,"max":4000,"default_value":1036}
 	//在没有人脸的时候是否绘制
 	//@gparam isnofacerender {"type":"slider","min":0,"max":1,"default_value":1}
 
@@ -55,6 +55,7 @@
 	//@gparam rot_weight {"type":"slider","min":0,"max":1,"default_value":1}
 	//@gparam expr_clamp {"type":"slider","min":0,"max":1,"default_value":1}
 	//@gparam follow {"type":"slider","min":0,"max":1,"default_value":0}
+	//@gparam follow_withbg {"type":"slider","min":0,"max":1,"default_value":0}
 	//@gparam tongue {"type":"slider","min":0,"max":1,"default_value":0}
 	//@gparam enable_physics {"type":"slider","min":0,"max":1,"default_value":1}
 	///////////////////////////
@@ -363,6 +364,7 @@
 	var scale_ex = 1.0;
 	
 	var isFollow = globals.follow;
+	var followWithBg = globals.follow_withbg;
 	var nf_fixed_x = globals.is_fix_x;
 	var nf_fixed_y = globals.is_fix_y;
 	var nf_fixed_z = globals.is_fix_z;
@@ -1281,6 +1283,9 @@
 		FollowState:function() {
 			return isFollow;
 		},
+		FollowWithBGState:function() {
+			return followWithBg;
+		},
 		TongueState:function() {
 			return globals.tongue;
 		},
@@ -1425,6 +1430,9 @@
 							//globals["camera_fov"] = nf_cfov;
 						}
 						isFollow = value;
+					}
+					if (desc.param == "follow_withbg") {
+						followWithBg = value;
 					}
 					return 1;
 				}else{

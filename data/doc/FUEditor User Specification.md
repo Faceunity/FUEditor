@@ -6,7 +6,7 @@ __FUEditor__ 是一款高效便捷的AR人脸道具编辑工具软件，为[Face
  - 可以高效制作2D道具。贴纸，贴纸动画，动画组，特定脸部动作触发动画。Faceunity的2D贴纸技术本质也是3D的，有前后景深效果，侧脸时仍能紧贴人脸，而不是全部贴纸都在一个平面上。  
  - 可以制作AR Mesh面具。  
  - 可以制作3D的道具，调整材质，如花环头盔等。  
-    ![xxx](./img/gif.gif)
+    ![xxx](img/gif.gif)
 
 ## 1. 快速安装
 - 系统要求  
@@ -37,41 +37,41 @@ __FUEditor__ 是一款高效便捷的AR人脸道具编辑工具软件，为[Face
 - 启动程序  
    双击 FUEditor 目录中 FUEditor.bat 启动程序。显示最近项目列表，可以选择以前的项目，也可以新建项目。
 
-    ![test](./img/start.png)
+    ![test](img/start.png)
 
 
 - 查看example    
    FUEditor中自带一些示例项目，首次启动时，显示的项目即是示例项目，在最近项目列表中鼠标左键选择打开‘example_2D’项目。  
 
-   ![test](./img/choice.png)  
+   ![test](img/choice.png)  
 
    ​
 
- 进入示例项目，点击![test](./img/qt32/play.png)按钮启动摄像头，点击![test](./img/qt32/refresh.png)开始预览。![test](./img/example.png)  
+ 进入示例项目，点击![test](img/qt/play.png)按钮启动摄像头，点击![test](img/qt/refresh.png)开始预览。![test](img/example.png)  
 
 ## 2. 使用  
 #### 2.1 新建项目  
-- 创建：点击菜单__File__>>__New Project__，或者快捷键__Ctrl+N__，或者点击左上边按钮![test](./img/qt32/document-add.png)。弹出对话框，选择创建项目类型，输入项目名称
+- 创建：点击菜单__File__>>__New Project__，或者快捷键__Ctrl+N__，或者点击左上边按钮![test](img/qt/document-add.png)。弹出对话框，选择创建项目类型，输入项目名称
 
-   ![test](./img/createproject.png)  
+   ![test](img/createproject.png)  
 
  创建完新项目后，界面左上角会显示__FUEditor – 项目名__，项目存放在 _FUEditor/Projects/项目名/_ 目录下。  
 __注意__：所有道具项目存放在 _FUEditor/Projects_ 目录下，新建项目时不要重名。道具名称命名最好以“公司名缩写\_设计师名缩写\_道具名”规范来命名，如“fu\_crt\_maolian”。道具名最好不要和之前的一样，否则会覆盖掉之前打包好的道具。  
 _FUEditor/Projects_ 目录下由程序创建的目录不要随意动。
 
 #### 2.2 2D道具编辑
-- 添加：点击2D类型下"__+__"号创建新的元素；或者在"__2D__"上右键选择"__添加子元素__"；或者选中"__2D__"，点击下面![test](./img/qt32/add.png)按钮添加新元素。  
-- 删除：点击![test](./img/qt32/remove.png)删除当前选中的元素。或者在元素上点右键，选择"__删除__"。    ![test](./img/2daddremove.png)
+- 添加：点击2D类型下"__+__"号创建新的元素；或者在"__2D__"上右键选择"__添加子元素__"；或者选中"__2D__"，点击下面![test](img/qt/add.png)按钮添加新元素。  
+- 删除：点击![test](img/qt/remove.png)删除当前选中的元素。或者在元素上点右键，选择"__删除__"。    ![test](img/2daddremove.png)
 
 
 
 - 2D元素属性：  
-   修改查看元素的属性，在视窗中选择道具元素，或者再树状元素列表中选择元素，右边会显示对应的元素属性视图  ![test](./img/attr.png)  
+   修改查看元素的属性，在视窗中选择道具元素，或者再树状元素列表中选择元素，右边会显示对应的元素属性视图  ![test](img/attr.png)  
 
 
 - 基本属性释意：
   - 元素名：当前元素的名称，可修改，不同元素元素名不同。
-  - 图片：点击右边图片按钮![test](./img/qt32/image.png)，选择图片纹理，图片文件名不能是中文。  
+  - 图片：点击右边图片按钮![test](img/qt/image.png)，选择图片纹理，图片文件名不能是中文。  
     __注意__：2D元素帧动画序列命名必须是“xxxx_五位数字.扩展名” 例如， xxxx_00000.png, xxxx_00001.png 帧序列，  
     即使没有帧动画，只有一帧也需命名为xxxx_00000.png。图片最大不能超过2000×2000。图片太大，会影响性能,建议控制在1000×1000以下。  
   - 水平翻转：沿元素中心做水平翻转。
@@ -94,7 +94,7 @@ _FUEditor/Projects_ 目录下由程序创建的目录不要随意动。
   - 高度：元素高度。  
   - 开启深度测试：当2D元素和3D元素混合使用时，给2D元素开启深度测试，能获得正确的遮挡效果。  
 
-  ![test](./img/anim.png)  
+  ![test](img/anim.png)  
 
 - 动画参数释意：
   - FPS：播放帧速率，每秒播放多少帧。
@@ -191,22 +191,22 @@ fuItemSetParamd(item_id, "rotationTexAngle",-90);     //顺时针旋转90度
 #### 2.4 特定脸部动作
 当道具元素选择触发开始类型为："特定脸部动作"，然后在触发开始动作列表中选择一个动作，能够根据人脸的特定表情触发元素播放。  
 
-![test](./img/action.png)  
+![test](img/action.png)  
 
 ###### 2.4.1 内置特定动作
-- "taimei" 是判断用户 抬眉毛的动作![test](./img/bq/01.png)  
-- "taizuijiao_zuo"是判断用户 抬左边嘴角的动作![test](./img/bq/02.png)  
-- "taizuijiao_you"是判断用户 抬右边嘴角的动作![test](./img/bq/03.png)  
-- "nu"是判断用户 怒的动作![test](./img/bq/04.png)  
-- "zuixing_o" 为嘴型O形![test](./img/bq/06.png)  
-- "zuixing_a" 为嘴型A形![test](./img/bq/05.png)   
-- "zuixing_du" 为嘴型嘟嘴形状![test](./img/bq/07.png)  
-- "zuixing_min" 为嘴型抿嘴形状![test](./img/bq/08.png)  
-- "zuixing_guqi" 为嘴型鼓气形状![test](./img/bq/09.png)   
-- "biyan_zuo" 为闭左眼![test](./img/bq/10.png)  
-- "biyan_you" 为闭右眼![test](./img/bq/11.png)   
-- "zhuantou_zuo" 为头往左边转![test](./img/bq/12.png)   
-- "zhuantou_you" 为头往右边转![test](./img/bq/13.png)  
+- "taimei" 是判断用户 抬眉毛的动作![test](img/bq/01.png)  
+- "taizuijiao_zuo"是判断用户 抬左边嘴角的动作![test](img/bq/02.png)  
+- "taizuijiao_you"是判断用户 抬右边嘴角的动作![test](img/bq/03.png)  
+- "nu"是判断用户 怒的动作![test](img/bq/04.png)  
+- "zuixing_o" 为嘴型O形![test](img/bq/06.png)  
+- "zuixing_a" 为嘴型A形![test](img/bq/05.png)   
+- "zuixing_du" 为嘴型嘟嘴形状![test](img/bq/07.png)  
+- "zuixing_min" 为嘴型抿嘴形状![test](img/bq/08.png)  
+- "zuixing_guqi" 为嘴型鼓气形状![test](img/bq/09.png)   
+- "biyan_zuo" 为闭左眼![test](img/bq/10.png)  
+- "biyan_you" 为闭右眼![test](img/bq/11.png)   
+- "zhuantou_zuo" 为头往左边转![test](img/bq/12.png)   
+- "zhuantou_you" 为头往右边转![test](img/bq/13.png)  
 - “weixiao” 为微笑表情  
 - “haqian” 为打哈欠表情  
 
@@ -235,7 +235,7 @@ fuItemSetParamd(item_id, "rotationTexAngle",-90);     //顺时针旋转90度
 
 当道具元素选择触发开始类型为："手势动作"，然后在手势列表中选择一个手势，能够根据特定手势触发元素播放。  
 
-![test](./img/hand.png)  
+![test](img/hand.png)  
 
 内置10种手势：  
 
@@ -254,7 +254,7 @@ fuItemSetParamd(item_id, "rotationTexAngle",-90);     //顺时针旋转90度
 
 在元素类型选择“跟随手势”即可在手势元素触发时跟随  
 
-![test](./img/follow_hand.png)  
+![test](img/follow_hand.png)  
 
 每个bundle只能支持一种手势，多手势可以添加不同的bundle，但是会导致识别效率下降的问题。  
 
@@ -264,9 +264,9 @@ fuItemSetParamd(item_id, "rotationTexAngle",-90);     //顺时针旋转90度
 
 ###### 2.6.1 添加组动画
 创建组：  
- ![test](./img/group.png)  
+ ![test](img/group.png)  
  创建子元素：  
- ![test](./img/group-add.png)  
+ ![test](img/group-add.png)  
 ###### 2.6.2 元素组构成
 元素组由组的根节点以及组内元素构成：
 
@@ -277,7 +277,13 @@ fuItemSetParamd(item_id, "rotationTexAngle",-90);     //顺时针旋转90度
 ###### 2.6.3 调整组元素顺序
 组动画的播放顺序由在元素列表先后顺序决定，点击右键可以调整元素前后关系  
 
- ![test](./img/group-up.png)  
+ ![test](img/group-up.png)  
+
+
+
+#### 2.7 截图  
+
+点击菜单栏的![test](img/qt/image.png) 按钮截屏，图片文件将会保存在res目录下。  
 
 - - -
 
@@ -299,7 +305,7 @@ AR Mesh 纹理制作方法：
 换脸使用方法：  
 
 
-- 选择图片：点击“换脸”行的图片选择按钮![test](./img/qt32/image.png)，图片文件名不能是中文，选择一张人脸图片，操作类似下图所示：    ![test](./img/changeface.png)
+- 选择图片：点击“换脸”行的图片选择按钮![test](img/qt/image.png)，图片文件名不能是中文，选择一张人脸图片，操作类似下图所示：    ![test](img/changeface.png)
 
 
 - 高级融合：勾选高级融合选项开启高级融合人脸功能。（仅换脸能够使用该功能）  
@@ -330,26 +336,26 @@ Faceunity Nama SDK拥有实时跟踪三维人脸的能力，能够实时推算�
   1. 一定要导出材质和组  
       材质在导出之后肯定是要重新调整过的，但是编辑器仍然需要知道 Maya 里哪些面 绑的材质是一样的，哪些面是不一样的。要不然到编辑器里所有的面就会合到一起， 不能分开调了。组也是一样的道理。  
       __注__：一个组内只能使用一个材质。      
-        ![maya export](./img/mayae.png)  
+        ![maya export](img/mayae.png)  
 
   2. 一定要对着参考人头调好模型大小，对于道具更要调整好位置  
       导入参考人头到maya中  
-      ![maya import](./img/mayai.png)  
+      ![maya import](img/mayai.png)  
       编辑器有一定的位置和大小调整功能，但如果道具小了/大了几十倍上百倍肯定就不行了。  
-      ![maya model](./img/mayam.png)  
+      ![maya model](img/mayam.png)  
 
 - 创建3D项目  
   1. 点击创建项目，项目类型选择3D，输入项目名称，点击"OK"创建项目。  
-     ![create 3d project](./img/c3d.png)  
+     ![create 3d project](img/c3d.png)  
 
   2. 创建新的3D元素：在项目"__元素列表__"中点击"__3D__"类别下"__+__"，创建新的3D元素。  
   3. 加载obj：在"__属性列表__"中，网格项中点击右边按钮，在弹出对话框中选择需要加载的obj。  
-     ![load obj](./img/n3d.png)      ![load obj](./img/objload.png)  
+     ![load obj](img/n3d.png)      ![load obj](img/objload.png)  
 
    __注__：在导出的obj的材质mtl，最好也导出贴图信息，并确保路径正确。  
 
    加载fbx：在"__属性列表__"中，网格项中点击右边按钮，在弹出对话框中选择需要加载的fbx文件。
-   ![load fbx](./img/nfb.png)
+   ![load fbx](img/nfb.png)
 
 #### 4.2 材质调整
 FUEditor默认采用"__GGX__"光照模型。  
@@ -455,12 +461,12 @@ fuItemSetParamd(1,'isFlipLight',1);	//翻转灯光
  FUEditor支持FBX格式骨骼动画，基本流程：首先添加‘3D’网格模型，网格模型载入支持.obj .fbx格式，再添加FBX骨骼动画并绑定到对应的‘3D’网格模型上，设置好骨骼动画元素的触发动画逻辑即可。
 - 添加FBX动画  
   在项目元素列表中点击"__Anim__"下的"__+__"添加一个骨骼动画元素，在右侧"__属性列表__"中，骨骼项中点击右边按钮，在弹出对话框中选择需要加载的fbx文件加载fbx动画。  
-   ![load anim](./img/nfba.png)  
+   ![load anim](img/nfba.png)  
 
 - 绑定骨骼动画  
 
 当加载了fbx动画以后，需要将动画绑定到对应的网格模型（3D项），操作如图：  
-   ![bind fbx](./img/fbxbind.png)  
+   ![bind fbx](img/fbxbind.png)  
 
 __注1__：如需绑定动画则必须对应到正确的网格模型，拓扑一致，否则会导致无法打包。例如：3D元素使用了obj格式导入，那么绑定的动画需要有相同的拓扑结构（即使用相同的obj在maya/max中绑定骨骼系统）。  
 __注2__：骨骼不能有缩放变换，并且影响每个顶点的骨骼数不能超过8根，否则会导致动画错乱。  
@@ -470,7 +476,7 @@ __注3__：骨骼动画元素的‘触发动画逻辑’和3D道具相同。
 Avatar指的是3D模型，且脸部有跟Nama SDK一致的[Blendshape/Morpher](#8- )，能够被Nama SDK驱动，进行脸部动画跟踪的模型。
 - 与静态3D道具相异之处：需要一组blendshape obj。  
 - obj的命名规范，每个表情对应一个obj（命名为__bsx.obj__，x为序列号），可以只做其中的一部分，如下图所示：  
-   ![blendshape](./img/bsobj.png)  
+   ![blendshape](img/bsobj.png)  
 
  其中 bs0.obj 是自然表情。拓扑结构需要保证这些obj的顶点顺序、面顺序、人头位置都是一样的。"_FUEditor/data/doc/blendshape_\__guide_" 目录下脚本 exportObj.mel 可以帮助把maya的blendshape导出成obj文件。如果使用这个script，需要保证每个blendshape表情的名字规范为\*bs0.obj、\*bs1.obj、\*bs2.obj、\*bs3.obj、…、\*bs46.obj。  
 - 导入avatar模型的步骤：启动FUEditor.exe，创建3D项目，点击加载模型网格，选择 __bs0.obj__ 导入，剩下的obj工具会自动加载进去。__注意__：必须选择 __bs0.obj__。   
@@ -485,7 +491,7 @@ Picasso让照片活起来的技术。用户选择一张照片，经过自动的�
 
 #### 7.2 效果  
 以下是最终的效果示例，从左到右分别是原图，动作1，动作2。  
-![p03](./img/p030.png)
+![p03](img/p030.png)
 
 #### 7.3 使用方法
 - 加载picasso.bundle
@@ -493,7 +499,7 @@ Picasso让照片活起来的技术。用户选择一张照片，经过自动的�
 
 #### 7.4 人像驱动道具制作
 在创建项目时，项目类型选择“Picasso”，输入项目名，创建工程。再选择图片，等待生成内容。需要联网，大概需要等待几秒，内容生成完后，进行打包预览即可。目前只支持图片内容为单个人脸，不支持多人脸生成。
-![p03](./img/picasso1.png)  
+![p03](img/picasso1.png)  
 
 ## 8. 高级视频滤镜  
 高级视频滤镜功能，需要在启动FUEditor时，选择相关Filter类型项目，或者创建Filter类型的项目。  
@@ -506,10 +512,10 @@ __注__: 进入2D/3D道具编辑功能后无法切换到Filter项目，需要重
 
 __测试打包、正式打包__：
 - 签名的证书分为两种，测试证书，以及正式证书，测试证书签出来的bundle，有一定时效性，运行一段时间后会消失。而正式证书签名的bundle可以一直运行。  
-- FUEditor内置了测试证书，通过 ![test](./img/debug.png) 打包出来的bundle即是测试bundle。测试bundle：点击"打包bundle"按钮，等待打包，道具打包后在"FUEditor/Projects/当前道具/__build__/"目录中。  
+- FUEditor内置了测试证书，通过 ![test](img/debug.png) 打包出来的bundle即是测试bundle。测试bundle：点击"打包bundle"按钮，等待打包，道具打包后在"FUEditor/Projects/当前道具/__build__/"目录中。  
 - 测试打包又可以分为两个过程，一是"__测试-生成__",生成过程即是将图片等资源进行转换；一是"__测试-签名__"，将转换好的资源进行加密打包。当需要修改一些临时脚本时，可以只"__测试-生成__"一次，多次修改生成的内容并多次"__测试-签名__"，这样可以节省生成时的耗时。  
-- 通过 ![test](./img/release.png) 打包出来的bundle即是正式发布bundle，道具打包后在“FUEditor/Projects/当前道具/__release__/”目录中。  
-   __注：__ 1.正式发布前需要确保测试打包正常。2.正式发布需要__网络连接__，需要正式证书。
+- 通过 ![test](img/release.png) 打包出来的bundle即是正式发布bundle，道具打包后在“FUEditor/Projects/当前道具/__release__/”目录中。  
+   __注：__ 1.正式发布前需要确保测试打包正常。2.正式发布需要__网络连接__，需要正式证书。3.签名优化可以修改菜单栏里的![1545644338421](./img/fastSign.png)为优化模式(此设置要求Nama版本最低5.9.0) 后打开优化版签名模式。
 - 点击![test](./img/dir.png) 直接打开当前项目目录。
 - 支持显示道具的签名类型![checkitem](img/checkitem.png)，黑色为正在开发的bundle。红色为测试打包，蓝色为正式打包。如需查看可点击![loadBTN](./img/loadBTN.png)按钮添加到这个列表后来查看bundle道具签名类型。
 
@@ -619,9 +625,11 @@ Emission_intensity:自发光强度
 
 animoji已支持多人脸，仅建议在AR模式下运行，打包制作流程和bundle调用和以前一样。
 
-进入AR模式的参数为（请注意双引号）：
+在GlobalParams里调整follow至1.0，即可开启AR模式。
 
-{"thing":"<global>","param":"follow"}  
+代码进入AR模式的参数为（请注意双引号）：
+
+{"thing":"\<global\>","param":"follow"}  
 
 注意：follow模式会关闭背景  
 
@@ -643,11 +651,21 @@ animoji已支持多人脸，仅建议在AR模式下运行，打包制作流程�
 
 FUEditor支持打包P2A道具  
 
-新建P2A类型项目；有Male，Female，MaleArt，FemaleArt 4种模板可供选择，道具类型包括身体，头发，衣服眼镜，帽子，动画 6种  
+新建P2A类型项目；有Male，Female，MaleArt，FemaleArt 4种模板可供选择，道具类型包括身体，头发，衣服眼镜，帽子，脸部妆容（胡子，眉毛等 以下声明为妆容），动画，相机， 8种  
 
 ![p2astart](./img/p2astart.png)
 
 选择道具类型，创建P2A道具项目，进如操作界面选择**对应**的模型FBX文件和贴图文件（选择和工程类型不一致的FBX会导致制作错误），不同类型的道具拥有不同的参数（全局参数也是不同的），一般选择各自的贴图并按照默认参数设置即可，打包和测试同普通道具，如果测试并没有加载对应的道具则需要生成发布版bundle，并手动添加bundle即可。  
+
+A2P目录下的**bg.bundle**是为纯色背景的bundle，p2a需要添加背景加载这个bundle即可。  
+
+**注意：**帽子制作需要在Global Params中设置hat_type，-1帽子适配没有头发，0适配头发blendshape0，1适配头发blendshape1...以此类推。  
+
+妆容的参数在Global Params中选择，无需添加3d或者anim项，设置完Global Params参数打包即可。  
+
+妆容部分包括脸部所有部分（眉毛，眼睫毛，胡子，腮红，眼影，纹身等），最多同时支持6层，所有部分制作方式相同，以胡子为例：为节省内存并提高胡子精度，胡子贴图只需要保留嘴唇附近有胡子部分，并保证贴图大小为2的幂次即可(128,256,512,1024,2048)。 
+
+可以给动画加入blendshape，但是只能加一组，在打包anim类型的bundle时需要在动画项的Head Node栏指定需要导出blendshape的node名字，选择3d项目里面对应的子项名即可，例如：nvKThead_mesh  
 
 ##### 创建工程说明：
 
@@ -672,9 +690,12 @@ FUEditor支持打包P2A道具
 
 - hat：帽子
 
+- facebeauty：妆容
+
 - anim：动画  
 
-  ​
+- camera：相机
+
 
 **常见问题**  
 
@@ -714,6 +735,154 @@ fuItemSetParamd(1,'translation_y',-0.5);
 ##### 5.制作鞋子示例  
 
 ![鞋子制作示例](.\img\p2a\foot.gif)
+
+##### 6.制作相机动画示例
+
+注意：相机动画的时间和动画同步，没加载动画则相机不动。
+
+![](img/cam_anim.gif)
+
+**参数说明：**
+
+ 头发：    
+
+ Tex_albedo	颜色贴图	
+
+ Tex_normal	法线粗糙度贴图	
+
+ Tex_spec	高光贴图	  
+
+ TransFactor	半透明比值	默认1.0保持贴图效果，值越高，头发越实  
+
+ S_shift	主高光偏移量	正数往发根偏移，负数往发梢偏移  
+
+ S_shift2	次高光偏移量	  
+
+ S_shift2Gloss	次高光聚合程度	值越大，高光越聚拢  
+
+ Diffuse_Base	头发固有色暗部补偿	默认0.2，避免暗部出现死黑  
+
+ AlphaThreshould	Alpha Test系数	默认0.6  
+
+ 身体：  
+
+ tex_base_color	基础颜色图	
+
+ tex_metallic_gloss_ao	合成图	R通道金属度 G通道粗糙度 B通道AO  
+
+ tex_normal	法线贴图	  
+
+ tex_curvature	曲率图	Substance/toolbag/knald均自带烘焙，用于表现皮肤的SSS效果  
+
+ Diffuse_Base	固有色暗部补偿	可以增强暗部光照通透感  
+
+ Metallic_factor	金属度强度	  
+
+ Gloss_factor	光滑度强度	  
+
+ Gloss_horizontal_factor	水平视角光滑度提升	  
+
+ Fresnel_intensity	菲尼尔强度	  
+
+ Occlusion_intensity	AO强度	  
+
+ curvature_scale	曲率强度	曲率越强，SSS效果越重    
+
+ 衣服：  
+
+ tex_base_color	基础颜色图	  
+
+ tex_metallic_gloss_ao	合成图	R通道金属度 G通道粗糙度 B通道AO  
+
+ tex_normal	法线贴图	  
+
+ Diffuse_Base	固有色暗部补偿	可以增强暗部光照通透感  
+
+ Metallic_factor	金属度强度	  
+
+ Gloss_factor	光滑度强度	  
+
+ Gloss_horizontal_factor	水平视角光滑度提升	  
+
+ Fresnel_intensity	菲尼尔强度	  
+
+ Occlusion_intensity	AO强度	  
+
+ 眼镜：  
+
+ is_glasses	是否是镜片	镜片设置为1.0，才能正确呈现玻璃效果  
+
+ tex_base_color	基础颜色	  
+
+ tex_normal	法线贴图	  
+
+ tex_refl	反射贴图	  
+
+ refl_rotate	反射贴图旋转角度	  
+
+ refl_f0	镜片的反射系数	  
+
+ refl_intensity	镜片反射高光强度	  
+
+ refl_uv_offset_x	反射uv横向偏移系数	  
+
+ refl_uv_offset_y	反射uv纵向偏移系数	  
+
+ refl_uv_offset_scale	反射uv缩放系数	  
+
+ glass_opacity	镜片的不透光率	  
+
+ Diffuse_Base	固有色暗部补偿	  
+
+ Metallic_factor	金属度强度	  
+
+ Gloss_factor	光滑度强度	  
+
+ Gloss_horizontal_factor	水平视角光滑度提升	  
+
+ Fresnel_intensity	菲尼尔强度	   
+
+ Occlusion_intensity	AO强度	  
+
+ 帽子：  
+
+ tex_base_color	基础颜色图	  
+
+ tex_metallic_gloss_ao	合成图	R通道金属度 G通道粗糙度 B通道AO  
+
+ tex_normal	法线贴图	  
+
+ Diffuse_Base	固有色暗部补偿	可以增强暗部光照通透感  
+
+ Metallic_factor	金属度强度	  
+
+ Gloss_factor	光滑度强度	  
+
+ Gloss_horizontal_factor	水平视角光滑度提升	  
+
+ Fresnel_intensity	菲尼尔强度	  
+
+ Occlusion_intensity	AO强度	  
+
+ 妆容：
+
+ tex_color	颜色贴图  
+
+ blend_weight  混合强度  
+
+ is_blend_alpha 是否替换alpha  对于睫毛类需要alpha的，填1.0  
+
+ is_eyebrow 是否是眉毛    1 表示是眉毛，0不是
+
+ offset_x	贴图x起始位置  
+
+ offset_y	贴图y起始位置  
+
+ size_x	贴图大小x  
+
+ size_y	贴图大小y  
+
+ total_size	原贴图大小    
 
 
 

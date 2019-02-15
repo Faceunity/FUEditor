@@ -34,6 +34,12 @@
             anim_state.last_anim_fid = 0;
             this.last_frame = 0;
         }
+		
+		this.reset_anim_frame = function (anim_state, fid) {
+            anim_state.last_time = new Date().getTime();
+			anim_state.anim_time = fid / 0.025;
+        }
+		
         this.start = function (anim_state, frame_id) {
             if (anim_state.firstTime) {
                 anim_state.firstTime = false;
@@ -101,6 +107,21 @@
         anim.meshName = meshName;
         anims[animName] = anim;
     }
+	
+	var getActiveAnimFrameCount = function() {
+		for (var prop in bindings) {
+			return anims[prop].frame_num;
+		}
+		return 0;
+	}
+	
+	var setFrame = function(fid) {
+		for (var prop in bindings) {
+			var anim = anims[prop];
+			anim.reset_anim_frame(anim.anim_state,fid);
+			break;
+		}
+	}
 
     return {
         Anims: anims,
@@ -108,6 +129,8 @@
 
         },
         Render: function (params) { },
-        name: "animation"
+        name: "animation",
+		GetAnimFrameCount: getActiveAnimFrameCount,
+		SetFrame: setFrame
     };
 })()

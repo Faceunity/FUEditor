@@ -18,6 +18,10 @@ void main(){
 
 	Nf=vec4(Nf.x,Nf.y,-Nf.z,0);
 
+	if(isFlipH>0.5){
+		Ps.x = -Ps.x;
+	}
+	
 	Ps = scale_e * Ps;
 
 	//model transform

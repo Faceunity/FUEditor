@@ -18,6 +18,10 @@ vec4 quaterionSlerp(vec4 p, vec4 q, float t){
 void main(){
 	
 	vec3 Ps=P*scales;
+	
+	if(isFlipH>0.5){
+		Ps.x = -Ps.x;
+	}
 
 	Ps = scale_e * Ps;
 

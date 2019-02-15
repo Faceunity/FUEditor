@@ -28,6 +28,8 @@
 	var UseState = false;
     var nowFrame = 0;
 	
+	var curHandx, curHandy;
+	
 	return {
 		m_hands:[],
 		m_particles:[],
@@ -184,6 +186,9 @@
 							hands[j].detectx=x;
 							hands[j].detecty=y;
 							hands[j].detectr=r;
+							
+							curHandx = x;
+							curHandy = y;
 						}
 						break;
 					}
@@ -301,6 +306,8 @@
 					if (g_params.multiHands==0) break;
 				}
 				
+				item.UpdateHand(0, curHandx, curHandy);
+				
 			} catch(ex) {
 				console.log(ex.stack);
 			}
@@ -327,10 +334,14 @@
 						}
 					}
 				}
+					
 				
 				this.m_hands = hands.filter(function(a){return a.energy>0;});
 				g_params.detected = hands.length;
 				g_params.boxes = hands;
+				
+				if(!UseState)
+					item.EndHandTriggeredItem();	
 			} catch(ex) {
 				console.log(ex.stack);
 			}

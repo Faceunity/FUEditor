@@ -474,8 +474,8 @@ vec4 shader_main(){
 		vec3 normal_map_value = texture2D(tex_normal,st_frag).rgb;
 		#endif
 	
-		vec3 nmmp=normalize(normal_map_value-vec3(0.5));
-		N+=(normalize(-nmmp.x*normalize(dPds_frag)-nmmp.y*normalize(dPdt_frag)+nmmp.z*N)-N)*normal_strength;
+		vec3 nmmp=normalize((normal_map_value-vec3(0.5))*2.0);
+		N+=(normalize(-nmmp.x*normalize(-dPds_frag)-nmmp.y*normalize(dPdt_frag)+nmmp.z*N)-N)*normal_strength;
 		N=normalize(N);	
 	}
 	

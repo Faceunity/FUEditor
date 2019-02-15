@@ -63,9 +63,20 @@
         }
         return false;
     }
+	
+	var action_normal = {biyan_zuo:1,biyan_you:0};
+	var action_mirror = {biyan_zuo:0,biyan_you:1};
 
 	var isActionTriggered=function (actionname, params){
 		if(params.expression==undefined || params.rotation==undefined)return false;
+		
+		var actionTable = action_normal;
+		if(g_params.flip_action) actionTable = action_mirror;
+		if(actionname == "biyan_zuo")
+			return params.expression[actionTable.biyan_zuo] >= 0.6;
+		else if(actionname == "biyan_you")
+			return params.expression[actionTable.biyan_you] >= 0.6;
+		
 		switch (actionname){
 			//#action
 			default:
@@ -93,7 +104,12 @@
 		resetFlag: 0,
 		highNama: 1,
 		frameLast: 300,
-		frameLastCount: 0
+		frameLastCount: 0,
+		rotMode:1,
+		is3DFlipH:0,
+		flip_action:0,
+		hand_offset_x:0,
+		hand_offset_y:0
 	};
 	/////////////////////////res
 	var boards = JSON.parse(FaceUnity.ReadFromCurrentItem("2d_desc.json"));
@@ -475,6 +491,13 @@
 		*/
 		if(this.nodetype!=1 && this.name.search("_bgseg")==-1){//non group root node
 			this["focal_length"] = (Math.abs(params.focal_length)<0.001)?this.focal_length:params.focal_length;
+			if(this.name.search("_fcp")!=-1) {
+				this["enable_depth_test"] = 1;
+				this["shader"] = "vec4 shader_main(vec4 C){if(C.a<0.01) discard; else return C;}";
+			} else if(this.name.search("_fcb")==-1) {
+				this["shader"] = "vec4 shader_main(vec4 C){if(C.a<0.01) discard; else return C;}";
+			}
+			
 			if(this.looptype=="infinite" || (this.frame_id < this.texture_frames.length * this.loopcnt)){
 				var idx  = (this.frame_id)%this.texture_frames.length;
 				FaceUnity.RenderBillboard(bigtex[this.texture_frames[idx].bigtexidx],this,this.texture_frames[idx],this.matp,this.rotationType?mat_cam:undefined,this.isFullScreenObj,params);
@@ -705,6 +728,29 @@
 				}
 				if (name=="frameLast") {
 					g_params.frameLast = value;
+				}
+				if(name=="rotMode") {
+					var toRot = Math.floor(value)+1;
+					if(toRot==1) toRot=4;
+					else if(toRot==2) toRot=1;
+					else if(toRot==3) toRot=2;
+					else if(toRot==4) toRot=3;
+					
+					g_params.rotMode = toRot;
+				}
+				if(name=="is3DFlipH") {
+					g_params["is3DFlipH"] = value;
+					if(value) {
+						if(g_params["rotMode"]==1) g_params["rotMode"]=3;
+					} else {
+						if(g_params["rotMode"]==3) g_params["rotMode"]=1;
+					}
+				}
+				if(name=="flip_action") {
+					g_params[name] = value;
+				}
+				if(name=="hand_offset_x" || name=="hand_offset_y") {
+					g_params[name] = value;
 				}
 				return 1;
 			}else{
@@ -949,7 +995,7 @@
 						meshlst[i].triggerStartEvent(params,now,false);
 						meshlst[i].updateEvent(params,now);
 					}
-					if(params.isFollow==undefined||!params.isFollow)
+					if(params.isFollow==undefined||!params.isFollow||params.followWithBG)
 						for(var i = 0; i < nonbgseg_bg_mesh_ref_lst.length; i++)nonbgseg_bg_mesh_ref_lst[i].renderEvent(params,now,mat_cam,false);
 					
 				}else if(pass==2){
@@ -983,12 +1029,43 @@
 						var meshToRender = nonbgseg_nonbg_hnd_mesh_ref_lst[i];
 						var w = params.w;
 						var h = params.h;
-						var x0=w/2-meshToRender.handx;
-						var y0=h/2-meshToRender.handy;
+						var x0=w/2-meshToRender.handx+g_params.hand_offset_x;
+						var y0=h/2-meshToRender.handy+g_params.hand_offset_y;
 						var x = x0;
 						var y = y0;
 						var z = params.focal_length;
-						var mat_hnd = FaceUnity.CreateViewMatrix([0,0,0,1],[x,y,z]);
+						
+						var hand_pos = [y,-x];
+						if(!g_params.isAndroid) {
+							hand_pos = [x,y];
+							if(g_params.rotMode == 2) {
+								var tmp = hand_pos[0];
+								hand_pos[0] = hand_pos[1];
+								hand_pos[1] = -tmp;
+							} else if(g_params.rotMode == 3) {
+								hand_pos[0] = -hand_pos[0];
+								hand_pos[1] = -hand_pos[1];
+							} else if(g_params.rotMode == 4) {
+								var tmp = hand_pos[0];
+								hand_pos[0] = hand_pos[1];
+								hand_pos[1] = tmp;
+							}
+						} else {
+							if(g_params.rotMode == 2) {
+								var tmp = hand_pos[0];
+								hand_pos[0] = hand_pos[1];
+								hand_pos[1] = -tmp;
+							} else if(g_params.rotMode == 3) {
+								hand_pos[0] = -hand_pos[0];
+								hand_pos[1] = -hand_pos[1];
+							} else if(g_params.rotMode == 4) {
+								var tmp = hand_pos[0];
+								hand_pos[0] = hand_pos[1];
+								hand_pos[1] = tmp;
+							}
+						}
+						
+						var mat_hnd = FaceUnity.CreateViewMatrix([0,0,0,1],[hand_pos[0],hand_pos[1],z]);
 						meshToRender.renderEvent(params,now,mat_hnd,true);
 					}
 					
@@ -1021,7 +1098,7 @@
 						meshlst[i].updateEvent(params,now);
 					}
 					//if(!params.face_count)
-					if(params.isFollow==undefined||!params.isFollow)
+					if(params.isFollow==undefined||!params.isFollow||params.followWithBG)
 						for(var i = 0; i < alwaysrender_fcbg_mesh_ref_lst.length; i++)alwaysrender_fcbg_mesh_ref_lst[i].renderEvent(params,now,undefined,true);	
 				}else if(pass == 2){
 					//if(!params.face_count)
@@ -1036,7 +1113,7 @@
 			}
 		},
 		
-		TriggerHand:function(params, handi, handx, handy) {
+		TriggerHand:function(params, handi, handx, handy) {			
 			for(var i = 0; i < meshlst.length; i++){
 				meshlst[i].triggerHand(params, now, handi, handx, handy);
 			}
@@ -1050,7 +1127,7 @@
 		
 		UpdateHand:function(handi, handx, handy) {
 			for(var i = 0; i < meshlst.length; i++) {
-				if(handi == meshlst[i].hand && meshlst[i].handTriggerd) {
+				if(meshlst[i].handTriggerd) {
 					meshlst[i].handx = handx;
 					meshlst[i].handy = handy;
 				}
@@ -1063,6 +1140,13 @@
 					return true;
 			}
 			return false;
+		},
+		
+		EndHandTriggeredItem:function() {
+			for(var i = 0; i < meshlst.length; i++){
+				if(meshlst[i].handTriggerd)
+					meshlst[i].stopThis(Date.now());
+			}
 		},
 		
 		name:"dummy",

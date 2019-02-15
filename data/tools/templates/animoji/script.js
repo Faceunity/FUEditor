@@ -5,6 +5,7 @@
 	var item3ds;
 	var handTrigger;
 	var isFollow = false;
+	var followWithBG = false;
 	var isTongue = false;
 	
 	var particle;
@@ -137,6 +138,7 @@
 				}
 
 				params.isFollow = isFollow;
+				params.followWithBG = followWithBG;
 				
 				if(g_params.isPause == 0)
 					current_frame++;
@@ -224,7 +226,9 @@
 				params.isPause = g_params.isPause; 
 
 				if(item3ds && item3ds.FollowState) isFollow = item3ds.FollowState();
+				if(item3ds && item3ds.FollowWithBGState) followWithBG = item3ds.FollowWithBGState();
 				params.isFollow = isFollow;
+				params.followWithBG = followWithBG;
 				if(params.ShadowPass){
                     if(item3ds.GetHasShadow()){
                     	params.NeedUpdateBoneMap=true;

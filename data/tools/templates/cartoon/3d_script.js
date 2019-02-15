@@ -425,7 +425,7 @@
 	*/
 	var g_params={
 		is3DFlipH: 0.0,
-		weightOffset:[0.0,0.0,0.0],
+		weightOffset:[0.0,0.0,0.0]
 	};
 	var faces = [];
 	var tex_map={};
@@ -978,7 +978,10 @@
 	        } else if (pass == 2) {
 	        	gl.enable(gl.CULL_FACE);
 	        	gl.frontFace(gl.CCW);
-	            gl.cullFace(gl.FRONT);
+				if(g_params['is3DFlipH'])
+					gl.cullFace(gl.BACK);
+				else
+					gl.cullFace(gl.FRONT);
 	            gl.enable(gl.DEPTH_TEST);
 	            gl.depthFunc(gl.LEQUAL);
 	            gl.depthMask(true);
@@ -988,7 +991,10 @@
 	            //for opaque object
 	        	gl.enable(gl.CULL_FACE);
 	        	gl.frontFace(gl.CCW);
-	            gl.cullFace(gl.BACK);
+				if(g_params['is3DFlipH'])
+					gl.cullFace(gl.FRONT);
+				else
+					gl.cullFace(gl.BACK);
 	            gl.enable(gl.DEPTH_TEST);
 	            gl.depthFunc(gl.LEQUAL);
 	            gl.depthMask(true);
@@ -998,7 +1004,10 @@
 	            //for transport object, alpha cut pass one
 	        	gl.enable(gl.CULL_FACE);
 	        	gl.frontFace(gl.CCW);
-	            gl.cullFace(gl.BACK);
+				if(g_params['is3DFlipH'])
+					gl.cullFace(gl.FRONT);
+				else
+					gl.cullFace(gl.BACK);
 	            gl.enable(gl.DEPTH_TEST);
 	            gl.depthMask(true);
 	            shaderadd = shaderadd+"vec4 shader_main_OIT(){vec4 c=shader_main();if (c.a>=" + alphaThreshold.toFixed(3) + ") return vec4(c.rgb,1.0);else discard;}";
@@ -1007,7 +1016,10 @@
 	            //for transport object, alpha cut pass two
 	        	gl.enable(gl.CULL_FACE);
 	        	gl.frontFace(gl.CCW);
-	            gl.cullFace(gl.BACK);
+				if(g_params['is3DFlipH'])
+					gl.cullFace(gl.FRONT);
+				else
+					gl.cullFace(gl.BACK);
 	            gl.enable(gl.DEPTH_TEST);
 	            gl.depthMask(false);
 	            gl.enable(gl.BLEND);
@@ -1051,6 +1063,7 @@
 	                var ret = 1;
 	                if (FaceUnity.TestVTF != undefined)
 	                    ret = FaceUnity.TestVTF();
+					ret = 0;
 	                this.animation.support_vtf = ret;
 	                this.animation.use_vtf = ret;
 	            }
