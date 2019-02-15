@@ -1,0 +1,13 @@
+[Version]
+Signature="$Windows NT$"
+
+[DefaultInstall]
+AddReg=NamaBundleCRT
+ 
+[NamaBundleCRT]
+hkcr,"Directory\shell\PackNamaBundleCRT",,,"Pack nama bundle CRT"
+hkcr,"Directory\shell\PackNamaBundleCRT\command",,,"""%1%\pack.bat"" ""%%1"""
+hkcr,".zip\shell\PackNamaBundleCRT",,,"Pack nama bundle CRT"
+hkcr,".zip\shell\PackNamaBundleCRT\command",,,"""%1%\pack.bat"" ""%%1"""
+hkcr,".bundle\shell\PackNamaBundleCRT",,,"UnPack nama bundle CRT"
+hkcr,".bundle\shell\PackNamaBundleCRT\command",,,"""%1%\pack.bat"" ""%%1"""
