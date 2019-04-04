@@ -135,7 +135,7 @@
 	
 	var initBgSeg = function() {
 		if(g_params.highNama) { 
-			config = FaceUnity.NNLoadConfig("config.json");
+			config = FaceUnity.NNLoadConfig("config_seg.json");
 			img_h = config["image_height"];
 			img_w = config["image_width"];
 			skip_frames = config["skip_frames"];

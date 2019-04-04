@@ -18,9 +18,6 @@ vec4 quaterionSlerp(vec4 p, vec4 q, float t){
 void main(){
 	
 	vec3 Ps=P*scales;
-	if(isFlipH>0.5){
-		Ps.x = -Ps.x-7.364;
-	}
 
 	Ps = scale_e * Ps;
 
@@ -39,9 +36,17 @@ void main(){
 		Ps = QuatTransformVector(head_quat,Ps);
 		Ps += weightOffset;
 
+		if(isFlipH>0.5){
+			Ps.x = -Ps.x-7.364/scale[0];
+		}
+
 		vec4 Pf = vec4(Ps,1.0);
 		gl_Position=mat_proj*(mat_cam*Pf);
 	}else {
+		if(isFlipH>0.5){
+			Ps.x = -Ps.x-7.364/scale[0];
+		}
+
 		vec4 Pf = vec4(Ps,1.0);
 		gl_Position=mat_proj*(mat_view*Pf);
 	}

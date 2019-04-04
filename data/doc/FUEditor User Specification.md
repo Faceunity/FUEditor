@@ -482,6 +482,7 @@ Avatar指的是3D模型，且脸部有跟Nama SDK一致的[Blendshape/Morpher](#
 - 导入avatar模型的步骤：启动FUEditor.exe，创建3D项目，点击加载模型网格，选择 __bs0.obj__ 导入，剩下的obj工具会自动加载进去。__注意__：必须选择 __bs0.obj__。   
 - 制作blendshape时需要注意：自然表情保持全部肌肉放松，不要有笑容等表情变化；其他表情需要在自然表情的基础上修改，只修改需要的部分即可，例如制作闭左眼的表情，右眼等其他部分要与自然表情完全相同。  
 - 自然表情和46种表情，参见"_FUEditor/data/doc/blendshape_\__guide_"目录下的 __Blendshape_Guide.pdf__。
+- 在6.0版本后，我们新增捏脸功能，虚拟角色支持捏脸，通过使用FUEditor 6.0.0模板facepup生成的bundle，在客户端调节对应参数，可以实现用户 对脸型，发型，唇色等部位自定义，生成和保存用户想要的虚拟形象的功能。且该虚拟形象可以通过引擎实时根据人 脸驱动，做出和人脸同步的表情，具体请参考[文档地址](./AvatarDoc.pdf)
 
 ## 7. 人像驱动
 
@@ -515,7 +516,7 @@ __测试打包、正式打包__：
 - FUEditor内置了测试证书，通过 ![test](img/debug.png) 打包出来的bundle即是测试bundle。测试bundle：点击"打包bundle"按钮，等待打包，道具打包后在"FUEditor/Projects/当前道具/__build__/"目录中。  
 - 测试打包又可以分为两个过程，一是"__测试-生成__",生成过程即是将图片等资源进行转换；一是"__测试-签名__"，将转换好的资源进行加密打包。当需要修改一些临时脚本时，可以只"__测试-生成__"一次，多次修改生成的内容并多次"__测试-签名__"，这样可以节省生成时的耗时。  
 - 通过 ![test](img/release.png) 打包出来的bundle即是正式发布bundle，道具打包后在“FUEditor/Projects/当前道具/__release__/”目录中。  
-   __注：__ 1.正式发布前需要确保测试打包正常。2.正式发布需要__网络连接__，需要正式证书。3.签名优化可以修改菜单栏里的![1545644338421](./img/fastSign.png)为优化模式(此设置要求Nama版本最低5.9.0) 后打开优化版签名模式。
+   __注：__ 1.正式发布前需要确保测试打包正常。2.正式发布需要__网络连接__，需要正式证书。3.签名优化可以修改菜单栏里的![1545644338421](./img/fastSign.png)为优化模式(注：此设置要求Nama版本最低5.9.0，使用低版本Nama的客户打开优化会导致此方式打包出的道具加载失败！) 后打开优化版签名模式。
 - 点击![test](./img/dir.png) 直接打开当前项目目录。
 - 支持显示道具的签名类型![checkitem](img/checkitem.png)，黑色为正在开发的bundle。红色为测试打包，蓝色为正式打包。如需查看可点击![loadBTN](./img/loadBTN.png)按钮添加到这个列表后来查看bundle道具签名类型。
 
@@ -651,7 +652,7 @@ animoji已支持多人脸，仅建议在AR模式下运行，打包制作流程�
 
 FUEditor支持打包P2A道具  
 
-新建P2A类型项目；有Male，Female，MaleArt，FemaleArt 4种模板可供选择，道具类型包括身体，头发，衣服眼镜，帽子，脸部妆容（胡子，眉毛等 以下声明为妆容），动画，相机， 8种  
+新建P2A类型项目；有Male，Female，MaleArt，FemaleArt 4种模板可供选择，道具类型包括身体，头发，衣服眼镜，帽子，脸部妆容（胡子，眉毛等 以下声明为妆容），配饰，动画，相机， 9种  
 
 ![p2astart](./img/p2astart.png)
 
@@ -667,34 +668,32 @@ A2P目录下的**bg.bundle**是为纯色背景的bundle，p2a需要添加背景�
 
 可以给动画加入blendshape，但是只能加一组，在打包anim类型的bundle时需要在动画项的Head Node栏指定需要导出blendshape的node名字，选择3d项目里面对应的子项名即可，例如：nvKThead_mesh  
 
+配饰可以独立于身体制作模型和动画。  
+
+具体道具参数参考：P2A Art美术制作规范参考  
+
 ##### 创建工程说明：
 
-```Project Tpye```：工程类型，一律选择【P2A】。
+```Project Tpye```：工程类型，一律选择【P2A】。  
 
-```Project Name```：工程名称，命名建议使用英文或者数字
+```Project Name```：工程名称，命名建议使用英文或者数字  
 
 ```Body_Type```
 
-- Male：男性身体
-- Female：女性身体
+- Male：男性身体  
+- Female：女性身体  
 
 ```Component```
 
-- body：身体
-
-- hair：头发
-
-- clothes：衣服、配饰
-
-- glass：眼镜
-
-- hat：帽子
-
-- facebeauty：妆容
-
+- body：身体  
+- hair：头发  
+- clothes：衣服、配饰  
+- glass：眼镜  
+- hat：帽子  
+- facebeauty：妆容  
 - anim：动画  
-
-- camera：相机
+- decoration：配饰  
+- camera：相机  
 
 
 **常见问题**  
@@ -897,10 +896,11 @@ fuItemSetParamd(1,'translation_y',-0.5);
 3. 在editor中不能够调节3D元素的大小、位置、旋转，显示效果由模型本身控制；  
 
 
-4. 3d参数调节以后不能立即预览，需要先打包；  
+4. 3d参数调节以后可以预览，更换贴图需要打包以后预览；  
 
 
 5. 贴图和模型名字不要用中文；    
+6. 动画类型工程需要加入动画元素、可以选择blendshape作用节点，配饰类型工程可以选择加入动画元素，其它类型的工程不需要；  
 
 
 ![p2aoperate](./img/p2aoperate.png)  

@@ -62,7 +62,7 @@
 	//@gparam fixed_nz {"type":"slider","min":0,"max":2000,"default_value":350}
 	
 	//@gparam use_fov {"type":"slider","min":0,"max":1,"default_value":0}
-	//@gparam camera_fov {"type":"slider","min":5,"max":90,"default_value":20}
+	//@gparam camera_fov {"type":"slider","min":0,"max":90,"default_value":20}
 	//控制旋转的幅度，rot_weight=1完全按照人头旋转，rot_weight=0不跟人头旋转
 	//@gparam rot_weight {"type":"slider","min":0,"max":1,"default_value":1}	
 	//@gparam expr_clamp {"type":"slider","min":0,"max":1,"default_value":0}	
@@ -136,6 +136,10 @@
 	"材质名"和blendshape.drawcalls[i].name是一一对应的。
 	*/
     /////////////////////////util
+	var PI = Math.PI;
+	var RAD2DEG = 180.0 / PI;
+	var DEG2RAD = PI / 180.0;
+	
     var CopySign = function (a, b) {
         var sign = 1;
         if (b < 0) sign = -1;
@@ -166,6 +170,9 @@
         rx *= rta; ry *= rta; rz *= rta;
         return [rx, ry, rz];
     }
+	
+	//ex 16,
+	var swaplst = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,  17,18,  20,22,  23,24,  25,26,  27,28,  29,30,  31,32,  44,45];
 
     // axis = 0 is x, axis = 1 is y, axis = 2 is z
     // opt = 0 means less, opt = 1 means greater
@@ -280,6 +287,7 @@
 	*/
 	var g_params={
 		is3DFlipH: 0.0,
+		isFlipExpr: 0.0,
 		weightOffset:[0.0,0.0,0.0],
 	};
 	var faces = [];
@@ -508,6 +516,9 @@
 		var mat = FaceUnity.MatrixTranslate(AddVec3(params.translation, trans));
 		mat = FaceUnity.MatrixMul(rot_ex, mat);
 		mat = FaceUnity.MatrixMul(FaceUnity.MatrixTranslate(InvVec3(trans)), mat);
+		
+		if(globals["use_fov"] > 0.5)
+			mat = FaceUnity.CreateViewMatrix([0,0,0,1],[params.translation[0],params.translation[1],AdjustZFov(params.translation[2])*2]);
 
 		var mat_cam = FaceUnity.MatrixTranslate(AddVec3(params.translation, trans));
 		mat_cam = FaceUnity.MatrixMul(rot_ex, mat_cam);
@@ -515,20 +526,32 @@
 
 		var mat_t = FaceUnity.CreateViewMatrix(
 			[-rotation[0], -rotation[1], -rotation[2], rotation[3]],
-			[0, 0, 0]);
+			[0,0,0]);
+		if(V(matex.obj_type,0.3) < 0.25 && g_params.isFlipExpr>0.5)
+			mat_t = FaceUnity.CreateViewMatrix(
+			[-rotation[0], rotation[1], rotation[2], rotation[3]],
+			[0,0,0]);
+			
 		var mat_cam_t = FaceUnity.CreateViewMatrix(
 			[0, 0, 0, 1],
 			[0, 0, 0]);
 
-		mat = FaceUnity.MatrixMul(mat_t, mat);
+		mat = FaceUnity.MatrixMul(mat_t,mat);
 		mat_cam = FaceUnity.MatrixMul(mat_cam_t, mat_cam);
 
 
 		if(V(matex.is_eye,this.is_eye)){
-			mat=FaceUnity.MatrixMul(
-				FaceUnity.CreateEyeMatrix(
+			var temp_mat = FaceUnity.CreateEyeMatrix(
 					[this.P_center[0]*SCALE,this.P_center[1]*SCALE,-this.P_center[2]*SCALE],
-					[params.pupil_pos[0]*V(globals.eyeRscale,1.5),params.pupil_pos[1]]),
+					[params.pupil_pos[0]*V(globals.eyeRscale,1.5),params.pupil_pos[1]]);
+			if (g_params['is3DFlipH']) {
+
+				temp_mat = FaceUnity.CreateEyeMatrix(
+					[(-this.P_center[0]-7.364)*SCALE,this.P_center[1]*SCALE,-this.P_center[2]*SCALE],
+					[params.pupil_pos[0]*V(globals.eyeRscale,1.5),params.pupil_pos[1]]);
+			}
+			mat=FaceUnity.MatrixMul(
+				temp_mat,
 				mat);
 		}
 		this.use_custom_gl_states=1;
@@ -604,10 +627,23 @@
 			var lbrt = [0.0,0.0,1.0,1.0];
 		}
 		var shaderUse = s_vert_shader;
+		var mat_proj;
+		
+		if(g_params["fix_rotation"]>0.5) {
+			if(g_params["flip_wh"]<0.5 && params.w > params.h) {
+				var rmode = g_params["fix_rotation_mode"];
+				FaceUnity.SetRotationMode(rmode);
+			}
+			if(g_params["flip_wh"]>0.5 && params.w < params.h) {
+				var rmode = g_params["fix_rotation_mode"];
+				FaceUnity.SetRotationMode(rmode);
+			}
+		}
+		
 		if(V(globals.use_fov,0)>0.5){
-			var mat_proj = FaceUnity.CreateProjectionMatrix_FOV(V(globals.camera_fov,20));
+			mat_proj = FaceUnity.CreateProjectionMatrix_FOV(V(globals.camera_fov,20));
 		}else{
-			var mat_proj = FaceUnity.CreateProjectionMatrix();
+			mat_proj = FaceUnity.CreateProjectionMatrix();
 		}
 		
 		var ka = [V(matex.Ka_r, 0.0),V(matex.Ka_g, 0.0),V(matex.Ka_b, 0.0)];
@@ -665,12 +701,14 @@
 		}
 		if (this.translate != null && this.translate != undefined &&
             this.rotate != null && this.rotate != undefined &&
-            this.transform != null && this.transform != undefined) {
+            this.transform != null && this.transform != undefined &&
+			this.scale != null && this.scale != undefined) {
 		    shaderParams.trans_pos = this.translate;
 		    shaderParams.rot_mat1 = [this.rotate[0], this.rotate[1], this.rotate[2]];
 		    shaderParams.rot_mat2 = [this.rotate[3], this.rotate[4], this.rotate[5]];
 		    shaderParams.rot_mat3 = [this.rotate[6], this.rotate[7], this.rotate[8]];
 		    shaderParams.model_mat = this.transform;
+			shaderParams.scale = this.scale;
 		} else {
 		    shaderParams.rot_mat1 = [1, 0, 0];
 		    shaderParams.rot_mat2 = [0, 1, 0];
@@ -680,6 +718,7 @@
                                       0, 1, 0, 0,
                                       0, 0, 1, 0,
                                       0, 0, 0, 1];
+			shaderParams.scale = [1, 1, 1];
 		}
 		if (animation != null) {
 		    if (animation.use_vtf == 1) 
@@ -687,9 +726,29 @@
 		}
 		
 		var cull = V((materials_json[this.name] || {}).back_cull, 0);
-		if(cull>0.5) gl.enable(gl.CULL_FACE);
+		var glcullface=gl.getParameter(gl.CULL_FACE);
+		var glfrontface=gl.getParameter(gl.FRONT_FACE);
+		var glcullfacemode=gl.getParameter(gl.CULL_FACE_MODE);
+		if(cull>0.5){
+			gl.enable(gl.CULL_FACE);
+			gl.frontFace(gl.CCW);
+			if(g_params['is3DFlipH']<0.5)
+				gl.cullFace(gl.BACK); 
+			else
+				gl.cullFace(gl.FRONT);
+		}
+		else
+			gl.disable(gl.CULL_FACE);
+		
 		FaceUnity.RenderBlendshapeComponent_new(blendshape, this, shaderUse, shader, shaderParams, pass);
-		if(cull>0.5) gl.disable(gl.CULL_FACE);
+
+		if(glcullface)
+			gl.enable(gl.CULL_FACE);
+		else
+			gl.disable(gl.CULL_FACE);
+		gl.frontFace(glfrontface);
+		gl.cullFace(glcullfacemode);
+
 	}
 
 	//meshgroup
@@ -997,6 +1056,20 @@
 	if(AnimMeshs["avatar"])
 		AnimMeshs["avatar"].meshgroup.calTriggerNextNodesRef(undefined);
 	
+	function AdjustZFov(oldZ) {
+		var multiFace = FaceUnity.GetFaceIdentifier(20) == 1 ? false : true; 
+		
+		var asp = FaceUnity.g_image_w / FaceUnity.g_image_h;
+		var fov = 25.0;
+		if(multiFace) {
+			if(FaceUnity.g_image_w < FaceUnity.g_image_h) fov *= asp;
+		}
+		var fovZ = oldZ;
+		if(globals["use_fov"] > 0.5)
+			fovZ = Math.tan((fov / 2.0)*DEG2RAD) * oldZ / Math.tan((globals["camera_fov"] / 2.0)*DEG2RAD);
+		return fovZ;
+	}
+	
 	return {
 	    CalRef: AnimMeshs[0] ? AnimMeshs[0].meshgroup.calTriggerNextNodesRef:undefined,
 	    meshlst: AnimMeshs[0] ? AnimMeshs[0].meshgroup.meshlst:undefined,
@@ -1015,6 +1088,10 @@
 				g_params[name] = value;
 				return 1;
 			}
+			if(name=='isFlipExpr'){ 
+				g_params[name] = value;
+				return 1;
+			}
 			if(name=="weightOffset"){
 				g_params[name]=value;
 				return 1;
@@ -1030,6 +1107,14 @@
 			    scale_delta = Math.max(Math.min(scale_delta + value, 1.0), -0.26);
 			    scale_ex = 1.0 + scale_delta;
 			    return;
+			}
+			if (name=="fix_rotation"){
+				g_params["fix_rotation"] = value;
+				return 1;
+			}
+			if (name=="flip_wh") {
+				g_params["flip_wh"] = value;
+				return 1;
 			}
 			/*
 			否则的话，name里面就是一个JSON对象：{"name":"材质名或<global>"，"param":"参数名"}
@@ -1094,6 +1179,24 @@
 		},
 		/// \brief 主要的绘制逻辑
 		Render: function (params, pass) {
+			if(g_params.isFlipExpr>0.5){
+				//filp rotation 
+				var rotation = params.rotation.slice();
+				//rotation[0] = -rotation[0];
+				rotation[1] = -rotation[1];
+				rotation[2] = -rotation[2];
+				params.rotation = rotation;
+				
+				//filp exp
+				for (var i = 0;i<swaplst.length;i+=2){
+					var tmp = params.expression[swaplst[i]];
+					params.expression[swaplst[i]] = params.expression[swaplst[i+1]];
+					params.expression[swaplst[i+1]] = tmp;
+				}
+				// fack eye rot
+				params.pupil_pos[0] = -params.pupil_pos[0];
+			}
+			
 			if(V(globals.is_fix_x,0)>0.5){
 				params.translation[0] = V(globals.fixed_x,0);
 			}

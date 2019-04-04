@@ -18,12 +18,6 @@
 	将来有需求的话可以把shader里L2的注释去掉，加个背光什么的。
 	现在的光源都没有产生阴影。有需求请联系我们，在系统里加一下。
 	*/
-	//高光颜色r
-	//@gparam ambient_light_intensity {"type":"slider","min":0,"max":1,"default_value":0}
-	//@gparam tex_light_probe {"type":"texture","default_value":"beach_1_4.jpg"}
-	//@gparam light_probe_intensity {"type":"slider","min":0,"max":1,"default_value":0.1}
-	//@gparam envmap_shift {"type":"slider","min":0,"max":1,"default_value":0.75}
-	//@gparam envmap_fov {"type":"slider","min":0.5,"max":5,"default_value":1.0}
 
 	//主光的航向角，也就是左右转的那个角
 	//@gparam L0_yaw {"type":"slider","min":0,"max":1,"default_value":0}
@@ -50,7 +44,7 @@
 	//@gparam isnofacerender {"type":"slider","min":0,"max":1,"default_value":1}
 
 	//@gparam use_fov {"type":"slider","min":0,"max":1,"default_value":0}
-	//@gparam camera_fov {"type":"slider","min":5,"max":90,"default_value":20}
+	//@gparam camera_fov {"type":"slider","min":1,"max":90,"default_value":20}
 	//控制旋转的幅度，rot_weight=1完全按照人头旋转，rot_weight=0不跟人头旋转
 	//@gparam rot_weight {"type":"slider","min":0,"max":1,"default_value":1}
 	//@gparam expr_clamp {"type":"slider","min":0,"max":1,"default_value":1}
@@ -72,6 +66,13 @@
 	//@mparam tex_ao {"type":"texture","default_value":"white.png"}
 	//@mparam tex_specular {"type":"texture","default_value":"black.png"}
 	//@mparam tex_emission {"type":"texture","default_value":"black.png"}
+	
+	//高光颜色r
+	//@mparam ambient_light_intensity {"type":"slider","min":0,"max":1,"default_value":0}
+	//@mparam tex_light_probe {"type":"texture","default_value":"beach_1_4.jpg"}
+	//@mparam light_probe_intensity {"type":"slider","min":0,"max":1,"default_value":0.1}
+	//@mparam envmap_shift {"type":"slider","min":0,"max":1,"default_value":0.75}
+	//@mparam envmap_fov {"type":"slider","min":0.5,"max":5,"default_value":1.0}
 
 	// param
 	//@mparam normal_strength {"type":"slider","min":0,"max":1,"default_value":0}
@@ -147,6 +148,10 @@
 	//ex 16,
 	var swaplst = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,  17,18,  20,22,  23,24,  25,26,  27,28,  29,30,  31,32,  44,45,
 		47,49, 50,52, 53,55 ];
+		
+	var PI = Math.PI;
+	var RAD2DEG = 180.0 / PI;
+	var DEG2RAD = PI / 180.0;
 
     // axis = 0 is x, axis = 1 is y, axis = 2 is z
     // opt = 0 means less, opt = 1 means greater
@@ -382,6 +387,7 @@
 		}
 	}
 	console.log("bigtexcnt",bigtexcnt);
+	var LoadBlendshape=FaceUnity.LoadBlendshape;
 	var user_frame_id=0;
 	var now = Date.now();
 	var bsCount = 56;
@@ -593,10 +599,13 @@
 		trans[0] = this.translate[0];
 		trans[1] = this.translate[1];
 		trans[2] = -this.translate[2];
-
+		
 		var mat = FaceUnity.MatrixTranslate(AddVec3(params.translation, trans));
 		mat = FaceUnity.MatrixMul(rot_ex, mat);
 		mat = FaceUnity.MatrixMul(FaceUnity.MatrixTranslate(InvVec3(trans)), mat);
+		
+		if(isFollow) 
+			mat = FaceUnity.CreateViewMatrix([0,0,0,1],[params.translation[0],params.translation[1],AdjustZFov(params.translation[2])*2]);
 
 		var mat_cam = FaceUnity.MatrixTranslate(AddVec3(params.translation, trans));
 		mat_cam = FaceUnity.MatrixMul(rot_ex, mat_cam);
@@ -751,11 +760,13 @@
 			EdgesDarkeningColor: [V(matex.EdgesDarkeningColor_r, 255.0)/255.0, V(matex.EdgesDarkeningColor_g, 255.0)/255.0, V(matex.EdgesDarkeningColor_b, 255.0)/255.0],
 			edgeDark_rimLight: [V(matex.edgeDark_rimLight_x, 0.0), V(matex.edgeDark_rimLight_y, 0.0), V(matex.edgeDark_rimLight_z, 1.0), V(matex.edgeDark_rimLight_w, 1.0)],
 
-			tex_light_probe: tex_light_probe,
-		    light_probe_rotate: V(globals.light_probe_rotate, 0.25),
-		    light_probe_intensity: V(globals.light_probe_intensity, 0.1),
-		    envmap_shift: V(globals.envmap_shift, 0.75),
-		    envmap_fov: V(globals.envmap_fov, 1.0),
+		    ambient_light_intensity: V(matex.ambient_light_intensity, 0.0),
+			tex_light_probe: tex_map[V(matex.tex_light_probe, "grey.png")],
+		    light_probe_rotate: V(matex.light_probe_rotate, 0.25),
+		    light_probe_intensity: V(matex.light_probe_intensity, 0.1),
+		    envmap_shift: V(matex.envmap_shift, 0.75),
+		    envmap_fov: V(matex.envmap_fov, 1.0),
+			
 			spec_color: [V(matex.spec_r, 255.0)/255.0, V(matex.spec_g, 255.0)/255.0, V(matex.spec_b, 255.0)/255.0],
 
 		    Ka: V(matex.Ka, 0.0), Kd: V(matex.Kd, 0.3), Ks: V(matex.Ks, 0.2), Kr: V(matex.Kr, 0.0),
@@ -765,7 +776,6 @@
 		    ior: V(matex.ior, 1.33),
 		    F0: V(matex.F0, 1.0),
 
-		    ambient_light_intensity: V(globals.ambient_light_intensity, 0.0),
 		    L0_dir: L0_dir, L0_color: L0_color,
 		    L1_dir: L1_dir, L1_color: L1_color,
 		    isFlipH: g_params['is3DFlipH'],
@@ -941,7 +951,7 @@
         if(typeof this.BlendShapes[id] != 'object')
         {
         	//console.log("Getblendshape:",this.meshName,"id=",id);
-            this.BlendShapes[id]=FaceUnity.LoadBlendshape(this.meshName + ".json", this.meshName + ".bin");
+            this.BlendShapes[id]=LoadBlendshape(this.meshName + ".json", this.meshName + ".bin");
         }
         return this.BlendShapes[id];
 	}
@@ -1271,6 +1281,20 @@
 	if(AnimMeshs["avatar"])
 		AnimMeshs["avatar"].meshgroup.calTriggerNextNodesRef(undefined);
 	
+	function AdjustZFov(oldZ) {
+		var multiFace = FaceUnity.GetFaceIdentifier(20) == 1 ? false : true; 
+		
+		var asp = FaceUnity.g_image_w / FaceUnity.g_image_h;
+		var fov = 25.0;
+		if(multiFace) {
+			if(FaceUnity.g_image_w < FaceUnity.g_image_h) fov *= asp;
+		}
+		var fovZ = oldZ;
+		if(globals["use_fov"] > 0.5)
+			fovZ = Math.tan((fov / 2.0)*DEG2RAD) * oldZ / Math.tan((globals["camera_fov"] / 2.0)*DEG2RAD);
+		return fovZ;
+	}
+	
 	return {
 	    CalRef: AnimMeshs[0] ? AnimMeshs[0].meshgroup.calTriggerNextNodesRef:undefined,
 	    meshlst: AnimMeshs[0] ? AnimMeshs[0].meshgroup.meshlst:undefined,
@@ -1542,6 +1566,10 @@
 			if(V(globals.is_fix_z,0)>0.5){
 				params.translation[2] = V(globals.fixed_z,0);
 			}
+			
+			if(!isFollow)
+				params.translation[2] = AdjustZFov(params.translation[2]);
+			
 			if (!params.focal_length) params.focal_length = focal_length;
 			if(V(globals.expr_clamp,0)>0.5){
 				for(var i =0;i<bsCount;i++){
@@ -1626,6 +1654,9 @@
 					params.pupil_pos = [0, 0];
 			    	params.expression = expression;
 		        }
+				
+				params.translation[2] = AdjustZFov(params.translation[2]);
+				
 		        if (!params.focal_length) params.focal_length = focal_length;
 
 		        //update animation

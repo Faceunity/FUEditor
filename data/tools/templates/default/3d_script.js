@@ -62,7 +62,7 @@
 	//@gparam fixed_nz {"type":"slider","min":0,"max":2000,"default_value":350.0}
 	
 	//@gparam use_fov {"type":"slider","min":0,"max":1,"default_value":0.0}
-	//@gparam camera_fov {"type":"slider","min":5,"max":90,"default_value":20.0}
+	//@gparam camera_fov {"type":"slider","min":1,"max":90,"default_value":20.0}
 	//控制旋转的幅度，rot_weight=1完全按照人头旋转，rot_weight=0不跟人头旋转
 	//@gparam rot_weight {"type":"slider","min":0,"max":1,"default_value":1.0}
 	//@gparam expr_clamp {"type":"slider","min":0,"max":1,"default_value":0.0}
@@ -161,6 +161,10 @@
 	
 	//ex 16,
 	var swaplst = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,  17,18,  20,22,  23,24,  25,26,  27,28,  29,30,  31,32,  44,45];
+	
+	var PI = Math.PI;
+	var RAD2DEG = 180.0 / PI;
+	var DEG2RAD = PI / 180.0;
 
     // axis = 0 is x, axis = 1 is y, axis = 2 is z
     // opt = 0 means less, opt = 1 means greater
@@ -543,6 +547,9 @@
 		var mat = FaceUnity.MatrixTranslate(AddVec3(params.translation, trans));
 		mat = FaceUnity.MatrixMul(rot_ex, mat);
 		mat = FaceUnity.MatrixMul(FaceUnity.MatrixTranslate(InvVec3(trans)), mat);
+		
+		if(globals["use_fov"] > 0.5)
+			mat = FaceUnity.CreateViewMatrix([0,0,0,1],[params.translation[0],params.translation[1],AdjustZFov(params.translation[2])*2]);
 
 		var mat_cam = FaceUnity.MatrixTranslate(AddVec3(params.translation, trans));
 		mat_cam = FaceUnity.MatrixMul(rot_ex, mat_cam);
@@ -1100,6 +1107,20 @@
 		if(FaceUnity.DisableTongueCoefs)
 			FaceUnity.DisableTongueCoefs();
 	} catch(err){console.log(err.stack);}
+	
+	function AdjustZFov(oldZ) {
+		var multiFace = FaceUnity.GetFaceIdentifier(20) == 1 ? false : true; 
+		
+		var asp = FaceUnity.g_image_w / FaceUnity.g_image_h;
+		var fov = 25.0;
+		if(multiFace) {
+			if(FaceUnity.g_image_w < FaceUnity.g_image_h) fov *= asp;
+		}
+		var fovZ = oldZ;
+		if(globals["use_fov"] > 0.5)
+			fovZ = Math.tan((fov / 2.0)*DEG2RAD) * oldZ / Math.tan((globals["camera_fov"] / 2.0)*DEG2RAD);
+		return fovZ;
+	}
 	
 	return {
 	    CalRef: AnimMeshs[0] ? AnimMeshs[0].meshgroup.calTriggerNextNodesRef:undefined,
