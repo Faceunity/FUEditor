@@ -139,6 +139,15 @@
 			img_h = config["image_height"];
 			img_w = config["image_width"];
 			skip_frames = config["skip_frames"];
+			
+			if(FaceUnity.m_platform == "android") {
+				config["model_threads"] = 4;
+			} else if(FaceUnity.m_platform == "ios") {
+				config["model_threads"] = 2;
+			}
+			
+			config["json_string"] = JSON.stringify(config);
+			
 			model = FaceUnity.NNLoadBackgroundSegmenter(config);
 		} else {
 			if(!FaceUnity.LoadNNModel) {
